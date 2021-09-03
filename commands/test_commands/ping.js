@@ -5,6 +5,6 @@ module.exports = {
         //     let ping = m.createdTimestamp - msg.createdTimestamp
         //     m.edit(`Il tuo ping è ${ping}ms`)
         // })
-        msg.channel.send(`Ping: ${bot.ws.ping}`)
+        msg.channel.send(`Ping: ${bot.ws.ping}ms`)
     },
 }

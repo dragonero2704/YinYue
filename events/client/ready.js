@@ -2,6 +2,6 @@ module.exports = {
     name: 'ready',
     once: true,
     run(bot, Discord) {
-        console.log('Bot online!')
+        console.log(`${bot.user.tag} online!`)
     },
 }
