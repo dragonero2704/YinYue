@@ -258,9 +258,9 @@ module.exports = {
                     let num = parseInt(args[0])
 
                     if (num < 1 || num > server_queue.songs.length) {
-                        msg.channel.send(`Per favore inserisci un numero valido tra 1 e ${server_queue.songs.length}`).then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
+                        let embed = require('../../embed')(msg.guild)
+                        embed.setTitle(`Per favore inserisci un numero valido tra 1 e ${server_queue.songs.length}`)
+                        msg.channel.send({ embeds: [embed] })
                         return
                     }
 
@@ -376,10 +376,42 @@ module.exports = {
 
                 }
                 break
+
+            case 'remove':
+            case 'r':
+                {
+                    let server_queue = queue.get(msg.guild.id)
+
+                    if (!server_queue || server_queue.songs.length == 0) {
+                        msg.channel.send('Nessuna coda da cancellare!').then(msg => {
+                            setTimeout(() => msg.delete(), 10000)
+                        });
+                        return
+                    }
+
+                    let voice_channel = await msg.member.voice.channel
+                    if (!voice_channel) {
+                        msg.channel.send('Devi essere in un canale vocale per ascoltare la musica!').then(msg => {
+                            setTimeout(() => msg.delete(), 10000)
+                        });
+                        return
+                    }
+
+                    let num = parseInt(args[0])
+
+                    if (num < 1 || num > server_queue.songs.length) {
+                        let embed = require('../../embed')(msg.guild)
+                        embed.setTitle(`Per favore inserisci un numero valido tra 1 e ${server_queue.songs.length}`)
+                        msg.channel.send({ embeds: [embed] })
+                        return
+                    }
+                }
+
+                break
         }
 
     },
-    aliases: ['p', 'pause', 'skip', 'jump', 'j', 'stop', 'die', 'l', 'loop', 'resume', 'q', 'queue']
+    aliases: ['p', 'pause', 'skip', 'jump', 'j', 'stop', 'die', 'l', 'loop', 'resume', 'q', 'queue', 'remove', 'r']
 }
 
 async function getMediaStream(url) {
