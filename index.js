@@ -1,33 +1,29 @@
-const { Client, Collection, Intents } = require('discord.js')
+const Discord = require('discord.js')
 const { config } = require("dotenv")
 const { readdirSync } = require('fs')
 
-const bot = new Client({
-    disableMentions: "everyone",
-    intents: [Intents.FLAGS.GUILDS],
+
+const Intents = Discord.Intents
+
+const bot = new Discord.Client({
+    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_VOICE_STATES],
 })
 
-bot.commands = new Collection()
-bot.aliases = new Collection()
-bot.events = new Collection()
+bot.commands = new Discord.Collection()
+bot.aliases = new Discord.Collection()
+bot.prefix = '-'
 
-console.log(__dirname)
+// console.log(bot.prefix)
 let handler_path = __dirname + '/handlers'
 readdirSync(handler_path).forEach((handler) => {
     require(`${handler_path}/${handler}`)(bot)
 })
 
+
 config({
     path: __dirname + '/.env'
 })
 
-bot.on('ready', () => {
-    console.log('Bot online!')
-})
-
-bot.on('message', (msg) => {
-    console.log(msg)
-})
 
 
 bot.login(process.env.TOKEN)

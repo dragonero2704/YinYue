@@ -1,6 +1,6 @@
 module.exports = {
     name: 'pong',
-    run: (bot, msg) => {
-        //code
+    run(msg, args, bot, Discord) {
+        msg.reply('ping!')
     },
 }
