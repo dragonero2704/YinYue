@@ -24,8 +24,8 @@ config({
     path: __dirname + '/.env'
 })
 
-bot.on('message', (msg) => {
-    msg.guild.me.displayColor
-})
+// bot.on('message', (msg) => {
+//     msg.guild.me.displayColor
+// })
 
 bot.login(process.env.TOKEN)

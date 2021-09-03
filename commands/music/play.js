@@ -10,7 +10,7 @@ module.exports = {
     name: 'play',
     once: false,
     async run(msg, args, bot, Discord) {
-        cmd = args.shift()
+        cmd = args.shift().toLowerCase()
 
         switch (cmd) {
             case 'play':
@@ -18,15 +18,18 @@ module.exports = {
 
                 let voice_channel = await msg.member.voice.channel
                 if (!voice_channel) {
-                    msg.channel.send('Devi essere in un canale vocale per ascoltare la musica!').then(msg => {
+                    let embed = require('../../embed')(msg.guild)
+                    embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
+                    msg.channel.send({ embeds: [embed] }).then(msg => {
                         setTimeout(() => msg.delete(), 10000)
                     });
-                    // console.log(cmd)
                     return
                 }
 
                 if (!args[0]) {
-                    msg.channel.send('Per favore inserisci una parola chiave o un link!').then(msg => {
+                    let embed = require('../../embed')(msg.guild)
+                    embed.setTitle('Inserisci una parola chiave')
+                    msg.channel.send({ embeds: [embed] }).then(msg => {
                         setTimeout(() => msg.delete(), 10000)
                     });
 
@@ -38,7 +41,9 @@ module.exports = {
                 let song = {
                     url: undefined,
                     title: undefined,
-                    thumbnail: undefined
+                    thumbnail: undefined,
+                    pos: undefined,
+                    playing: undefined
                 }
 
                 if (play_dl.validate(args[0])) {
@@ -46,7 +51,9 @@ module.exports = {
                     song = {
                         url: media.url,
                         title: media.title,
-                        thumbnail: media.thumbnail
+                        thumbnail: media.thumbnail,
+                        pos: 0,
+                        playing: true
                     }
                 } else {
                     let query = ''
@@ -60,7 +67,9 @@ module.exports = {
                     song = {
                             url: media.url,
                             title: media.title,
-                            thumbnail: media.thumbnail
+                            thumbnail: media.thumbnail,
+                            pos: 0,
+                            playing: true
                         }
                         // console.log(song)
                 }
@@ -75,10 +84,9 @@ module.exports = {
                     }
 
                     queue.set(msg.guild.id, queue_constructor)
-                    let item = {
-                        song: song,
-                        pos: 0
-                    }
+                    let item = song
+
+
                     queue_constructor.songs.push(item)
 
                     try {
@@ -95,7 +103,7 @@ module.exports = {
                         queue_constructor.player = player
 
                         let embed = require('../../embed.js')(msg.guild)
-                            .setTitle(`In riproduzione: [**${item.song.title}**](${item.song.url})`)
+                            .addField('In riproduzione:', `[**${item.title}**](${item.url})`)
                             // .setURL(item.song.url)
                         msg.channel.send({ embeds: [embed] })
                             // console.log(queue.get(msg.guild.id))
@@ -104,23 +112,29 @@ module.exports = {
                             console.log('Music is playing!')
 
                         })
+                        let server_queue = queue.get(msg.guild.id)
                         player.on(voice.AudioPlayerStatus.Idle, async(oldState, newState) => {
-
-                            let next_resource = await getNextSong(queue, msg.guild.id)
+                            let last_song_pos = oldState.resource.metadata.pos
+                            let next_resource = await getNextSong(queue, msg.guild.id, last_song_pos)
                             if (!next_resource) {
+                                let embed = require('../../embed')(msg.guild)
+                                    .setTitle('Coda terminata!')
+                                server_queue.text_channel.send({ embeds: [embed] }).then(msg => {
+                                    setTimeout(() => msg.delete(), 10000)
+                                });
                                 return
                             }
                             player.play(next_resource)
+                            let embed = require('../../embed.js')(msg.guild)
+                                .addField('In riproduzione', `[**${next_resource.metadata.title}**](${next_resource.metadata.url})`)
+                            msg.channel.send({ embeds: [embed] })
 
                         })
                         player.on('error', error => {
                             console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
                         });
 
-
-
-                        server_queue = queue.get(msg.guild.id)
-                            // const connection = server_queue.connection
+                        // const connection = server_queue.connection
                         connection.on(voice.VoiceConnectionStatus.Disconnected, async(oldState, newState) => {
                             try {
                                 await Promise.race([
@@ -142,19 +156,22 @@ module.exports = {
                     }
 
                 } else {
-                    let item = {
-                        song: song,
-                        pos: server_queue.songs.length
+                    song.pos = server_queue.songs.length
+                    if (server_queue.player.state === voice.AudioPlayerStatus.Paused) {
+                        song.playing = true
+                        server_queue.songs.push(song)
+                        let embed = require('../../embed.js')(msg.guild)
+                            .addField('In riproduzione', `[**${song.title}**](${song.url})`)
+                        msg.channel.send({ embeds: [embed] })
+                        server_queue.player.play(await getResource(song))
+                        return
                     }
-                    if (!item in server_queue.songs) server_queue.songs.push(item)
-                    let embed = require('../../embed.js')(msg.guild)
-                        .setTitle(`${item.song.title} è in coda!`)
-                        .setURL(item.song.url)
-                    msg.channel.send({ embeds: [embed] })
 
-                    if (!server_queue.player.unpause()) {
-                        server_queue.player.play(await getResource(server_queue.songs[0].song))
-                    }
+                    song.playing = false
+                    server_queue.songs.push(song)
+                    let embed = require('../../embed.js')(msg.guild)
+                        .addField('Aggiunta alla coda', `[${song.title}](${song.url}) è in coda!`)
+                    msg.channel.send({ embeds: [embed] })
                     return
 
                 }
@@ -165,7 +182,9 @@ module.exports = {
                 {
                     let voice_channel = await msg.member.voice.channel
                     if (!voice_channel) {
-                        msg.channel.send('Devi essere in un canale vocale per ascoltare la musica!').then(msg => {
+                        let embed = require('../../embed')(msg.guild)
+                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
+                        msg.channel.send({ embeds: [embed] }).then(msg => {
                             setTimeout(() => msg.delete(), 10000)
                         });
                         return
@@ -179,7 +198,7 @@ module.exports = {
                     }
 
                     server_queue.player.pause()
-                    msg.channel.send(`Metto in pausa **${server_queue.songs[0].song.title}**`).then(msg => {
+                    msg.channel.send(`Metto in pausa **${server_queue.songs[0].title}**`).then(msg => {
                         setTimeout(() => msg.delete(), 10000)
                     });
                 }
@@ -189,7 +208,9 @@ module.exports = {
                 {
                     let voice_channel = await msg.member.voice.channel
                     if (!voice_channel) {
-                        msg.channel.send('Devi essere in un canale vocale per ascoltare la musica!').then(msg => {
+                        let embed = require('../../embed')(msg.guild)
+                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
+                        msg.channel.send({ embeds: [embed] }).then(msg => {
                             setTimeout(() => msg.delete(), 10000)
                         });
                         return
@@ -203,19 +224,21 @@ module.exports = {
                     }
 
                     server_queue.player.unpause()
-                    msg.channel.send(`Riprendo **${server_queue.songs[0].song.title}**`).then(msg => {
+                    msg.channel.send(`Riprendo **${server_queue.songs[0].title}**`).then(msg => {
                         setTimeout(() => msg.delete(), 10000)
                     });
 
                 }
                 break
-
+                // da fixare
             case 'skip':
             case 's':
                 {
                     let voice_channel = await msg.member.voice.channel
                     if (!voice_channel) {
-                        msg.channel.send('Devi essere in un canale vocale per ascoltare la musica!').then(msg => {
+                        let embed = require('../../embed')(msg.guild)
+                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
+                        msg.channel.send({ embeds: [embed] }).then(msg => {
                             setTimeout(() => msg.delete(), 10000)
                         });
                         return
@@ -229,8 +252,27 @@ module.exports = {
                         return
                     }
 
-                    server_queue.player.play(await getNextSong(queue, msg.guild.id))
+                    let currently_playing = undefined
 
+                    for (let song of server_queue.songs) {
+                        if (song.playing === true) {
+                            currently_playing = song
+                        }
+                    }
+
+                    let resource = await getNextSong(queue, msg.guild.id, currently_playing.pos)
+                    if (!resource) {
+                        let embed = require('../../embed')(msg.guild)
+                            .setTitle('Coda terminata!')
+                        server_queue.text_channel.send({ embeds: [embed] }).then(msg => {
+                            setTimeout(() => msg.delete(), 10000)
+                        });
+                        return
+                    }
+                    server_queue.player.play(resource)
+                    let embed = require('../../embed.js')(msg.guild)
+                        .addField('In riproduzione', `[**${resource.metadata.title}**](${resource.metadata.url})`)
+                    msg.channel.send({ embeds: [embed] })
 
                 }
                 break;
@@ -238,10 +280,11 @@ module.exports = {
             case 'jump':
             case 'j':
                 {
-                    loop = true
                     let voice_channel = await msg.member.voice.channel
                     if (!voice_channel) {
-                        msg.channel.send('Devi essere in un canale vocale per ascoltare la musica!').then(msg => {
+                        let embed = require('../../embed')(msg.guild)
+                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
+                        msg.channel.send({ embeds: [embed] }).then(msg => {
                             setTimeout(() => msg.delete(), 10000)
                         });
                         return
@@ -264,18 +307,14 @@ module.exports = {
                         return
                     }
 
-                    while (true) {
-                        if (server_queue.songs[0].pos == num - 1) {
-                            selected_song = server_queue.songs[0].song
-                            break
-                        }
-                        let last = server_queue.songs.shift()
-                        server_queue.songs.push(last)
-                    }
 
-                    server_queue.player.play(await getResource(selected_song))
-                    msg.channel.send(`${selected_song.title}`)
-                    loop = false
+
+                    server_queue.player.play(await getNextSong(queue, msg.guild.id, num - 2))
+                    let selected_song = server_queue.songs[num - 1]
+                    let embed = require('../../embed.js')(msg.guild)
+                        .addField('In riproduzione', `[**${selected_song.title}**](${selected_song.url})`)
+                        // .setURL(item.song.url)
+                    msg.channel.send({ embeds: [embed] })
                 }
                 break;
 
@@ -295,7 +334,9 @@ module.exports = {
 
                     let voice_channel = await msg.member.voice.channel
                     if (!voice_channel) {
-                        msg.channel.send('Devi essere in un canale vocale per ascoltare la musica!').then(msg => {
+                        let embed = require('../../embed')(msg.guild)
+                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
+                        msg.channel.send({ embeds: [embed] }).then(msg => {
                             setTimeout(() => msg.delete(), 10000)
                         });
                         return
@@ -315,7 +356,9 @@ module.exports = {
                 {
                     let voice_channel = await msg.member.voice.channel
                     if (!voice_channel) {
-                        msg.channel.send('Devi essere in un canale vocale per ascoltare la musica!').then(msg => {
+                        let embed = require('../../embed')(msg.guild)
+                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
+                        msg.channel.send({ embeds: [embed] }).then(msg => {
                             setTimeout(() => msg.delete(), 10000)
                         });
                         return
@@ -333,15 +376,16 @@ module.exports = {
                     }
                 }
                 break;
-
+                //da rifare
             case 'queue':
             case 'q':
                 {
-                    loop = true
+
+
                     let server_queue = queue.get(msg.guild.id)
 
                     if (!server_queue || server_queue.songs.length == 0) {
-                        msg.channel.send('Nessuna coda da cancellare!').then(msg => {
+                        msg.channel.send('Nessuna coda!').then(msg => {
                             setTimeout(() => msg.delete(), 10000)
                         });
 
@@ -350,25 +394,17 @@ module.exports = {
 
                     let voice_channel = await msg.member.voice.channel
                     if (!voice_channel) {
-                        msg.channel.send('Devi essere in un canale vocale per ascoltare la musica!').then(msg => {
+                        let embed = require('../../embed')(msg.guild)
+                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
+                        msg.channel.send({ embeds: [embed] }).then(msg => {
                             setTimeout(() => msg.delete(), 10000)
                         });
                         return
                     }
 
-                    let copy = server_queue.songs
-
-                    while (true) {
-                        if (copy[0].pos == 0) {
-                            break
-                        }
-                        let last = copy.shift()
-                        copy.push(last)
-                    }
                     let embed = require('../../embed.js')(msg.guild)
-                    for (let song of copy) {
-                        // console.log(song)
-                        embed.addField('\u200b', `${(song.pos+1).toString()}) [${song.song.title}](${song.song.url})`)
+                    for (let song of server_queue.songs) {
+                        embed.addField('\u200b', `${(song.pos+1).toString()}) [${song.title}](${song.url})`)
                             .setTitle('Coda')
                     }
 
@@ -376,7 +412,7 @@ module.exports = {
 
                 }
                 break
-
+                // da rifare
             case 'remove':
             case 'r':
                 {
@@ -391,12 +427,13 @@ module.exports = {
 
                     let voice_channel = await msg.member.voice.channel
                     if (!voice_channel) {
-                        msg.channel.send('Devi essere in un canale vocale per ascoltare la musica!').then(msg => {
+                        let embed = require('../../embed')(msg.guild)
+                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
+                        msg.channel.send({ embeds: [embed] }).then(msg => {
                             setTimeout(() => msg.delete(), 10000)
                         });
                         return
                     }
-
                     let num = parseInt(args[0])
 
                     if (num < 1 || num > server_queue.songs.length) {
@@ -405,6 +442,17 @@ module.exports = {
                         msg.channel.send({ embeds: [embed] })
                         return
                     }
+
+                    let target = server_queue.songs[num - 1]
+
+                    server_queue.songs = server_queue.songs.filter((value) => {
+                        return value.pos !== num - 1
+                    })
+
+                    let embed = require('../../embed')(msg.guild)
+                    embed.addField('Traccia rimossa', `[${target.title}](${target.url}) è stata rimossa dalla coda`)
+
+                    msg.channel.send({ embeds: [embed] })
                 }
 
                 break
@@ -421,22 +469,32 @@ async function getResource(song) {
     return voice.createAudioResource(await getMediaStream(song.url), { metadata: song })
 }
 
-async function getNextSong(queue, guildID) {
+async function getNextSong(queue, guildID, last_song_pos) {
     let server_queue = queue.get(guildID)
-    let last_song = server_queue.songs.shift()
-
-    server_queue.songs.push(last_song)
-    let song = server_queue.songs[0]
-
-    if (song.pos === server_queue.songs.length - 1 && !loop) {
-        server_queue.text_channel.send('Coda terminata!').then(msg => {
-            setTimeout(() => msg.delete(), 10000)
-        });
-        server_queue.songs = []
-
-        return undefined
+    try {
+        server_queue.songs[last_song_pos].playing = false
+    } catch (error) {
+        console.log(error)
     }
 
-    let resource = await getResource(song.song)
+    let next_song_pos = last_song_pos + 1
+
+
+    if (next_song_pos >= server_queue.songs.length && !loop) {
+        return undefined
+    }
+    if (next_song_pos >= server_queue.length && loop) {
+        next_song_pos = 0
+    }
+    try {
+        server_queue.songs[next_song_pos].playing = true
+    } catch (error) {
+        console.log(error)
+    }
+
+
+    let song = server_queue.songs[next_song_pos]
+
+    let resource = await getResource(song)
     return resource
 }
