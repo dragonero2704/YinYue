@@ -129,7 +129,9 @@ module.exports = {
                             player.play(next_resource)
                             let embed = require('../../embed.js')(msg.guild)
                                 .addField('In riproduzione', `[**${next_resource.metadata.title}**](${next_resource.metadata.url})`)
-                            msg.channel.send({ embeds: [embed] })
+                            msg.channel.send({ embeds: [embed] }).then(msg => {
+                            setTimeout(() => msg.delete(), 10000)
+                        });
 
                         })
                         player.on('error', error => {
@@ -274,7 +276,9 @@ module.exports = {
                     server_queue.player.play(resource)
                     let embed = require('../../embed.js')(msg.guild)
                         .addField('In riproduzione', `[**${resource.metadata.title}**](${resource.metadata.url})`)
-                    msg.channel.send({ embeds: [embed] })
+                    msg.channel.send({ embeds: [embed] }).then(msg => {
+                            setTimeout(() => msg.delete(), 10000)
+                        });
 
                 }
                 break;
@@ -299,24 +303,28 @@ module.exports = {
                         });
                         return
                     }
-
-                    let num = parseInt(args[0])
-
-                    if (num < 1 || num > server_queue.songs.length) {
+                    let num 
+                    try{
+                      num = parseInt(args[0])
+                    }catch(error){
+                      console.log(error)
+                    }
+                  
+                    if (num < 1 || num > server_queue.songs.length || !num) {
                         let embed = require('../../embed')(msg.guild)
                         embed.setTitle(`Per favore inserisci un numero valido tra 1 e ${server_queue.songs.length}`)
                         msg.channel.send({ embeds: [embed] })
                         return
                     }
 
-
-
                     server_queue.player.play(await getNextSong(queue, msg.guild.id, num - 2))
                     let selected_song = server_queue.songs[num - 1]
                     let embed = require('../../embed.js')(msg.guild)
                         .addField('In riproduzione', `[**${selected_song.title}**](${selected_song.url})`)
                         // .setURL(item.song.url)
-                    msg.channel.send({ embeds: [embed] })
+                    msg.channel.send({ embeds: [embed] }).then(msg => {
+                            setTimeout(() => msg.delete(), 10000)
+                        });
                 }
                 break;
 
@@ -436,11 +444,16 @@ module.exports = {
                         });
                         return
                     }
-                    let num = parseInt(args[0])
-
-                    if (num < 1 || num > server_queue.songs.length) {
+                    let num
+                    try{
+                      num = parseInt(args[0])
+                    }catch(error){
+                      console.log(error)
+                    }
+                    
+                    if (num < 1 || num > server_queue.songs.length || !num) {
                         let embed = require('../../embed')(msg.guild)
-                        embed.setTitle(`Per favore inserisci un numero valido tra 1 e ${server_queue.songs.length}`)
+                        embed.setTitle(`Inserisci un numero valido tra 1 e ${server_queue.songs.length}`)
                         msg.channel.send({ embeds: [embed] })
                         return
                     }
@@ -449,7 +462,8 @@ module.exports = {
 
                     server_queue.songs = server_queue.songs.filter((value) => {
                         if (value.pos > num - 1) {
-                            return value.pos - 1
+                            value.pos = value.pos - 1
+                            return true
                         }
                         return value.pos !== num - 1
                     })
@@ -484,13 +498,13 @@ async function getNextSong(queue, guildID, last_song_pos) {
 
     let next_song_pos = last_song_pos + 1
 
-
-    if (next_song_pos >= server_queue.songs.length && !loop) {
+    if (next_song_pos >= server_queue.songs.length && loop === false) {
         return undefined
     }
-    if (next_song_pos >= server_queue.length && loop) {
+    if (next_song_pos >= server_queue.songs.length && loop === true) {
         next_song_pos = 0
     }
+    
     try {
         server_queue.songs[next_song_pos].playing = true
     } catch (error) {
