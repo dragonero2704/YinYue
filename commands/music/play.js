@@ -482,13 +482,13 @@ async function getNextSong(queue, guildID, last_song_pos) {
 
     let next_song_pos = last_song_pos + 1
 
-
-    if (next_song_pos >= server_queue.songs.length && !loop) {
+    if (next_song_pos >= server_queue.songs.length && loop === false) {
         return undefined
     }
-    if (next_song_pos >= server_queue.length && loop) {
+    if (next_song_pos >= server_queue.songs.length && loop === true) {
         next_song_pos = 0
     }
+    
     try {
         server_queue.songs[next_song_pos].playing = true
     } catch (error) {
