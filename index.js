@@ -1,7 +1,7 @@
 const Discord = require('discord.js')
 const { config } = require("dotenv")
 const { readdirSync } = require('fs')
-
+const keepAlive = require('./server')
 
 const Intents = Discord.Intents
 
@@ -29,5 +29,5 @@ config({
 // })
 
 // console.log(process.env.TOKEN)
-
+keepAlive()
 bot.login(process.env['TOKEN'])
