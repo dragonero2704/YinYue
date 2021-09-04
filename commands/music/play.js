@@ -446,6 +446,9 @@ module.exports = {
                     let target = server_queue.songs[num - 1]
 
                     server_queue.songs = server_queue.songs.filter((value) => {
+                        if (value.pos > num - 1) {
+                            return value.pos - 1
+                        }
                         return value.pos !== num - 1
                     })
 

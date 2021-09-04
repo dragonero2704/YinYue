@@ -28,4 +28,6 @@ config({
 //     msg.guild.me.displayColor
 // })
 
+// console.log(process.env.TOKEN)
+
 bot.login(process.env.TOKEN)
