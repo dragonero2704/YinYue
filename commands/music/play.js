@@ -36,6 +36,8 @@ module.exports = {
                     return
                 }
 
+                //songs = getSongObject()
+
                 let media = undefined
                 let server_queue = queue.get(msg.guild.id)
                 let song = {
