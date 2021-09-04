@@ -30,4 +30,4 @@ config({
 
 // console.log(process.env.TOKEN)
 
-bot.login(process.env.TOKEN)
+bot.login(process.env['TOKEN'])
