@@ -301,17 +301,19 @@ module.exports = {
                         });
                         return
                     }
-
-                    let num = parseInt(args[0])
-
-                    if (num < 1 || num > server_queue.songs.length) {
+                    let num 
+                    try{
+                      num = parseInt(args[0])
+                    }catch(error){
+                      console.log(error)
+                    }
+                  
+                    if (num < 1 || num > server_queue.songs.length || !num) {
                         let embed = require('../../embed')(msg.guild)
                         embed.setTitle(`Per favore inserisci un numero valido tra 1 e ${server_queue.songs.length}`)
                         msg.channel.send({ embeds: [embed] })
                         return
                     }
-
-
 
                     server_queue.player.play(await getNextSong(queue, msg.guild.id, num - 2))
                     let selected_song = server_queue.songs[num - 1]
@@ -440,11 +442,16 @@ module.exports = {
                         });
                         return
                     }
-                    let num = parseInt(args[0])
-
-                    if (num < 1 || num > server_queue.songs.length) {
+                    let num
+                    try{
+                      num = parseInt(args[0])
+                    }catch(error){
+                      console.log(error)
+                    }
+                    
+                    if (num < 1 || num > server_queue.songs.length || !num) {
                         let embed = require('../../embed')(msg.guild)
-                        embed.setTitle(`Per favore inserisci un numero valido tra 1 e ${server_queue.songs.length}`)
+                        embed.setTitle(`Inserisci un numero valido tra 1 e ${server_queue.songs.length}`)
                         msg.channel.send({ embeds: [embed] })
                         return
                     }
