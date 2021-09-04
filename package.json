@@ -24,6 +24,7 @@
     "dotenv": "^10.0.0",
     "ffmpeg-static": "^4.4.0",
     "libsodium-wrappers": "^0.7.9",
+    "node": "^16.6.1",
     "play-dl": "^0.7.6"
   }
 }
