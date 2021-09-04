@@ -24,10 +24,5 @@ config({
     path: __dirname + '/.env'
 })
 
-// bot.on('message', (msg) => {
-//     msg.guild.me.displayColor
-// })
-
-// console.log(process.env.TOKEN)
 keepAlive()
 bot.login(process.env['TOKEN'])
