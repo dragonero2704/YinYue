@@ -127,7 +127,9 @@ module.exports = {
                             player.play(next_resource)
                             let embed = require('../../embed.js')(msg.guild)
                                 .addField('In riproduzione', `[**${next_resource.metadata.title}**](${next_resource.metadata.url})`)
-                            msg.channel.send({ embeds: [embed] })
+                            msg.channel.send({ embeds: [embed] }).then(msg => {
+                            setTimeout(() => msg.delete(), 10000)
+                        });
 
                         })
                         player.on('error', error => {
@@ -272,7 +274,9 @@ module.exports = {
                     server_queue.player.play(resource)
                     let embed = require('../../embed.js')(msg.guild)
                         .addField('In riproduzione', `[**${resource.metadata.title}**](${resource.metadata.url})`)
-                    msg.channel.send({ embeds: [embed] })
+                    msg.channel.send({ embeds: [embed] }).then(msg => {
+                            setTimeout(() => msg.delete(), 10000)
+                        });
 
                 }
                 break;
@@ -314,7 +318,9 @@ module.exports = {
                     let embed = require('../../embed.js')(msg.guild)
                         .addField('In riproduzione', `[**${selected_song.title}**](${selected_song.url})`)
                         // .setURL(item.song.url)
-                    msg.channel.send({ embeds: [embed] })
+                    msg.channel.send({ embeds: [embed] }).then(msg => {
+                            setTimeout(() => msg.delete(), 10000)
+                        });
                 }
                 break;
 
