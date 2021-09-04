@@ -460,7 +460,8 @@ module.exports = {
 
                     server_queue.songs = server_queue.songs.filter((value) => {
                         if (value.pos > num - 1) {
-                            return value.pos - 1
+                            value.pos = value.pos - 1
+                            return true
                         }
                         return value.pos !== num - 1
                     })
