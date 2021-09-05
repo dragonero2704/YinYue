@@ -10,7 +10,7 @@ module.exports = {
         try {
             bot.commands.get(cmd_name).run(msg, args, bot, Discord);
         } catch (error) {
-            console.log(error)
+            console.log('Comando sconosciuto')
         }
     },
 }

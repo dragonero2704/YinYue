@@ -13,7 +13,6 @@ bot.commands = new Discord.Collection()
 bot.aliases = new Discord.Collection()
 bot.prefix = '-'
 
-// console.log(bot.prefix)
 let handler_path = __dirname + '/handlers'
 readdirSync(handler_path).forEach((handler) => {
     require(`${handler_path}/${handler}`)(bot)
@@ -25,5 +24,5 @@ config({
 })
 
 keepAlive()
-console.log(process.env.TOKEN)
+
 bot.login(process.env.TOKEN)
