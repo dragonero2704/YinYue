@@ -11,7 +11,8 @@ const bot = new Discord.Client({
 
 bot.commands = new Discord.Collection()
 bot.aliases = new Discord.Collection()
-bot.prefix = '-'
+bot.prefix = new Map()
+bot.prefix.set('default', '-')
 
 let handler_path = __dirname + '/handlers'
 readdirSync(handler_path).forEach((handler) => {
@@ -24,5 +25,7 @@ config({
 })
 
 keepAlive()
+
+bot.user.setActivity(`/help`, {type: 'WATCHING'});
 
 bot.login(process.env.TOKEN)
