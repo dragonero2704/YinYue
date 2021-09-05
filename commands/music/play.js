@@ -469,7 +469,7 @@ async function getResource(song) {
     if (!song) return undefined
     let stream = await getMediaStream(song.url)
     if (!stream) return undefined
-    let resource = await voice.createAudioResource(stream, { metadata: song, inlineVolume: true })
+    let resource = voice.createAudioResource(stream, { metadata: song, inlineVolume: true })
     resource.volume.setVolume(0.5)
     return resource
 }
