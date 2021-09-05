@@ -78,9 +78,9 @@ module.exports = {
                             playing_song.set(newState.resource.metadata.guildID, newState.resource.metadata)
                             let song = newState.resource.metadata
                             let embed = require('../../embed.js')(msg.guild)
-                            .addField('In riproduzione:', `[**${song.title}**](${song.url})`)
-                            // .setURL(item.song.url)
-                        msg.channel.send({ embeds: [embed] }).then(msg => {
+                                .addField('In riproduzione:', `[**${song.title}**](${song.url})`)
+                                // .setURL(item.song.url)
+                            msg.channel.send({ embeds: [embed] }).then(msg => {
                                 setTimeout(() => msg.delete(), 10000)
                             });
 
@@ -88,7 +88,7 @@ module.exports = {
                         let server_queue = queue.get(msg.guild.id)
                         player.on(voice.AudioPlayerStatus.Idle, async(oldState, newState) => {
                             let last_song_pos = oldState.resource.metadata.pos
-                            
+
                             let next_resource = await getNextSong(queue, msg.guild.id, last_song_pos)
                             if (!next_resource) {
                                 let embed = require('../../embed')(msg.guild)
@@ -96,7 +96,7 @@ module.exports = {
                                 server_queue.text_channel.send({ embeds: [embed] }).then(msg => {
                                     setTimeout(() => msg.delete(), 10000)
                                 });
-                                setTimeout(()=>server_queue.connection.destroy(), 30000)
+                                setTimeout(() => server_queue.connection.destroy(), 30000)
                                 queue.delete(server_queue.text_channel.guild.id)
                                 return
                             }
@@ -118,7 +118,7 @@ module.exports = {
                                 connection.destroy();
                             }
                         })
-                        
+
                     } catch (error) {
                         queue.delete(msg.guild.id)
                         console.log(error)
@@ -172,7 +172,7 @@ module.exports = {
 
             case 'resume':
                 {
-                    
+
                     let server_queue = queue.get(msg.guild.id)
                     if (!server_queue || server_queue.songs.length == 0) {
                         msg.channel.send('Nessuna canzone in coda!').then(msg => {
@@ -194,7 +194,7 @@ module.exports = {
 
                 }
                 break
-        
+
             case 'skip':
             case 's':
                 {
@@ -215,15 +215,15 @@ module.exports = {
                         return
                     }
                     let currently_playing_pos = playing_song.get(msg.guild.id).pos + 1
-                    if(currently_playing_pos >= server_queue.songs.length && server_queue.loop[0] === 'queue'){
-                      currently_playing_pos = 0
+                    if (currently_playing_pos >= server_queue.songs.length && server_queue.loop[0] === 'queue') {
+                        currently_playing_pos = 0
                     }
                     let song
-                    try{
-                      song = server_queue.songs[currently_playing_pos]
-                    }catch(error){
-                      song = undefined
-                    } 
+                    try {
+                        song = server_queue.songs[currently_playing_pos]
+                    } catch (error) {
+                        song = undefined
+                    }
 
                     let resource = await getResource(song)
                     if (!resource) {
@@ -336,29 +336,28 @@ module.exports = {
                     let loop_state = server_queue.loop.shift()
                     server_queue.loop.push(loop_state)
 
-                    switch(server_queue.loop[0])
-                    {
-                      case 'no':
-                        {
-                          let embed = require('../../embed.js')(msg.guild)
-                            .setTitle('Loop disabilitato')
-                        msg.channel.send({ embeds: [embed] })
-                        }
-                        break
-                      case 'queue':
-                      {
-                          let embed = require('../../embed.js')(msg.guild)
-                            .setTitle('Loop abilitato')
-                        msg.channel.send({ embeds: [embed] })
-                        }
-                      break
-                      case 'track':
-                      {
-                          let embed = require('../../embed.js')(msg.guild)
-                            .setTitle('Loop abilitato sulla singola traccia')
-                        msg.channel.send({ embeds: [embed] })
-                        }
-                      break
+                    switch (server_queue.loop[0]) {
+                        case 'no':
+                            {
+                                let embed = require('../../embed.js')(msg.guild)
+                                    .setTitle('Loop disabilitato')
+                                msg.channel.send({ embeds: [embed] })
+                            }
+                            break
+                        case 'queue':
+                            {
+                                let embed = require('../../embed.js')(msg.guild)
+                                    .setTitle('Loop abilitato')
+                                msg.channel.send({ embeds: [embed] })
+                            }
+                            break
+                        case 'track':
+                            {
+                                let embed = require('../../embed.js')(msg.guild)
+                                    .setTitle('Loop abilitato sulla singola traccia')
+                                msg.channel.send({ embeds: [embed] })
+                            }
+                            break
                     }
                 }
                 break;
@@ -398,7 +397,7 @@ module.exports = {
 
                 }
                 break
-      
+
             case 'remove':
             case 'r':
                 {
@@ -460,23 +459,25 @@ module.exports = {
 async function getMediaStream(url) {
     let stream = undefined
     try {
-      stream = (await play_dl.stream(url)).stream
-    } catch(error){
-      console.log(error);
+        stream = (await play_dl.stream(url)).stream
+    } catch (error) {
+        console.log(error);
     }
     return stream
 }
 async function getResource(song) {
-  if(!song) return undefined
-  let resource = await getMediaStream(song.url)
-  if(!resource) return undefined
-  return voice.createAudioResource(resource, { metadata: song })
+    if (!song) return undefined
+    let stream = await getMediaStream(song.url)
+    if (!stream) return undefined
+    let resource = await voice.createAudioResource(stream, { metadata: song, inlineVolume: true })
+    resource.volume.setVolume(0.5)
+    return resource
 }
 
 async function getNextSong(queue, guildID, last_song_pos) {
     let server_queue = queue.get(guildID)
     let loop = server_queue.loop[0]
-    
+
     let next_song_pos = last_song_pos + 1
 
     if (next_song_pos >= server_queue.songs.length && loop === 'no') {
@@ -485,8 +486,8 @@ async function getNextSong(queue, guildID, last_song_pos) {
     if (next_song_pos >= server_queue.songs.length && loop === 'queue') {
         next_song_pos = 0
     }
-    if(loop === 'track'){
-      next_song_pos = last_song_pos
+    if (loop === 'track') {
+        next_song_pos = last_song_pos
     }
 
     let song = server_queue.songs[next_song_pos]
