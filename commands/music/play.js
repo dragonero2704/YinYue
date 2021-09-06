@@ -73,7 +73,7 @@ module.exports = {
                         return
                     }
 
-                    queue_constructor.connection = connection
+                    connection = queue_constructor.connection
                     let player = voice.createAudioPlayer({
                         behaviors: voice.NoSubscriberBehavior.Play
                     })
