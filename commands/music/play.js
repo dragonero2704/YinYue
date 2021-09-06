@@ -73,7 +73,7 @@ module.exports = {
                         
                         queue_constructor.player.play(resource)
 
-                        player.on(voice.AudioPlayerStatus.Playing, (oldState, newState) => {
+                        queue_constructor.player.on(voice.AudioPlayerStatus.Playing, (oldState, newState) => {
                             console.log('Music is playing!')
                             playing_song.set(newState.resource.metadata.guildID, newState.resource.metadata)
                             let song = newState.resource.metadata
@@ -86,7 +86,7 @@ module.exports = {
 
                         })
                         let server_queue = queue.get(msg.guild.id)
-                        player.on(voice.AudioPlayerStatus.Idle, async(oldState, newState) => {
+                        queue_constructor.player.on(voice.AudioPlayerStatus.Idle, async(oldState, newState) => {
                             let last_song_pos = oldState.resource.metadata.pos
 
                             let next_resource = await getNextSong(queue, msg.guild.id, last_song_pos)
@@ -102,7 +102,7 @@ module.exports = {
                             }
                             player.play(next_resource)
                         })
-                        player.on('error', error => {
+                        queue_constructor.player.on('error', error => {
                             console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
                         });
 
