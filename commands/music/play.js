@@ -67,13 +67,18 @@ module.exports = {
                             adapterCreator: voice_channel.guild.voiceAdapterCreator,
                         });
                         queue_constructor.connection = connection
-                        queue_constructor.player = voice.createAudioPlayer()
-                        connection.subscribe(queue_constructor.player)
+                        let player = voice.createAudioPlayer()
+                        connection.subscribe(player)
+                        queue_constructor.player = player
                         let resource = await getResource(item[0])
-                        
+
                         queue_constructor.player.play(resource)
 
-                        queue_constructor.player.on(voice.AudioPlayerStatus.Playing, (oldState, newState) => {
+                        player.on('stateChange', (oldState, newState) => {
+                            console.log(`Player passato da ${oldState.status} a ${newState.status}`)
+                        })
+
+                        player.on(voice.AudioPlayerStatus.Playing, (oldState, newState) => {
                             console.log('Music is playing!')
                             playing_song.set(newState.resource.metadata.guildID, newState.resource.metadata)
                             let song = newState.resource.metadata
@@ -85,8 +90,13 @@ module.exports = {
                             });
 
                         })
+
+                        player.on(voice.AudioPlayerStatus.Buffering, (oldState, newState) => {
+                            console.log(`Buffering ${newState.resource.metadata.title}`)
+                        })
+
                         let server_queue = queue.get(msg.guild.id)
-                        queue_constructor.player.on(voice.AudioPlayerStatus.Idle, async(oldState, newState) => {
+                        player.on(voice.AudioPlayerStatus.Idle, async(oldState, newState) => {
                             let last_song_pos = oldState.resource.metadata.pos
 
                             let next_resource = await getNextSong(queue, msg.guild.id, last_song_pos)
@@ -102,7 +112,7 @@ module.exports = {
                             }
                             player.play(next_resource)
                         })
-                        queue_constructor.player.on('error', error => {
+                        player.on('error', error => {
                             console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
                         });
 
