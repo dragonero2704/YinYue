@@ -5,7 +5,7 @@ module.exports = {
         console.log(`${bot.user.tag} online!`)
         bot.user.setActivity({
             type: 'WATCHING',
-            name: '**-help**'
+            name: '-help'
         })
     },
 }
