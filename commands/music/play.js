@@ -59,81 +59,81 @@ module.exports = {
                     queue.set(msg.guild.id, queue_constructor)
 
                     queue_constructor.songs = queue_constructor.songs.concat(item)
-
+                    const connection = undefined
                     try {
-                        const connection = voice.joinVoiceChannel({
+                        connection = voice.joinVoiceChannel({
                             channelId: voice_channel.id,
                             guildId: msg.guild.id,
                             adapterCreator: voice_channel.guild.voiceAdapterCreator,
                         });
-                        queue_constructor.connection = connection
-                        let player = voice.createAudioPlayer()
-                        connection.subscribe(player)
-                        queue_constructor.player = player
-                        let resource = await getResource(item[0])
-
-                        queue_constructor.player.play(resource)
-
-                        player.on('stateChange', (oldState, newState) => {
-                            console.log(`Player passato da ${oldState.status} a ${newState.status}`)
-                        })
-
-                        player.on(voice.AudioPlayerStatus.Playing, (oldState, newState) => {
-                            console.log('Music is playing!')
-                            playing_song.set(newState.resource.metadata.guildID, newState.resource.metadata)
-                            let song = newState.resource.metadata
-                            let embed = require('../../embed.js')(msg.guild)
-                                .addField('In riproduzione:', `[**${song.title}**](${song.url})`)
-                                // .setURL(item.song.url)
-                            msg.channel.send({ embeds: [embed] }).then(msg => {
-                                setTimeout(() => msg.delete(), 10000)
-                            });
-
-                        })
-
-                        player.on(voice.AudioPlayerStatus.Buffering, (oldState, newState) => {
-                            console.log(`Buffering ${newState.resource.metadata.title}`)
-                        })
-
-                        let server_queue = queue.get(msg.guild.id)
-                        player.on(voice.AudioPlayerStatus.Idle, async(oldState, newState) => {
-                            let last_song_pos = oldState.resource.metadata.pos
-
-                            let next_resource = await getNextSong(queue, msg.guild.id, last_song_pos)
-                            if (!next_resource) {
-                                let embed = require('../../embed')(msg.guild)
-                                    .setTitle('Coda terminata!')
-                                server_queue.text_channel.send({ embeds: [embed] }).then(msg => {
-                                    setTimeout(() => msg.delete(), 10000)
-                                });
-                                setTimeout(() => server_queue.connection.destroy(), 30000)
-                                queue.delete(server_queue.text_channel.guild.id)
-                                return
-                            }
-                            player.play(next_resource)
-                        })
-                        player.on('error', error => {
-                            console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
-                        });
-
-                        connection.on(voice.VoiceConnectionStatus.Disconnected, async(oldState, newState) => {
-                            try {
-                                await Promise.race([
-                                    voice.entersState(connection, voice.VoiceConnectionStatus.Signalling, 50000),
-                                    voice.entersState(connection, voice.VoiceConnectionStatus.Connecting, 50000),
-                                ]);
-                                // Seems to be reconnecting to a new channel - ignore disconnect
-                            } catch (error) {
-                                // Seems to be a real disconnect which SHOULDN'T be recovered from
-                                connection.destroy();
-                            }
-                        })
-
                     } catch (error) {
                         queue.delete(msg.guild.id)
                         console.log(error)
                         return
                     }
+
+                    queue_constructor.connection = connection
+                    let player = voice.createAudioPlayer()
+                    connection.subscribe(player)
+                    queue_constructor.player = player
+                    let resource = await getResource(item[0])
+
+                    queue_constructor.player.play(resource)
+
+                    player.on('stateChange', (oldState, newState) => {
+                        console.log(`Player passato da ${oldState.status} a ${newState.status}`)
+                    })
+
+                    player.on(voice.AudioPlayerStatus.Playing, (oldState, newState) => {
+                        console.log('Music is playing!')
+                        playing_song.set(newState.resource.metadata.guildID, newState.resource.metadata)
+                        let song = newState.resource.metadata
+                        let embed = require('../../embed.js')(msg.guild)
+                            .addField('In riproduzione:', `[**${song.title}**](${song.url})`)
+                            // .setURL(item.song.url)
+                        msg.channel.send({ embeds: [embed] }).then(msg => {
+                            setTimeout(() => msg.delete(), 10000)
+                        });
+
+                    })
+
+                    player.on(voice.AudioPlayerStatus.Buffering, (oldState, newState) => {
+                        console.log(`Buffering ${newState.resource.metadata.title}`)
+                    })
+
+                    let server_queue = queue.get(msg.guild.id)
+                    player.on(voice.AudioPlayerStatus.Idle, async(oldState, newState) => {
+                        let last_song_pos = oldState.resource.metadata.pos
+
+                        let next_resource = await getNextSong(queue, msg.guild.id, last_song_pos)
+                        if (!next_resource) {
+                            let embed = require('../../embed')(msg.guild)
+                                .setTitle('Coda terminata!')
+                            server_queue.text_channel.send({ embeds: [embed] }).then(msg => {
+                                setTimeout(() => msg.delete(), 10000)
+                            });
+                            setTimeout(() => server_queue.connection.destroy(), 30000)
+                            queue.delete(server_queue.text_channel.guild.id)
+                            return
+                        }
+                        player.play(next_resource)
+                    })
+                    player.on('error', error => {
+                        console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
+                    });
+
+                    connection.on(voice.VoiceConnectionStatus.Disconnected, async(oldState, newState) => {
+                        try {
+                            await Promise.race([
+                                voice.entersState(connection, voice.VoiceConnectionStatus.Signalling, 50000),
+                                voice.entersState(connection, voice.VoiceConnectionStatus.Connecting, 50000),
+                            ]);
+                            // Seems to be reconnecting to a new channel - ignore disconnect
+                        } catch (error) {
+                            // Seems to be a real disconnect which SHOULDN'T be recovered from
+                            connection.destroy();
+                        }
+                    })
 
                 } else {
                     if (server_queue.player.state === voice.AudioPlayerStatus.Paused) {
