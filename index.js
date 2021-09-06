@@ -26,6 +26,4 @@ config({
 
 keepAlive()
 
-bot.user.setActivity(`/help`, {type: 'WATCHING'});
-
 bot.login(process.env.TOKEN)
