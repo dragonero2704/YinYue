@@ -73,7 +73,9 @@ module.exports = {
                     }
 
                     queue_constructor.connection = connection
-                    let player = voice.createAudioPlayer()
+                    let player = voice.createAudioPlayer({
+                        behaviors: voice.NoSubscriberBehavior.Play
+                    })
                     connection.subscribe(player)
                     queue_constructor.player = player
                     let resource = await getResource(item[0])
