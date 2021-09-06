@@ -4,7 +4,7 @@ module.exports = {
     run(bot, Discord) {
         console.log(`${bot.user.tag} online!`)
         bot.user.setActivity({
-            type: 'CUSTOM',
+            type: 'WATCHING',
             name: '**-help**'
         })
     },
