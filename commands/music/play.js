@@ -59,13 +59,14 @@ module.exports = {
                     queue.set(msg.guild.id, queue_constructor)
 
                     queue_constructor.songs = queue_constructor.songs.concat(item)
-                    const connection = undefined
+
                     try {
-                        connection = voice.joinVoiceChannel({
+                        const connection = voice.joinVoiceChannel({
                             channelId: voice_channel.id,
                             guildId: msg.guild.id,
                             adapterCreator: voice_channel.guild.voiceAdapterCreator,
                         });
+                        queue_constructor.connection = connection
                     } catch (error) {
                         queue.delete(msg.guild.id)
                         console.log(error)
