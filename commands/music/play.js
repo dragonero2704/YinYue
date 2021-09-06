@@ -67,11 +67,11 @@ module.exports = {
                             adapterCreator: voice_channel.guild.voiceAdapterCreator,
                         });
                         queue_constructor.connection = connection
-                        let player = voice.createAudioPlayer()
-                        connection.subscribe(player)
+                        queue_constructor.player = voice.createAudioPlayer()
+                        connection.subscribe(queue_constructor.player)
                         let resource = await getResource(item[0])
-                        queue_constructor.player = player
-                        player.play(resource)
+                        
+                        queue_constructor.player.play(resource)
 
                         player.on(voice.AudioPlayerStatus.Playing, (oldState, newState) => {
                             console.log('Music is playing!')
