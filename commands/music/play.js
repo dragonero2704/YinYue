@@ -106,6 +106,7 @@ module.exports = {
 
                     let server_queue = queue.get(msg.guild.id)
                     player.on(voice.AudioPlayerStatus.Idle, async(oldState, newState) => {
+
                         let last_song_pos = oldState.resource.metadata.pos
 
                         let next_resource = await getNextSong(queue, msg.guild.id, last_song_pos)
@@ -113,9 +114,9 @@ module.exports = {
                             let embed = require('../../embed')(msg.guild)
                                 .setTitle('Coda terminata!')
                             server_queue.text_channel.send({ embeds: [embed] }).then(msg => {
-                                setTimeout(() => msg.delete(), 10000)
+                                setTimeout(() => msg.delete(), 30000)
                             });
-                            setTimeout(() => server_queue.connection.destroy(), 30000)
+                            server_queue.connection.destroy()
                             queue.delete(server_queue.text_channel.guild.id)
                             return
                         }
@@ -128,8 +129,8 @@ module.exports = {
                     connection.on(voice.VoiceConnectionStatus.Disconnected, async(oldState, newState) => {
                         try {
                             await Promise.race([
-                                voice.entersState(connection, voice.VoiceConnectionStatus.Signalling, 50000),
-                                voice.entersState(connection, voice.VoiceConnectionStatus.Connecting, 50000),
+                                voice.entersState(connection, voice.VoiceConnectionStatus.Signalling, 5000),
+                                voice.entersState(connection, voice.VoiceConnectionStatus.Connecting, 5000),
                             ]);
                             // Seems to be reconnecting to a new channel - ignore disconnect
                         } catch (error) {
@@ -317,8 +318,12 @@ module.exports = {
                     }
 
                     server_queue.songs = []
-                    server_queue.connection.destroy()
-
+                    try{
+                      server_queue.connection.destroy()
+                    }catch(error){
+                      console.log(error)
+                    }
+                  
                     queue.delete(msg.guild.id)
                     console.log(`${bot.user.tag} disconesso da ${voice_channel.name}`)
                 }
