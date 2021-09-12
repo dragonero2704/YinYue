@@ -12,9 +12,14 @@ module.exports = {
         }
 
         try {
-            msg.channel.bulkDelete(parseInt(args[1]))
+            msg.channel.bulkDelete(parseInt(args[1])+1)
         } catch (error) {
             console.log(error)
+            let embed = require('../../embed')(msg.guild)
+            embed.addField('Errore')
+            msg.channel.send({ embeds: [embed] }).then(msg => {
+                setTimeout(() => msg.delete(), 10000)
+            })
         }
     }
 }
