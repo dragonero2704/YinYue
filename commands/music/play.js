@@ -9,7 +9,7 @@ let blank_field = '\u200b'
 
 module.exports = {
     name: 'play',
-    args: ['input'],
+    args: ['[input]'],
     description: 'plays some music!',
     once: false,
     async run(msg, args, bot, Discord) {
