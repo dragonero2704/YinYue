@@ -9,6 +9,7 @@ let blank_field = '\u200b'
 
 module.exports = {
     name: 'play',
+    args: ['input'],
     description: 'plays some music!',
     once: false,
     async run(msg, args, bot, Discord) {
@@ -319,12 +320,12 @@ module.exports = {
                     }
 
                     server_queue.songs = []
-                    try{
-                      server_queue.connection.destroy()
-                    }catch(error){
-                      console.log(error)
+                    try {
+                        server_queue.connection.destroy()
+                    } catch (error) {
+                        console.log(error)
                     }
-                  
+
                     queue.delete(msg.guild.id)
                     console.log(`${bot.user.tag} disconesso da ${voice_channel.name}`)
                 }

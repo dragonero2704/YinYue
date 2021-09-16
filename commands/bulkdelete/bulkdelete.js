@@ -1,6 +1,7 @@
 module.exports = {
     name: 'bulkdelete',
     aliases: ['clean'],
+    args: ['number of messages'],
     run: (msg, args, bot, Discord) => {
 
         if (!args[1]) {
@@ -12,7 +13,7 @@ module.exports = {
         }
 
         try {
-            msg.channel.bulkDelete(parseInt(args[1])+1)
+            msg.channel.bulkDelete(parseInt(args[1]) + 1)
         } catch (error) {
             console.log(error)
             let embed = require('../../embed')(msg.guild)
