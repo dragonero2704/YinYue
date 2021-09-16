@@ -9,6 +9,7 @@ let blank_field = '\u200b'
 
 module.exports = {
     name: 'play',
+    description: 'plays some music!',
     once: false,
     async run(msg, args, bot, Discord) {
         cmd = args.shift().toLowerCase()
