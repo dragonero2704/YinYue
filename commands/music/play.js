@@ -327,6 +327,7 @@ module.exports = {
                     }
 
                     queue.delete(msg.guild.id)
+                    msg.react('👋')
                     console.log(`${bot.user.tag} disconesso da ${voice_channel.name}`)
                 }
 
@@ -408,9 +409,14 @@ module.exports = {
                     }
 
                     let embed = require('../../embed.js')(msg.guild)
+                    embed.setTitle('Coda')
                     for (let song of server_queue.songs) {
-                        embed.addField('\u200b', `${(song.pos+1).toString()}) [${song.title}](${song.url})`)
-                            .setTitle('Coda')
+                        if (song === playing_song.get(msg.guild.id)) {
+                            embed.addField('\u200b', `${(song.pos+1).toString()}) [${song.title}](${song.url})`, true)
+                            embed.addField(blank_field, '*Now playing!*', true)
+                        } else {
+                            embed.addField('\u200b', `${(song.pos+1).toString()}) [${song.title}](${song.url})`)
+                        }
                     }
 
                     msg.channel.send({ embeds: [embed] })
