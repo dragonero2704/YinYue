@@ -84,6 +84,7 @@ module.exports = {
                     let resource = await getResource(item[0])
 
                     queue_constructor.player.play(resource)
+                    msg.react('👌')
 
                     player.on('stateChange', (oldState, newState) => {
                         console.log(`Player passato da ${oldState.status} a ${newState.status}`)
@@ -145,6 +146,7 @@ module.exports = {
                     if (server_queue.player.state === voice.AudioPlayerStatus.Paused) {
                         server_queue.songs = server_queue.songs.concat(item)
                         server_queue.player.play(await getNextSong(queue, msg.guild.id, playing_song.get(msg.guild.id).pos))
+                        msg.react('👌')
                         return
                     }
 
@@ -152,6 +154,7 @@ module.exports = {
                     let embed = require('../../embed.js')(msg.guild)
                         .addField('Aggiunta alla coda', `[${item[0].title}](${item[0].url}) è in coda!`)
                     msg.channel.send({ embeds: [embed] })
+                    msg.react('👌')
                     return
 
                 }
@@ -180,6 +183,7 @@ module.exports = {
                     server_queue.player.pause()
                     let embed = require('../../embed.js')(msg.guild)
                         .addField('Pausa', `[${paused_song.title}](${paused_song.url}) è in coda!`)
+                    msg.react('⏸️')
                     msg.channel.send({ embeds: [embed] }).then(msg => {
                         setTimeout(() => msg.delete(), 10000)
                     });
@@ -205,9 +209,8 @@ module.exports = {
                         });
                         return
                     }
-                    let resumed_song = playing_song.get(msg.guild.id)
                     server_queue.player.unpause()
-
+                    msg.react('▶️')
                 }
                 break
 
@@ -252,6 +255,7 @@ module.exports = {
                         return
                     }
                     server_queue.player.play(resource)
+                    msg.react('⏭️')
                 }
                 break;
 
@@ -292,6 +296,7 @@ module.exports = {
                     let selected_song = server_queue.songs[num - 1]
                     let embed = require('../../embed.js')(msg.guild)
                         .addField('In riproduzione', `[**${selected_song.title}**](${selected_song.url})`)
+                    msg.react('👍')
                     msg.channel.send({ embeds: [embed] }).then(msg => {
                         setTimeout(() => msg.delete(), 10000)
                     });
@@ -362,6 +367,7 @@ module.exports = {
                             {
                                 let embed = require('../../embed.js')(msg.guild)
                                     .setTitle('Loop disabilitato')
+                                msg.react('➡️')
                                 msg.channel.send({ embeds: [embed] })
                             }
                             break
@@ -369,6 +375,7 @@ module.exports = {
                             {
                                 let embed = require('../../embed.js')(msg.guild)
                                     .setTitle('Loop abilitato')
+                                msg.react('🔁')
                                 msg.channel.send({ embeds: [embed] })
                             }
                             break
@@ -376,6 +383,7 @@ module.exports = {
                             {
                                 let embed = require('../../embed.js')(msg.guild)
                                     .setTitle('Loop abilitato sulla singola traccia')
+                                msg.react('🔂')
                                 msg.channel.send({ embeds: [embed] })
                             }
                             break
@@ -471,7 +479,7 @@ module.exports = {
 
                     let embed = require('../../embed')(msg.guild)
                     embed.addField('Traccia rimossa', `[${target.title}](${target.url}) è stata rimossa dalla coda`)
-
+                    msg.react('⭕')
                     msg.channel.send({ embeds: [embed] })
                 }
 
