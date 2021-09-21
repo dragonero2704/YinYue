@@ -1,6 +1,7 @@
 const play_dl = require('play-dl')
 const voice = require('@discordjs/voice');
-const { MessageEmbed } = require('discord.js')
+const { MessageEmbed } = require('discord.js');
+const { type } = require('os');
 
 let queue = new Map()
 let playing_song = new Map()
@@ -77,7 +78,7 @@ module.exports = {
 
                     connection = queue_constructor.connection
                     let player = voice.createAudioPlayer({
-                        behaviors: voice.NoSubscriberBehavior.Pause
+                        behaviors: voice.NoSubscriberBehavior.Play
                     })
                     connection.subscribe(player)
                     queue_constructor.player = player
@@ -151,9 +152,17 @@ module.exports = {
                     }
 
                     server_queue.songs = server_queue.songs.concat(item)
-                    let embed = require('../../embed.js')(msg.guild)
-                        .addField('Aggiunta alla coda', `[${item[0].title}](${item[0].url}) è in coda!`)
-                    msg.channel.send({ embeds: [embed] })
+
+                    if (item.length > 1) {
+                        let embed = require('../../embed.js')(msg.guild)
+                            .addField('Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)
+                        msg.channel.send({ embeds: [embed] })
+                    } else {
+                        let embed = require('../../embed.js')(msg.guild)
+                            .addField('Aggiunta alla coda', `[${item[0].title}](${item[0].url}) è in coda!`)
+                        msg.channel.send({ embeds: [embed] })
+                    }
+
                     msg.react('👌')
                     return
 
@@ -493,7 +502,7 @@ module.exports = {
 async function getMediaStream(url) {
     let stream = undefined
     try {
-        stream = (await play_dl.stream(url)).stream
+        stream = (await play_dl.stream(url))
     } catch (error) {
         console.log(error);
     }
@@ -503,7 +512,7 @@ async function getResource(song) {
     if (!song) return undefined
     let stream = await getMediaStream(song.url)
     if (!stream) return undefined
-    let resource = voice.createAudioResource(stream, { metadata: song, inlineVolume: true })
+    let resource = voice.createAudioResource(stream.stream, { metadata: song, inlineVolume: true, inputType: stream.type })
     resource.volume.setVolume(0.5)
     return resource
 }
@@ -531,55 +540,76 @@ async function getNextSong(queue, guildID, last_song_pos) {
 }
 
 async function getSongObject(args, songs_length, guildID) {
-    //yt video
-    if (play_dl.validate(args[0])) {
-        let media = (await play_dl.video_basic_info(args[0])).video_details
-        console.log(media)
-        let song = [{
-            url: media.url,
-            title: media.title,
-            thumbnail: media.thumbnail,
-            pos: songs_length,
-            guildID: guildID
-        }]
-        return song
+    // isurl
+    let type_url = await play_dl.validate(args[0])
+    try {
+        type_url = type_url.split('_')
+    } catch (error) {
+
     }
-    //yt playlist
-    if (play_dl.validate_playlist(args[0])) {
-        let playlist = (await play_dl.playlist_info(args[0]))
-        console.log(playlist)
-        let songs = []
-        for (let i = 0; i < playlist.videoCount; i++) {
-            let song = {
-                url: playlist[i].video_details.url,
-                title: playlist[i].video_details.title,
-                thumbnail: playlist[i].video_details.thumbnail,
-                pos: songs_length + i,
-                guildID: guildID
+
+    switch (type_url[0]) {
+        //youtube
+        case 'yt':
+            if (type_url[1] === 'video') {
+                let media = (await play_dl.video_basic_info(args[0])).video_details
+                console.log(media)
+                let song = [{
+                    url: media.url,
+                    title: media.title,
+                    thumbnail: media.thumbnail,
+                    duration: media.durationInSec,
+                    pos: songs_length,
+                    guildID: guildID
+                }]
+                return song
             }
-            songs.push(song)
-        }
-        return songs
-    }
+            if (type_url[1] === 'playlist') {
+                let playlist = (await play_dl.playlist_info(args[0]))
+                console.log(playlist)
+                let songs = []
+                for (let i = 0; i < playlist.videoCount; i++) {
+                    let song = {
+                        url: playlist[i].video_details.url,
+                        title: playlist[i].video_details.title,
+                        thumbnail: playlist[i].video_details.thumbnail,
+                        duration: playlist[i].video_details.durationInSec,
+                        pos: songs_length + i,
+                        guildID: guildID
+                    }
+                    songs.push(song)
+                }
+                return songs
+            }
+            break;
+            //spotify
+        case 'sp':
 
-    //spotify playlist --coming soon!
+            break;
+            //soundcloud
+        case 'so':
 
-    let query = ''
-    if (args.length > 1) {
-        query = args.join(' ')
-    } else {
-        query = args[0]
+            break;
+
+        default:
+            let query = ''
+            if (args.length > 1) {
+                query = args.join(' ')
+            } else {
+                query = args[0]
+            }
+            let media = (await play_dl.search(query, { type: 'video', limit: 1 }))[0]
+                // console.log(media)
+            song = [{
+                url: media.url,
+                title: media.title,
+                thumbnail: media.thumbnail,
+                duration: media.durationInSec,
+                pos: songs_length,
+                guildID: guildID
+            }]
+            return song
     }
-    let media = (await play_dl.search(query, { type: 'video', limit: 1 }))[0]
-        // console.log(media)
-    song = [{
-        url: media.url,
-        title: media.title,
-        thumbnail: media.thumbnail,
-        pos: songs_length,
-        guildID: guildID
-    }]
-    return song
 }
 
 
