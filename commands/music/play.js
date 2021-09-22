@@ -1,7 +1,6 @@
 const play_dl = require('play-dl')
 const voice = require('@discordjs/voice');
 const { MessageEmbed } = require('discord.js');
-const { type } = require('os');
 
 let queue = new Map()
 let playing_song = new Map()
@@ -101,7 +100,6 @@ module.exports = {
                         msg.channel.send({ embeds: [embed] }).then(msg => {
                             setTimeout(() => msg.delete(), 10000)
                         });
-
                     })
 
                     player.on(voice.AudioPlayerStatus.Buffering, (oldState, newState) => {
