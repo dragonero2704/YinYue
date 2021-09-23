@@ -582,6 +582,57 @@ async function getSongObject(args, songs_length, guildID) {
             break;
             //spotify
         case 'sp':
+            if (type_url[1] === 'album') {
+                let playlist = (await play_dl.spotify(args[0]))
+                console.log(playlist)
+                let songs = []
+                for (let i = 0; i < playlist.videoCount; i++) {
+                    let song = {
+                        url: playlist[i].video_details.url,
+                        title: playlist[i].video_details.title,
+                        thumbnail: playlist[i].video_details.thumbnail,
+                        duration: playlist[i].video_details.durationInSec,
+                        pos: songs_length + i,
+                        guildID: guildID
+                    }
+                    songs.push(song)
+                }
+                return songs
+            }
+            if (type_url[1] === 'playlist') {
+                let playlist = (await play_dl.spotify(args[0]))
+                console.log(playlist)
+                let songs = []
+                for (let i = 0; i < playlist.total_tracks; i++) {
+                    let song = {
+                        url: playlist[i].url,
+                        title: playlist[i].name,
+                        thumbnail: playlist[i].thumbnail,
+                        duration: playlist[i].durationInSec,
+                        pos: songs_length + i,
+                        guildID: guildID
+                    }
+                    songs.push(song)
+                }
+                return songs
+            }
+            if (type_url[1] === 'track') {
+                let track = (await play_dl.spotify(args[0]))
+                console.log(playlist)
+                let songs = []
+
+                let song = [{
+                    url: track.url,
+                    title: track.name,
+                    thumbnail: track.thumbnail,
+                    duration: track.durationInSec,
+                    pos: songs_length + i,
+                    guildID: guildID
+                }]
+
+
+                return songs
+            }
 
             break;
             //soundcloud
