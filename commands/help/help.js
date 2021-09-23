@@ -3,9 +3,6 @@ module.exports = {
     run(msg, args, bot, Discord) {
         let embed = require('../../embed')(msg.guild)
         let commands = Array.from(bot.commands.values())
-            // console.log(commands)
-            // let ar = []
-            // ar.toLocaleString()
         for (let cmd of commands) {
             if (cmd.name === 'help' || cmd.disabled)
                 continue

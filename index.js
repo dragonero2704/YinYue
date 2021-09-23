@@ -25,4 +25,8 @@ config({
 
 keepAlive()
 
+// bot.on('interactionCreate', (inter) => {
+//     inter.reply({ embeds: [embed] })
+// })
+
 bot.login(process.env.TOKEN)
