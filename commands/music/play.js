@@ -43,10 +43,18 @@ module.exports = {
                 let server_queue = queue.get(msg.guild.id)
                 if (!server_queue) {
                     item = await getSongObject(args, 0, msg.guild.id)
+                    if (item.length > 1) {
+                        let embed = require('../../embed.js')(msg.guild)
+                            .addField('Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)
+                        msg.channel.send({ embeds: [embed] })
+                    } else {
+                        let embed = require('../../embed.js')(msg.guild)
+                            .addField('Aggiunta alla coda', `[${item[0].title}](${item[0].url}) è in coda!`)
+                        msg.channel.send({ embeds: [embed] })
+                    }
                 } else {
                     item = await getSongObject(args, server_queue.songs.length, msg.guild.id)
                 }
-
 
                 if (!server_queue) {
                     const queue_constructor = {
@@ -142,14 +150,16 @@ module.exports = {
                     })
 
                 } else {
+
+                    server_queue.songs = server_queue.songs.concat(item)
+
                     if (server_queue.player.state === voice.AudioPlayerStatus.Paused) {
-                        server_queue.songs = server_queue.songs.concat(item)
                         server_queue.player.play(await getNextSong(queue, msg.guild.id, playing_song.get(msg.guild.id).pos))
                         msg.react('👌')
                         return
                     }
 
-                    server_queue.songs = server_queue.songs.concat(item)
+
 
                     if (item.length > 1) {
                         let embed = require('../../embed.js')(msg.guild)
@@ -501,6 +511,7 @@ async function getMediaStream(url) {
     let stream = undefined
     try {
         stream = (await play_dl.stream(url))
+
     } catch (error) {
         console.log(error);
     }
@@ -601,35 +612,43 @@ async function getSongObject(args, songs_length, guildID) {
             }
             if (type_url[1] === 'playlist') {
                 let playlist = (await play_dl.spotify(args[0]))
-                console.log(playlist)
+                    // console.log(playlist)
+                let tracks = await playlist.fetched_tracks.get('1')
+                    // console.log(tracks)
                 let songs = []
-                for (let i = 0; i < playlist.total_tracks; i++) {
+                console.log('fetching...')
+                console.log(playlist.tracksCount)
+                for (let i = 0; i < playlist.tracksCount; i++) {
+
+                    let yt_video = (await play_dl.search(tracks[i].name, { limit: 1, type: 'video' }))[0]
+                    console.log(yt_video)
                     let song = {
-                        url: playlist[i].url,
-                        title: playlist[i].name,
-                        thumbnail: playlist[i].thumbnail,
-                        duration: playlist[i].durationInSec,
+                        url: yt_video.url,
+                        title: yt_video.title,
+                        thumbnail: yt_video.thumbnail,
+                        duration: yt_video.durationInSec,
                         pos: songs_length + i,
                         guildID: guildID
                     }
                     songs.push(song)
                 }
+                console.log('done')
                 return songs
             }
             if (type_url[1] === 'track') {
                 let track = (await play_dl.spotify(args[0]))
-                console.log(playlist)
-                let songs = []
+                let yt_video = (await play_dl.search(track.name, { limit: 1, type: 'video' }))[0]
 
                 let song = [{
-                    url: track.url,
-                    title: track.name,
-                    thumbnail: track.thumbnail,
-                    duration: track.durationInSec,
+                    url: yt_video.url,
+                    title: yt_video.name,
+                    thumbnail: yt_video.thumbnail,
+                    duration: yt_video.durationInSec,
                     pos: songs_length + i,
                     guildID: guildID
                 }]
 
+                song.push(song)
 
                 return songs
             }
