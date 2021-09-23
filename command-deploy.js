@@ -6,11 +6,14 @@ const { readdirSync } = require('fs')
 let commands = []
 
 readdirSync("./commands/").forEach(dir => {
-    const commands = readdirSync(`./commands/${dir}/`).filter(file => file.endsWith('.js'))
+    const files = readdirSync(`./commands/${dir}/`).filter(file => file.endsWith('.js'))
 
-    for (let file of commands) {
-        const pull = require(`../commands/${dir}/${file}`)
-        commands.push(pull.data.toJSON());
+    for (let file of files) {
+        const pull = require(`./commands/${dir}/${file}`)
+        if(pull.data){
+            commands.push(pull.data.toJSON());
+        }
+        
     }
 
 })
@@ -18,13 +21,10 @@ readdirSync("./commands/").forEach(dir => {
 const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
 
 (async() => {
-    try {
-        await rest.put(
-            Routes.applicationCommands(process.env.clientID), { body: commands },
-        );
+  
+        await rest.put(Routes.applicationCommands(process.env.clientID), { body: commands })
+        .then(()=>console.log('Successfully registered application commands.'))
+        .catch(console.error());
 
-        console.log('Successfully registered application commands.');
-    } catch (error) {
-        console.error(error);
-    }
+    
 })();
