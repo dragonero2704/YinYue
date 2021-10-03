@@ -1,6 +1,5 @@
 const play_dl = require('play-dl')
 const voice = require('@discordjs/voice');
-const { MessageEmbed } = require('discord.js');
 
 let queue = new Map()
 let playing_song = new Map()
@@ -506,6 +505,7 @@ async function getMediaStream(url) {
     }
     return stream
 }
+
 async function getResource(song) {
     if (!song) return undefined
     let stream = await getMediaStream(song.url)
@@ -515,27 +515,28 @@ async function getResource(song) {
     return resource
 }
 
-async function getNextSong(queue, guildID, last_song_pos) {
-    let server_queue = queue.get(guildID)
-    let loop = server_queue.loop[0]
+// async function getNextSong(queue, guildID, last_song_pos, forceskip) {
+//     let server_queue = queue.get(guildID)
+//     let loop = server_queue.loop[0]
 
-    let next_song_pos = last_song_pos + 1
+//     let next_song_pos = last_song_pos + 1
 
-    if (next_song_pos >= server_queue.songs.length && loop === 'no') {
-        return undefined
-    }
-    if (next_song_pos >= server_queue.songs.length && loop === 'queue') {
-        next_song_pos = 0
-    }
-    if (loop === 'track') {
-        next_song_pos = last_song_pos
-    }
+//     if (next_song_pos >= server_queue.songs.length && loop === 'no') {
+//         return undefined
+//     }
+//     if (next_song_pos >= server_queue.songs.length && loop === 'queue') {
+//         next_song_pos = 0
+//     }
+//     if (loop === 'track') {
+//         next_song_pos = last_song_pos
+//     }
 
-    let song = server_queue.songs[next_song_pos]
+//     let song = server_queue.songs[next_song_pos]
 
-    let resource = await getResource(song)
-    return resource
-}
+//     let resource = await getResource(song)
+//     return resource
+// }
+
 
 async function getSongObject(args, songs_length, guildID) {
     // isurl
