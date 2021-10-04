@@ -23,6 +23,7 @@
     "@discordjs/rest": "^0.1.0-canary.0",
     "@discordjs/voice": "^0.6.0",
     "@mapbox/node-pre-gyp": "^1.0.5",
+    "ansi-regex": "^6.0.1",
     "ascii-table": "^0.0.9",
     "chalk": "^4.1.2",
     "discord-api-types": "^0.22.0",
