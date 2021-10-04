@@ -562,7 +562,7 @@ async function getSongObject(input, guildID) {
     try {
         type_url = type_url.split('_')
     } catch (error) {
-
+        console.log(error)
     }
 
     switch (type_url[0]) {
