@@ -667,7 +667,7 @@ async function getSongObject(args, songs_length, guildID) {
                 query = args[0]
             }
             let media = (await play_dl.search(query, { type: 'video', limit: 1 }))[0]
-                // console.log(media)
+                console.log(media)
             song = [{
                 url: media.url,
                 title: media.title,
