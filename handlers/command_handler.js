@@ -13,7 +13,7 @@ module.exports = (bot) => {
 
         for (let file of commands) {
             let pull = require(`../commands/${dir}/${file}`)
-            if (pull.name) {
+            if (pull.name && !pull.disabled) {
                 bot.commands.set(pull.name, pull)
                 table.addRow(file, 'Online')
             } else {

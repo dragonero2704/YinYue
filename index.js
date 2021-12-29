@@ -25,4 +25,10 @@ config({
 
 keepAlive()
 
+// bot.on('interactionCreate', (inter) => {
+//     inter.reply({ embeds: [embed] })
+//     const { commandName } = inter
+//     inter.member.voice.channel
+// })
+
 bot.login(process.env.TOKEN)
