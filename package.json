@@ -33,7 +33,7 @@
     "ffmpeg-static": "^4.4.0",
     "libsodium-wrappers": "^0.7.9",
     "npm": "^7.23.0",
-    "play-dl": "^0.9.9",
+    "play-dl": "^1.2.5",
     "sequelize": "^6.6.5",
     "sqlite3": "^4.2.0"
   },
