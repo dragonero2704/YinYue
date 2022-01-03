@@ -359,6 +359,9 @@ class serverQueue {
     static convertToRawDuration(seconds) {
         let minutes = Math.floor(seconds / 60);
         seconds = Math.round(seconds % 60);
+        if (seconds < 10) {
+            return minutes.toString() + ':' + '0' + seconds.toString();
+        }
         return minutes.toString() + ':' + seconds.toString();
     }
 
