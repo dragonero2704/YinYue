@@ -383,11 +383,18 @@ function fieldEmbed(guild, title, content) {
 }
 
 async function sendReply(channel, embed, timeout = undefined) {
-    if (timeout === undefined) {
+    if (!timeout) {
         channel.send({ embeds: [embed] })
     } else {
         channel.send({ embeds: [embed] }).then(msg => {
-            setTimeout(() => msg.delete(), timeout)
+            setTimeout(() => {
+                try {
+                    msg.delete()
+                } catch (error) {
+
+                }
+
+            }, timeout)
         });
     }
 
