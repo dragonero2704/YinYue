@@ -2,7 +2,7 @@ module.exports = {
     name: 'bulkdelete',
     aliases: ['clean', 'clear'],
     args: ['[number of messages]'],
-    run: (msg, args, bot, Discord) => {
+    run: (msg, args, bot) => {
 
         if (!args[1]) {
             let embed = require('../../embed')(msg.guild)

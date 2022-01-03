@@ -417,12 +417,12 @@ module.exports = {
     //         input.setRequired(true)
     //         input.setName('input')
     //     }),
-    // async execute(interaction, bot, Discord) {
+    // async execute(interaction, bot) {
     //     const { commandName } = interaction
     //     let cmd = commandName
     // },
 
-    async run(msg, args, bot, Discord) {
+    async run(msg, args, bot) {
         cmd = args.shift().toLowerCase()
 
         switch (cmd) {
