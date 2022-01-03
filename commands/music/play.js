@@ -1,408 +1,619 @@
 const play_dl = require('play-dl')
 const voice = require('@discordjs/voice');
+const { SlashCommandBuilder } = require('@discordjs/builders');
 
-let queue = new Map()
-let playing_song = new Map()
+
+let globalQueue = new Map()
 
 let blank_field = '\u200b'
 
+
+class serverQueue {
+    constructor(songs, txtChannel, voiceChannel, connection, player) {
+
+        this.songs = [];
+        if (Array.isArray(songs)) {
+            this.songs.concat(songs);
+        } else {
+            this.songs.push(songs);
+        }
+        console.log(this.songs)
+        this.curPlayingSong = this.songs[0];
+        this.loopState = serverQueue.loopStates.disabled;
+
+        this.txtChannel = txtChannel;
+        this.voiceChannel = voiceChannel;
+
+        this.connection = connection;
+
+        this.connection.on(voice.VoiceConnectionStatus.Disconnected, async(oldState, newState) => {
+            try {
+                await Promise.race([
+                    voice.entersState(connection, voice.VoiceConnectionStatus.Signalling, 5000),
+                    voice.entersState(connection, voice.VoiceConnectionStatus.Connecting, 5000),
+                ]);
+                // Seems to be reconnecting to a new channel - ignore disconnect
+            } catch (error) {
+                // Seems to be a real disconnect which SHOULDN'T be recovered from
+                connection.destroy();
+            }
+        })
+
+        this.player = player;
+        this.player.on('stateChange', (oldState, newState) => {
+            console.log(`Player passato da ${oldState.status} a ${newState.status}`);
+        })
+
+        this.player.on(voice.AudioPlayerStatus.Playing, (oldState, newState) => {
+            let song = newState.resource.metadata;
+            console.log(`Now playing: ${song.title}`);
+            sendReply(this.txtChannel, fieldEmbed(this.txtChannel.guild, 'In riproduzione', `[**${song.title}**](${song.url})`), 10000);
+        })
+
+        this.player.on(voice.AudioPlayerStatus.Buffering, (oldState, newState) => {
+            console.log(`Buffering ${newState.resource.metadata.title}`);
+        })
+
+        this.player.on(voice.AudioPlayerStatus.Idle, async(oldState, newState) => {
+            let song = this.nextTrack();
+            // console.log(song)
+            if (song) {
+                await this.play(song)
+            } else {
+                this.die();
+                globalQueue.delete(this.txtChannel.guild.id);
+                sendReply(this.txtChannel, titleEmbed(this.txtChannel.guild, serverQueue.responses.endQueue))
+            }
+
+        })
+        this.player.on('error', error => {
+            console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
+        });
+    }
+
+    static loopStates = {
+        disabled: 0,
+        queue: 1,
+        track: 2,
+    }
+
+    static errors = {
+        queueNotFound: 'Coda non trovata',
+        voiceChannelNotFound: 'Devi essere in un canale vocale',
+        invalidArgument: 'Inserire una parola chiave o un url',
+        emptyQueue: 'La coda è vuota'
+    }
+
+    static responses = {
+        loopDisabled: 'Loop disabilitato',
+        loopEnabled: 'Loop abilitato sulla coda',
+        loopEnabledTrack: 'Loop abilitato sulla traccia',
+        newTrack: 'Aggiunta alla coda',
+        endQueue: 'Coda terminata',
+    }
+
+    static async getSongObject(args) {
+        // isurl
+        let query = args.join(' ');
+        let type_url = await play_dl.validate(query)
+        try {
+            type_url = type_url.split('_')
+        } catch (error) {}
+        let songs;
+        switch (type_url[0]) {
+            //youtube
+            case 'yt':
+                switch (type_url[1]) {
+                    case 'video':
+                        {
+                            let media = (await play_dl.video_basic_info(query)).video_details
+                                // console.log(media)
+                            songs = {
+                                url: media.url,
+                                title: media.title,
+                                thumbnail: media.thumbnail,
+                                duration: media.durationInSec,
+                                durationRaw: media.durationRaw,
+                            }
+                        }
+
+                        break;
+                    case 'playlist':
+                        {
+                            let playlist = (await play_dl.playlist_info(query))
+                                // console.log(playlist)
+                            for (let i = 0; i < playlist.videoCount; i++) {
+                                let song = {
+                                    url: playlist[i].video_details.url,
+                                    title: playlist[i].video_details.title,
+                                    thumbnail: playlist[i].video_details.thumbnail,
+                                    duration: playlist[i].video_details.durationInSec,
+                                    durationRaw: playlist[i].video_details.durationRaw,
+                                }
+                                songs.push(song)
+                            }
+                        }
+                        break;
+                    case 'album':
+                        break;
+                }
+                break;
+                //spotify
+            case 'sp':
+                switch (type_url[1]) {
+                    case 'album':
+                        {
+                            let playlist = (await play_dl.spotify(query))
+                                // console.log(playlist)
+                            let songs = []
+                            for (let i = 0; i < playlist.videoCount; i++) {
+                                let song = {
+                                    url: playlist[i].video_details.url,
+                                    title: playlist[i].video_details.title,
+                                    thumbnail: playlist[i].video_details.thumbnail,
+                                    duration: playlist[i].video_details.durationInSec,
+                                    durationRaw: playlist[i].video_details.durationRaw,
+
+                                }
+                                songs.push(song)
+                            }
+                        }
+                        break;
+                    case 'playlist':
+                        {
+                            let playlist = (await play_dl.spotify(query))
+                                // console.log(playlist)
+                            let tracks = await playlist.fetched_tracks.get('1')
+                                // console.log(tracks)
+                            console.log(`fetching ${playlist.tracksCount} tracks from Youtube...`)
+                            for (let i = 0; i < playlist.tracksCount; i++) {
+
+                                let yt_video = (await play_dl.search(tracks[i].name, { limit: 1, type: 'video' }))[0]
+                                    // console.log(yt_video)
+                                let song = {
+                                    url: yt_video.url,
+                                    title: yt_video.title,
+                                    thumbnail: yt_video.thumbnail,
+                                    duration: yt_video.durationInSec,
+                                    durationRaw: yt_video.durationRaw,
+
+                                }
+                                songs.push(song)
+                            }
+                            console.log('done')
+                        }
+                        break;
+                    case 'track':
+                        {
+                            let track = (await play_dl.spotify(query))
+                            let yt_video = (await play_dl.search(track.name, { limit: 1, type: 'video' }))[0]
+
+                            songs = {
+                                url: yt_video.url,
+                                title: yt_video.name,
+                                thumbnail: yt_video.thumbnail,
+                                duration: yt_video.durationInSec,
+                                durationRaw: yt_video.durationRaw,
+
+                            }
+                        }
+                        break;
+
+
+                }
+                //soundcloud
+            case 'so':
+                //not implemented 
+                break;
+
+            default:
+                {
+                    console.log(`Searching for '${query}' on YT`);
+                    let media = (await play_dl.search(query, { type: 'video', limit: 1 }))[0]
+                    songs = {
+                        url: media.url,
+                        title: media.title,
+                        thumbnail: media.thumbnail,
+                        duration: media.durationInSec,
+                        durationRaw: media.durationRaw,
+                    }
+                }
+                break;
+        }
+
+        return songs
+
+    }
+
+    static async getResource(song) {
+        // Stream first from play-dl.stream('url')
+        let resource;
+        try {
+            const stream = await play_dl.stream(song.url);
+            resource = voice.createAudioResource(stream.stream, {
+                metadata: song
+            })
+        } catch (error) {
+            console.log(new Error(error))
+        }
+        // console.log(resource)
+        return resource;
+        // Resource for discord.js player to play
+    }
+
+    nextTrack(forceskip = false) {
+        let curIndex = this.curPlayingIndex();
+        let nextIndex = curIndex + 1;
+        let songsLenght = this.songs.length;
+        let nextSong = undefined;
+        if (!forceskip) {
+            switch (this.loopState) {
+                case serverQueue.loopStates.disabled:
+                    if (nextIndex < songsLenght) {
+                        nextSong = this.songs[nextIndex];
+                    }
+                    break;
+                case serverQueue.loopStates.queue:
+                    if (nextIndex >= songsLenght) {
+                        nextIndex = 0;
+                    }
+                    nextSong = this.songs[nextIndex];
+                    break;
+                case serverQueue.loopStates.track:
+                    nextIndex = curIndex;
+                    nextSong = this.songs[nextIndex];
+                    break;
+            }
+        } else {
+
+            switch (this.loopState) {
+                case serverQueue.loopStates.disabled:
+                    if (nextIndex < songsLenght) {
+                        nextSong = this.songs[nextIndex];
+                    }
+                    break;
+                case serverQueue.loopStates.queue:
+                case serverQueue.loopStates.track:
+                    if (nextIndex >= songsLenght) {
+                        nextIndex = 0;
+                    }
+                    nextSong = this.songs[nextIndex];
+                    break;
+            }
+        }
+        if (nextSong !== undefined) {
+            this.curPlayingSong = nextSong;
+        }
+
+        return nextSong;
+    }
+
+    async play(song = undefined) {
+        if (!song) {
+            song = this.curPlayingSong;
+        }
+        let resource = await serverQueue.getResource(song);
+        this.player.play(resource);
+        this.curPlayingSong = song;
+    }
+
+    async jump(index) {
+        await this.play(this.songs[index]);
+    }
+
+    add(song) {
+        this.songs.push(song);
+    }
+
+    addMultiple(songs) {
+        this.songs.concat(songs)
+    }
+
+    curPlayingIndex() {
+        return this.songs.indexOf(this.curPlayingSong);
+    }
+
+    indexOfSong(song) {
+        return this.songs.indexOf(song);
+    }
+
+    remove(index) {
+        this.songs = this.songs.filter((val, i) => {
+            return i != index
+        })
+    }
+
+    changeLoopState() {
+        this.loopState += 1
+        if (this.loopState > serverQueue.loopStates.track) {
+            this.loopState = serverQueue.loopStates.disabled;
+        }
+        return this.loopState;
+    }
+
+    getLoopState() {
+        return this.loopState;
+    }
+
+    getSongs() {
+        return this.songs;
+    }
+
+    pause() {
+        this.player.pause();
+    }
+
+    resume() {
+        this.player.unpause();
+    }
+
+    die() {
+        try {
+            this.connection.destroy();
+        } catch (error) {
+
+        }
+
+    }
+
+    static convertToRawDuration(seconds) {
+        let minutes = Math.floor(seconds / 60);
+        seconds = Math.round(seconds % 60);
+        return minutes.toString() + ':' + seconds.toString();
+    }
+
+    getPlaybackDuration() {
+        return this.player.state.playbackDuration;
+    }
+}
+
+function titleEmbed(guild, title) {
+    let embed = require('../../embed')(guild)
+    embed.setTitle(title)
+    embed.setDescription('')
+    return embed;
+}
+
+function fieldEmbed(guild, title, content) {
+    let embed = require('../../embed')(guild)
+    embed.addField(title, content)
+    embed.setDescription('')
+        // console.log(embed)
+    return embed;
+}
+
+async function sendReply(channel, embed, timeout = undefined) {
+    if (timeout === undefined) {
+        channel.send({ embeds: [embed] })
+    } else {
+        channel.send({ embeds: [embed] }).then(msg => {
+            setTimeout(() => msg.delete(), timeout)
+        });
+    }
+
+}
+
+async function reactToMSg(msg, emoji) {
+    await msg.react(emoji)
+}
+
 module.exports = {
     name: 'play',
+    aliases: ['p', 'pause', 'skip', 's', 'jump', 'j', 'stop', 'die', 'l', 'loop', 'resume', 'q', 'queue', 'remove', 'r'],
     args: ['[input]'],
     description: 'plays some music!',
     once: false,
+    disabled: false,
+    // data: new SlashCommandBuilder()
+    //     .setName('play')
+    //     .setDescription('plays some music!')
+    //     .addStringOption(input => {
+    //         input.setRequired(true)
+    //         input.setName('input')
+    //     }),
+    // async execute(interaction, bot, Discord) {
+    //     const { commandName } = interaction
+    //     let cmd = commandName
+    // },
+
     async run(msg, args, bot, Discord) {
         cmd = args.shift().toLowerCase()
 
         switch (cmd) {
             case 'play':
             case 'p':
-
-                let voice_channel = await msg.member.voice.channel
+                let voice_channel = await msg.member.voice.channel;
                 if (!voice_channel) {
-                    let embed = require('../../embed')(msg.guild)
-                    embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
-                    msg.channel.send({ embeds: [embed] }).then(msg => {
-                        setTimeout(() => msg.delete(), 10000)
-                    });
+                    sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.voiceChannelNotFound), 10000);
                     return
                 }
 
                 if (!args[0]) {
-                    let embed = require('../../embed')(msg.guild)
-                    embed.setTitle('Inserisci una parola chiave')
-                    msg.channel.send({ embeds: [embed] }).then(msg => {
-                        setTimeout(() => msg.delete(), 10000)
-                    });
-
+                    sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.invalidArgument), 10000);
                     return
                 }
 
-                let item
-                let server_queue = queue.get(msg.guild.id)
-                if (!server_queue) {
-                    item = await getSongObject(args, 0, msg.guild.id)
-                    if (item.length > 1) {
-                        let embed = require('../../embed.js')(msg.guild)
-                            .addField('Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)
-                        msg.channel.send({ embeds: [embed] })
-                    } else {
-                        let embed = require('../../embed.js')(msg.guild)
-                            .addField('Aggiunta alla coda', `[${item[0].title}](${item[0].url}) è in coda!`)
-                        msg.channel.send({ embeds: [embed] })
-                    }
+                let item = await serverQueue.getSongObject(args);
+                if (Array.isArray(item)) {
+                    sendReply(msg.channel, fieldEmbed(msg.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`));
                 } else {
-                    item = await getSongObject(args, server_queue.songs.length, msg.guild.id)
+                    sendReply(msg.channel, fieldEmbed(msg.guild, 'Aggiunta alla coda', `[${item.title}](${item.url}) è in coda!`));
                 }
 
+                let server_queue = globalQueue.get(msg.guild.id);
+
                 if (!server_queue) {
-                    const queue_constructor = {
-                        voice_channel: voice_channel,
-                        text_channel: msg.channel,
-                        connection: null,
-                        player: null,
-                        loop: ['no', 'queue', 'track'],
-                        songs: []
-                    }
-
-                    queue.set(msg.guild.id, queue_constructor)
-
-                    queue_constructor.songs = queue_constructor.songs.concat(item)
-
+                    // connection
+                    let connection;
                     try {
-                        const connection = voice.joinVoiceChannel({
+                        connection = voice.joinVoiceChannel({
                             channelId: voice_channel.id,
                             guildId: msg.guild.id,
                             adapterCreator: voice_channel.guild.voiceAdapterCreator,
                         });
-                        queue_constructor.connection = connection
                     } catch (error) {
-                        queue.delete(msg.guild.id)
-                        console.log(error)
+                        console.log(new Error(error))
                         return
                     }
-
-                    connection = queue_constructor.connection
+                    // player
                     let player = voice.createAudioPlayer({
-                        behaviors: voice.NoSubscriberBehavior.Play
+                        behaviors: {
+                            noSubscriber: voice.NoSubscriberBehavior.Play
+                        }
                     })
+
+
                     connection.subscribe(player)
-                    queue_constructor.player = player
-                    let resource = await getResource(item[0])
 
-                    queue_constructor.player.play(resource)
-                    msg.react('👌')
-
-                    player.on('stateChange', (oldState, newState) => {
-                        console.log(`Player passato da ${oldState.status} a ${newState.status}`)
-                    })
-
-                    player.on(voice.AudioPlayerStatus.Playing, (oldState, newState) => {
-                        console.log('Music is playing!')
-                        playing_song.set(newState.resource.metadata.guildID, newState.resource.metadata)
-                        let song = newState.resource.metadata
-                        let embed = require('../../embed.js')(msg.guild)
-                            .addField('In riproduzione:', `[**${song.title}**](${song.url})`)
-                            // .setURL(item.song.url)
-                        msg.channel.send({ embeds: [embed] }).then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
-                    })
-
-                    player.on(voice.AudioPlayerStatus.Buffering, (oldState, newState) => {
-                        console.log(`Buffering ${newState.resource.metadata.title}`)
-                    })
-
-                    let server_queue = queue.get(msg.guild.id)
-                    player.on(voice.AudioPlayerStatus.Idle, async(oldState, newState) => {
-
-                        let last_song_pos = oldState.resource.metadata.pos
-
-                        let next_resource = await getNextSong(queue, msg.guild.id, last_song_pos)
-                        if (!next_resource) {
-                            let embed = require('../../embed')(msg.guild)
-                                .setTitle('Coda terminata!')
-                            server_queue.text_channel.send({ embeds: [embed] }).then(msg => {
-                                setTimeout(() => msg.delete(), 30000)
-                            });
-                            server_queue.connection.destroy()
-                            queue.delete(server_queue.text_channel.guild.id)
-                            return
-                        }
-                        player.play(next_resource)
-                    })
-                    player.on('error', error => {
-                        console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
-                    });
-
-                    connection.on(voice.VoiceConnectionStatus.Disconnected, async(oldState, newState) => {
-                        try {
-                            await Promise.race([
-                                voice.entersState(connection, voice.VoiceConnectionStatus.Signalling, 5000),
-                                voice.entersState(connection, voice.VoiceConnectionStatus.Connecting, 5000),
-                            ]);
-                            // Seems to be reconnecting to a new channel - ignore disconnect
-                        } catch (error) {
-                            // Seems to be a real disconnect which SHOULDN'T be recovered from
-                            connection.destroy();
-                        }
-                    })
-
+                    server_queue = new serverQueue(item, msg.channel, voice_channel, connection, player);
+                    // adds songs to the global queue map
+                    globalQueue.set(msg.guild.id, server_queue);
+                    // plays the first song of the list
+                    server_queue.play()
                 } else {
-
-                    server_queue.songs = server_queue.songs.concat(item)
-
-                    if (server_queue.player.state === voice.AudioPlayerStatus.Paused) {
-                        server_queue.player.play(await getNextSong(queue, msg.guild.id, playing_song.get(msg.guild.id).pos))
-                        msg.react('👌')
-                        return
-                    }
-
-
-
-                    if (item.length > 1) {
-                        let embed = require('../../embed.js')(msg.guild)
-                            .addField('Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)
-                        msg.channel.send({ embeds: [embed] })
+                    if (Array.isArray(item)) {
+                        server_queue.addMultiple(item);
                     } else {
-                        let embed = require('../../embed.js')(msg.guild)
-                            .addField('Aggiunta alla coda', `[${item[0].title}](${item[0].url}) è in coda!`)
-                        msg.channel.send({ embeds: [embed] })
+                        server_queue.add(item);
                     }
-
-                    msg.react('👌')
-                    return
-
                 }
+                reactToMSg(msg, '👌');
 
                 break;
 
             case 'pause':
                 {
-                    let server_queue = queue.get(msg.guild.id)
-                    if (!server_queue || server_queue.songs.length == 0) {
-                        msg.channel.send('Nessuna canzone in coda!').then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
+                    let voice_channel = await msg.member.voice.channel;
+                    if (!voice_channel) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.voiceChannelNotFound), 10000);
                         return
                     }
-                    let voice_channel = await msg.member.voice.channel
-                    if (!voice_channel || voice_channel !== server_queue.voice_channel) {
-                        let embed = require('../../embed')(msg.guild)
-                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
-                        msg.channel.send({ embeds: [embed] }).then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
-                        return
+                    let server_queue = globalQueue.get(msg.guild.id);
+                    if (!server_queue) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.queueNotFound), 10000);
+                        return;
                     }
-                    let paused_song = playing_song.get(msg.guild.id)
-                    server_queue.player.pause()
-                    let embed = require('../../embed.js')(msg.guild)
-                        .addField('Pausa', `[${paused_song.title}](${paused_song.url}) è in coda!`)
-                    msg.react('⏸️')
-                    msg.channel.send({ embeds: [embed] }).then(msg => {
-                        setTimeout(() => msg.delete(), 10000)
-                    });
+                    server_queue.pause();
+                    reactToMSg(msg, '⏸️');
+
                 }
                 break;
 
             case 'resume':
                 {
-
-                    let server_queue = queue.get(msg.guild.id)
-                    if (!server_queue || server_queue.songs.length == 0) {
-                        msg.channel.send('Nessuna canzone in coda!').then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
+                    let voice_channel = await msg.member.voice.channel;
+                    if (!voice_channel) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.voiceChannelNotFound), 10000);
                         return
                     }
-                    let voice_channel = await msg.member.voice.channel
-                    if (!voice_channel || voice_channel !== server_queue.voice_channel) {
-                        let embed = require('../../embed')(msg.guild)
-                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
-                        msg.channel.send({ embeds: [embed] }).then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
-                        return
+                    let server_queue = globalQueue.get(msg.guild.id);
+                    if (!server_queue) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.queueNotFound), 10000);
+                        return;
                     }
-                    server_queue.player.unpause()
-                    msg.react('▶️')
+                    server_queue.resume();
+                    reactToMSg(msg, '▶️');
                 }
                 break
 
             case 'skip':
             case 's':
                 {
-                    let server_queue = queue.get(msg.guild.id)
-                    if (!server_queue || server_queue.songs.length == 0) {
-                        msg.channel.send('Nessuna canzone in coda!').then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
+                    let voice_channel = await msg.member.voice.channel;
+                    if (!voice_channel) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.voiceChannelNotFound), 10000);
                         return
                     }
-                    let voice_channel = await msg.member.voice.channel
-                    if (!voice_channel || voice_channel !== server_queue.voice_channel) {
-                        let embed = require('../../embed')(msg.guild)
-                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
-                        msg.channel.send({ embeds: [embed] }).then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
-                        return
+                    let server_queue = globalQueue.get(msg.guild.id);
+                    if (!server_queue) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.queueNotFound), 10000);
+                        return;
                     }
-                    let currently_playing_pos = playing_song.get(msg.guild.id).pos + 1
-                    if (currently_playing_pos >= server_queue.songs.length && server_queue.loop[0] === 'queue') {
-                        currently_playing_pos = 0
+                    let song = server_queue.nextTrack(true);
+                    console.log(song);
+                    if (song) {
+                        await server_queue.play(song);
+                    } else {
+                        server_queue.die();
+                        globalQueue.delete(msg.guild.id);
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.responses.endQueue))
                     }
-                    let song
-                    try {
-                        song = server_queue.songs[currently_playing_pos]
-                    } catch (error) {
-                        song = undefined
-                    }
-
-                    let resource = await getResource(song)
-                    if (!resource) {
-                        let embed = require('../../embed')(msg.guild)
-                            .setTitle('Coda terminata!')
-                        server_queue.text_channel.send({ embeds: [embed] }).then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
-                        server_queue.player.stop()
-                        return
-                    }
-                    server_queue.player.play(resource)
-                    msg.react('⏭️')
+                    reactToMSg(msg, '⏭️');
                 }
                 break;
 
             case 'jump':
             case 'j':
                 {
-                    let server_queue = queue.get(msg.guild.id)
-                    if (!server_queue || server_queue.songs.length == 0) {
-                        msg.channel.send('Nessuna canzone in coda!').then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
-                        return
+                    let voice_channel = await msg.member.voice.channel;
+                    if (!voice_channel) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.voiceChannelNotFound), 10000);
+                        return;
                     }
-                    let voice_channel = await msg.member.voice.channel
-                    if (!voice_channel || voice_channel !== server_queue.voice_channel) {
-                        let embed = require('../../embed')(msg.guild)
-                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
-                        msg.channel.send({ embeds: [embed] }).then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
-                        return
-                    }
-                    let num
-                    try {
-                        num = parseInt(args[0])
-                    } catch (error) {
-                        console.log(error)
+                    let server_queue = globalQueue.get(msg.guild.id);
+                    if (!server_queue) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.queueNotFound), 10000);
+                        return;
                     }
 
-                    if (num < 1 || num > server_queue.songs.length || !num) {
-                        let embed = require('../../embed')(msg.guild)
-                        embed.setTitle(`Per favore inserisci un numero valido tra 1 e ${server_queue.songs.length}`)
-                        msg.channel.send({ embeds: [embed] })
-                        return
+                    let index = parseInt(args[0])
+                    if (!index || index < 1 || index > server_queue.songs.length) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, `Inserire un numero tra 1 e ${server_queue.songs.length}`))
+                        return;
                     }
-
-                    server_queue.player.play(await getNextSong(queue, msg.guild.id, num - 2))
-                    let selected_song = server_queue.songs[num - 1]
-                    let embed = require('../../embed.js')(msg.guild)
-                        .addField('In riproduzione', `[**${selected_song.title}**](${selected_song.url})`)
-                    msg.react('👍')
-                    msg.channel.send({ embeds: [embed] }).then(msg => {
-                        setTimeout(() => msg.delete(), 10000)
-                    });
+                    let songs = server_queue.getSongs();
+                    server_queue.play(songs[index - 1]);
+                    reactToMSg(msg, '👍')
                 }
                 break;
 
             case 'die':
             case 'd':
                 {
-                    let server_queue = queue.get(msg.guild.id)
-                    if (!server_queue || server_queue.songs.length == 0) {
-                        msg.channel.send('Nessuna coda da cancellare!').then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
-                        return
+                    let voice_channel = await msg.member.voice.channel;
+                    if (!voice_channel) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.voiceChannelNotFound), 10000);
+                        return;
                     }
-
-                    let voice_channel = await msg.member.voice.channel
-                    if (!voice_channel || voice_channel !== server_queue.voice_channel) {
-                        let embed = require('../../embed')(msg.guild)
-                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
-                        msg.channel.send({ embeds: [embed] }).then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
-                        return
+                    let server_queue = globalQueue.get(msg.guild.id);
+                    if (!server_queue) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.queueNotFound), 10000);
+                        return;
                     }
-
-                    server_queue.songs = []
-                    try {
-                        server_queue.connection.destroy()
-                    } catch (error) {
-                        console.log(error)
-                    }
-
-                    queue.delete(msg.guild.id)
-                    msg.react('👋')
-                    console.log(`${bot.user.tag} disconesso da ${voice_channel.name}`)
+                    server_queue.die();
+                    globalQueue.delete(msg.guild.id);
+                    reactToMSg(msg, '👋');
                 }
-
                 break;
 
             case 'loop':
             case 'l':
                 {
-                    let server_queue = queue.get(msg.guild.id)
-                    if (!server_queue || server_queue.songs.length == 0) {
-                        msg.channel.send('Nessuna coda!').then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
+                    let voice_channel = await msg.member.voice.channel;
+                    if (!voice_channel) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.voiceChannelNotFound), 10000);
                         return
                     }
-
-                    let voice_channel = await msg.member.voice.channel
-                    if (!voice_channel || voice_channel !== server_queue.voice_channel) {
-                        let embed = require('../../embed')(msg.guild)
-                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
-                        msg.channel.send({ embeds: [embed] }).then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
-                        return
+                    let server_queue = globalQueue.get(msg.guild.id);
+                    if (!server_queue) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.queueNotFound), 10000);
+                        return;
                     }
 
-                    let loop_state = server_queue.loop.shift()
-                    server_queue.loop.push(loop_state)
+                    switch (server_queue.changeLoopState()) {
+                        case serverQueue.loopStates.disabled:
+                            sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.responses.loopDisabled))
+                            reactToMSg(msg, '➡️');
+                            break;
+                        case serverQueue.loopStates.queue:
+                            sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.responses.loopEnabled));
+                            reactToMSg(msg, '🔁');
 
-                    switch (server_queue.loop[0]) {
-                        case 'no':
-                            {
-                                let embed = require('../../embed.js')(msg.guild)
-                                    .setTitle('Loop disabilitato')
-                                msg.react('➡️')
-                                msg.channel.send({ embeds: [embed] })
-                            }
-                            break
-                        case 'queue':
-                            {
-                                let embed = require('../../embed.js')(msg.guild)
-                                    .setTitle('Loop abilitato')
-                                msg.react('🔁')
-                                msg.channel.send({ embeds: [embed] })
-                            }
-                            break
-                        case 'track':
-                            {
-                                let embed = require('../../embed.js')(msg.guild)
-                                    .setTitle('Loop abilitato sulla singola traccia')
-                                msg.react('🔂')
-                                msg.channel.send({ embeds: [embed] })
-                            }
-                            break
+                            break;
+                        case serverQueue.loopStates.track:
+                            sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.responses.loopEnabledTrack));
+                            reactToMSg(msg, '🔂');
+                            break;
                     }
                 }
                 break;
@@ -410,40 +621,40 @@ module.exports = {
             case 'queue':
             case 'q':
                 {
-
-
-                    let server_queue = queue.get(msg.guild.id)
-
-                    if (!server_queue || server_queue.songs.length == 0) {
-                        msg.channel.send('Nessuna coda!').then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
-
+                    let voice_channel = await msg.member.voice.channel;
+                    if (!voice_channel) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.voiceChannelNotFound), 10000);
                         return
                     }
-
-                    let voice_channel = await msg.member.voice.channel
-                    if (!voice_channel || voice_channel !== server_queue.voice_channel) {
-                        let embed = require('../../embed')(msg.guild)
-                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
-                        msg.channel.send({ embeds: [embed] }).then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
-                        return
+                    let server_queue = globalQueue.get(msg.guild.id);
+                    if (!server_queue) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.queueNotFound), 10000);
+                        return;
                     }
-
-                    let embed = require('../../embed.js')(msg.guild)
-                    embed.setTitle('Coda')
-                    for (let song of server_queue.songs) {
-                        if (song === playing_song.get(msg.guild.id)) {
-                            embed.addField('\u200b', `${(song.pos+1).toString()}) [${song.title}](${song.url})`, true)
-                            embed.addField(blank_field, '*Now playing!*', true)
+                    // ...
+                    let songs = server_queue.getSongs();
+                    if (songs.length === 0) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.emptyQueue), 10000);
+                        return;
+                    }
+                    let curPlayingSongIndex = server_queue.curPlayingIndex();
+                    let queue = ['```javascript'];
+                    let counter = 1;
+                    for (const song of songs) {
+                        let line = '';
+                        if (song === songs[curPlayingSongIndex]) {
+                            //currently playing
+                            console.log(song.duration - (Math.round((server_queue.getPlaybackDuration()) / 1000)))
+                            line = `    ⬐In riproduzione\n${counter}. ${song.title}\t${serverQueue.convertToRawDuration(song.duration - (Math.round((server_queue.getPlaybackDuration())/1000)))} rimasti\n    ⬑In riproduzione`
                         } else {
-                            embed.addField('\u200b', `${(song.pos+1).toString()}) [${song.title}](${song.url})`)
+                            line = `${counter}. ${song.title}\t${song.durationRaw}`
                         }
+                        queue.push(line);
+                        counter++;
                     }
-
-                    msg.channel.send({ embeds: [embed] })
+                    queue.push('```')
+                    queue = queue.join('\n');
+                    msg.channel.send({ content: queue })
 
                 }
                 break
@@ -451,237 +662,27 @@ module.exports = {
             case 'remove':
             case 'r':
                 {
-                    let server_queue = queue.get(msg.guild.id)
-
-                    if (!server_queue || server_queue.songs.length == 0) {
-                        msg.channel.send('Nessuna coda da cancellare!').then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
+                    let voice_channel = await msg.member.voice.channel;
+                    if (!voice_channel) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.voiceChannelNotFound), 10000);
                         return
                     }
-
-                    let voice_channel = await msg.member.voice.channel
-                    if (!voice_channel || voice_channel !== server_queue.voice_channel) {
-                        let embed = require('../../embed')(msg.guild)
-                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
-                        msg.channel.send({ embeds: [embed] }).then(msg => {
-                            setTimeout(() => msg.delete(), 10000)
-                        });
-                        return
+                    let server_queue = globalQueue.get(msg.guild.id);
+                    if (!server_queue) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.queueNotFound), 10000);
+                        return;
                     }
-                    let num
-                    try {
-                        num = parseInt(args[0])
-                    } catch (error) {
-                        console.log(error)
+                    let index = parseInt(args[0])
+                    if (!index || index < 1 || index > server_queue.songs.length) {
+                        sendReply(msg.channel, titleEmbed(msg.guild, `Inserire un numero tra 1 e ${server_queue.songs.length}`));
+                        return;
                     }
 
-                    if (num < 1 || num > server_queue.songs.length || !num) {
-                        let embed = require('../../embed')(msg.guild)
-                        embed.setTitle(`Inserisci un numero valido tra 1 e ${server_queue.songs.length}`)
-                        msg.channel.send({ embeds: [embed] })
-                        return
-                    }
-
-                    let target = server_queue.songs[num - 1]
-
-                    server_queue.songs = server_queue.songs.filter((value) => {
-                        if (value.pos > num - 1) {
-                            value.pos = value.pos - 1
-                            return true
-                        }
-                        return value.pos !== num - 1
-                    })
-
-                    let embed = require('../../embed')(msg.guild)
-                    embed.addField('Traccia rimossa', `[${target.title}](${target.url}) è stata rimossa dalla coda`)
-                    msg.react('⭕')
-                    msg.channel.send({ embeds: [embed] })
+                    server_queue.remove(index - 1);
+                    reactToMSg(msg, '❌')
                 }
-
                 break
         }
 
-    },
-    aliases: ['p', 'pause', 'skip', 's', 'jump', 'j', 'stop', 'die', 'l', 'loop', 'resume', 'q', 'queue', 'remove', 'r']
-}
-
-async function getMediaStream(url) {
-    let stream = undefined
-    try {
-        stream = (await play_dl.stream(url))
-
-    } catch (error) {
-        console.log(error);
     }
-    return stream
-}
-
-async function getResource(song) {
-    if (!song) return undefined
-    let stream = await getMediaStream(song.url)
-    if (!stream) return undefined
-    let resource = voice.createAudioResource(stream.stream, { metadata: song, inlineVolume: true, inputType: stream.type })
-    resource.volume.setVolume(0.5)
-    return resource
-}
-
-// async function getNextSong(queue, guildID, last_song_pos, forceskip) {
-//     let server_queue = queue.get(guildID)
-//     let loop = server_queue.loop[0]
-
-//     let next_song_pos = last_song_pos + 1
-
-//     if (next_song_pos >= server_queue.songs.length && loop === 'no') {
-//         return undefined
-//     }
-//     if (next_song_pos >= server_queue.songs.length && loop === 'queue') {
-//         next_song_pos = 0
-//     }
-//     if (loop === 'track') {
-//         next_song_pos = last_song_pos
-//     }
-
-//     let song = server_queue.songs[next_song_pos]
-
-//     let resource = await getResource(song)
-//     return resource
-// }
-
-
-async function getSongObject(args, songs_length, guildID) {
-    // isurl
-    let type_url = await play_dl.validate(args[0])
-    try {
-        type_url = type_url.split('_')
-    } catch (error) {
-
-    }
-
-    switch (type_url[0]) {
-        //youtube
-        case 'yt':
-            if (type_url[1] === 'video') {
-                let media = (await play_dl.video_basic_info(args[0])).video_details
-                console.log(media)
-                let song = [{
-                    url: media.url,
-                    title: media.title,
-                    thumbnail: media.thumbnail,
-                    duration: media.durationInSec,
-                    pos: songs_length,
-                    guildID: guildID
-                }]
-                return song
-            }
-            if (type_url[1] === 'playlist') {
-                let playlist = (await play_dl.playlist_info(args[0]))
-                console.log(playlist)
-                let songs = []
-                for (let i = 0; i < playlist.videoCount; i++) {
-                    let song = {
-                        url: playlist[i].video_details.url,
-                        title: playlist[i].video_details.title,
-                        thumbnail: playlist[i].video_details.thumbnail,
-                        duration: playlist[i].video_details.durationInSec,
-                        pos: songs_length + i,
-                        guildID: guildID
-                    }
-                    songs.push(song)
-                }
-                return songs
-            }
-            break;
-            //spotify
-        case 'sp':
-            if (type_url[1] === 'album') {
-                let playlist = (await play_dl.spotify(args[0]))
-                console.log(playlist)
-                let songs = []
-                for (let i = 0; i < playlist.videoCount; i++) {
-                    let song = {
-                        url: playlist[i].video_details.url,
-                        title: playlist[i].video_details.title,
-                        thumbnail: playlist[i].video_details.thumbnail,
-                        duration: playlist[i].video_details.durationInSec,
-                        pos: songs_length + i,
-                        guildID: guildID
-                    }
-                    songs.push(song)
-                }
-                return songs
-            }
-            if (type_url[1] === 'playlist') {
-                let playlist = (await play_dl.spotify(args[0]))
-                    // console.log(playlist)
-                let tracks = await playlist.fetched_tracks.get('1')
-                    // console.log(tracks)
-                let songs = []
-                console.log('fetching...')
-                console.log(playlist.tracksCount)
-                for (let i = 0; i < playlist.tracksCount; i++) {
-
-                    let yt_video = (await play_dl.search(tracks[i].name, { limit: 1, type: 'video' }))[0]
-                    console.log(yt_video)
-                    let song = {
-                        url: yt_video.url,
-                        title: yt_video.title,
-                        thumbnail: yt_video.thumbnail,
-                        duration: yt_video.durationInSec,
-                        pos: songs_length + i,
-                        guildID: guildID
-                    }
-                    songs.push(song)
-                }
-                console.log('done')
-                return songs
-            }
-            if (type_url[1] === 'track') {
-                let track = (await play_dl.spotify(args[0]))
-                let yt_video = (await play_dl.search(track.name, { limit: 1, type: 'video' }))[0]
-
-                let song = [{
-                    url: yt_video.url,
-                    title: yt_video.name,
-                    thumbnail: yt_video.thumbnail,
-                    duration: yt_video.durationInSec,
-                    pos: songs_length + i,
-                    guildID: guildID
-                }]
-
-                song.push(song)
-
-                return songs
-            }
-
-            break;
-            //soundcloud
-        case 'so':
-
-            break;
-
-        default:
-            let query = ''
-            if (args.length > 1) {
-                query = args.join(' ')
-            } else {
-                query = args[0]
-            }
-            let media = (await play_dl.search(query, { type: 'video', limit: 1 }))[0]
-                console.log(media)
-            song = [{
-                url: media.url,
-                title: media.title,
-                thumbnail: media.thumbnail,
-                duration: media.durationInSec,
-                pos: songs_length,
-                guildID: guildID
-            }]
-            return song
-    }
-}
-
-
-function getIndex(target, array) {
-    return array.indexOf(target)
 }

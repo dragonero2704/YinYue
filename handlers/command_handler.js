@@ -1,6 +1,6 @@
 const { readdirSync } = require('fs')
 const ascii_table = require('ascii-table')
-const chalk = require('chalk')
+
 
 
 module.exports = (bot) => {

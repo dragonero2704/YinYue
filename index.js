@@ -1,7 +1,11 @@
 const Discord = require('discord.js')
+
 const { config } = require("dotenv")
+
 const { readdirSync } = require('fs')
+
 const keepAlive = require('./server')
+
 
 const Intents = Discord.Intents
 

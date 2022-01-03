@@ -1,6 +1,6 @@
 module.exports = {
     name: 'bulkdelete',
-    aliases: ['clean'],
+    aliases: ['clean', 'clear'],
     args: ['[number of messages]'],
     run: (msg, args, bot, Discord) => {
 

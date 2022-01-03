@@ -1,36 +1,19 @@
 const play_dl = require('play-dl')
 const voice = require('@discordjs/voice');
-const { SlashCommandBuilder } = require('@discordjs/builders');
-
+// import play_dl from 'play-dl';
+// import voice from '@discordjs/voice';
 
 let queue = new Map()
+let playing_song = new Map()
 
 let blank_field = '\u200b'
 
-let looping_states = {
-    disabled: 0,
-    queue: 1,
-    track: 2,
-}
-
 module.exports = {
     name: 'play',
-    aliases: ['p', 'pause', 'skip', 's', 'jump', 'j', 'stop', 'die', 'l', 'loop', 'resume', 'q', 'queue', 'remove', 'r'],
     args: ['[input]'],
     description: 'plays some music!',
     once: false,
-    data: new SlashCommandBuilder()
-        .setName(this.name)
-        .setDescription(this.description)
-        .addStringOption(input => {
-            input.setRequired(true)
-            input.setName('input')
-        }),
-    async execute(interaction, bot, Discord) {
-        const { commandName } = interaction
-        let cmd = commandName
-    },
-
+    disabled: true,
     async run(msg, args, bot, Discord) {
         cmd = args.shift().toLowerCase()
 
@@ -42,25 +25,38 @@ module.exports = {
                 if (!voice_channel) {
                     let embed = require('../../embed')(msg.guild)
                     embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
-                    Response(msg.channel, embed)
+                    msg.channel.send({ embeds: [embed] }).then(msg => {
+                        setTimeout(() => msg.delete(), 10000)
+                    });
                     return
                 }
 
                 if (!args[0]) {
                     let embed = require('../../embed')(msg.guild)
-                    embed.setTitle('Inserisci una parola chiave o un link')
-                    Response(msg.channel, embed)
+                    embed.setTitle('Inserisci una parola chiave')
+                    msg.channel.send({ embeds: [embed] }).then(msg => {
+                        setTimeout(() => msg.delete(), 10000)
+                    });
+
                     return
                 }
 
                 let item
                 let server_queue = queue.get(msg.guild.id)
                 if (!server_queue) {
-                    item = await getSongObject(args, msg.guild.id)
+                    item = await getSongObject(args, 0, msg.guild.id)
+                    if (item.length > 1) {
+                        let embed = require('../../embed.js')(msg.guild)
+                            .addField('Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)
+                        msg.channel.send({ embeds: [embed] })
+                    } else {
+                        let embed = require('../../embed.js')(msg.guild)
+                            .addField('Aggiunta alla coda', `[${item[0].title}](${item[0].url}) è in coda!`)
+                        msg.channel.send({ embeds: [embed] })
+                    }
                 } else {
-                    item = await getSongObject(args, msg.guild.id)
+                    item = await getSongObject(args, server_queue.songs.length, msg.guild.id)
                 }
-
 
                 if (!server_queue) {
                     const queue_constructor = {
@@ -68,7 +64,7 @@ module.exports = {
                         text_channel: msg.channel,
                         connection: null,
                         player: null,
-                        loop: null,
+                        loop: ['no', 'queue', 'track'],
                         songs: []
                     }
 
@@ -111,7 +107,9 @@ module.exports = {
                         let embed = require('../../embed.js')(msg.guild)
                             .addField('In riproduzione:', `[**${song.title}**](${song.url})`)
                             // .setURL(item.song.url)
-                        Response(msg.channel, embed, 10000)
+                        msg.channel.send({ embeds: [embed] }).then(msg => {
+                            setTimeout(() => msg.delete(), 10000)
+                        });
                     })
 
                     player.on(voice.AudioPlayerStatus.Buffering, (oldState, newState) => {
@@ -154,14 +152,16 @@ module.exports = {
                     })
 
                 } else {
+
+                    server_queue.songs = server_queue.songs.concat(item)
+
                     if (server_queue.player.state === voice.AudioPlayerStatus.Paused) {
-                        server_queue.songs = server_queue.songs.concat(item)
                         server_queue.player.play(await getNextSong(queue, msg.guild.id, playing_song.get(msg.guild.id).pos))
                         msg.react('👌')
                         return
                     }
 
-                    server_queue.songs = server_queue.songs.concat(item)
+
 
                     if (item.length > 1) {
                         let embed = require('../../embed.js')(msg.guild)
@@ -446,7 +446,7 @@ module.exports = {
                         }
                     }
 
-                    Response(msg.channel, embed)
+                    msg.channel.send({ embeds: [embed] })
 
                 }
                 break
@@ -457,9 +457,9 @@ module.exports = {
                     let server_queue = queue.get(msg.guild.id)
 
                     if (!server_queue || server_queue.songs.length == 0) {
-                        let embed = require('../../embed')(msg.guild)
-                        embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
-                        Response(msg.channel, embed, 10000)
+                        msg.channel.send('Nessuna coda da cancellare!').then(msg => {
+                            setTimeout(() => msg.delete(), 10000)
+                        });
                         return
                     }
 
@@ -467,7 +467,9 @@ module.exports = {
                     if (!voice_channel || voice_channel !== server_queue.voice_channel) {
                         let embed = require('../../embed')(msg.guild)
                         embed.setTitle('Devi essere in un canale vocale per ascoltare la musica!')
-                        Response(msg.channel, embed, 10000)
+                        msg.channel.send({ embeds: [embed] }).then(msg => {
+                            setTimeout(() => msg.delete(), 10000)
+                        });
                         return
                     }
                     let num
@@ -475,13 +477,12 @@ module.exports = {
                         num = parseInt(args[0])
                     } catch (error) {
                         console.log(error)
-                        return
                     }
 
                     if (num < 1 || num > server_queue.songs.length || !num) {
                         let embed = require('../../embed')(msg.guild)
                         embed.setTitle(`Inserisci un numero valido tra 1 e ${server_queue.songs.length}`)
-                        Response(msg.channel, embed)
+                        msg.channel.send({ embeds: [embed] })
                         return
                     }
 
@@ -497,91 +498,87 @@ module.exports = {
 
                     let embed = require('../../embed')(msg.guild)
                     embed.addField('Traccia rimossa', `[${target.title}](${target.url}) è stata rimossa dalla coda`)
-                    ReactToMSg(msg, '⭕')
-                    Response(msg.channel, embed)
+                    msg.react('⭕')
+                    msg.channel.send({ embeds: [embed] })
                 }
 
                 break
         }
-    }
+
+    },
+    aliases: ['p', 'pause', 'skip', 's', 'jump', 'j', 'stop', 'die', 'l', 'loop', 'resume', 'q', 'queue', 'remove', 'r']
 }
 
-
-
-
-async function ReactToMSg(msg, emoji) {
-    await msg.react(emoji)
-}
-
-async function getIndex(array, target) {
-    return array.indexOf(target)
-}
-
-async function Response(channel, embed, timeout = undefined) {
+async function getMediaStream(url) {
+    let stream = undefined
     try {
-        if (!timeout) {
-            channel.send({ embeds: [embed] }).then(msg => {
-                setTimeout(() => msg.delete(), timeout)
-            })
-        } else {
-            channel.send({ embeds: [embed] })
-        }
+        stream = (await play_dl.stream(url))
 
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
+    return stream
 }
 
-async function GetNextSong(queue, guildID, forceskip) {
-    let server_queue = queue.get(guildID)
-    let loop = server_queue.loop
-
-    if (!forceskip) {
-        switch (loop) {
-            case looping_states.disabled:
-
-                break;
-            case looping_states.queue:
-
-                break;
-            case looping_states.track:
-
-                break;
-            default:
-                break;
-        }
-    } else {
-
-    }
-
+async function getResource(song) {
+    if (!song) return undefined
+    let stream = await getMediaStream(song.url)
+    if (!stream) return undefined
+    let resource = voice.createAudioResource(stream.stream, { metadata: song, inlineVolume: true, inputType: stream.type })
+    resource.volume.setVolume(0.5)
+    return resource
 }
 
-async function getSongObject(input, guildID) {
+// async function getNextSong(queue, guildID, last_song_pos, forceskip) {
+//     let server_queue = queue.get(guildID)
+//     let loop = server_queue.loop[0]
+
+//     let next_song_pos = last_song_pos + 1
+
+//     if (next_song_pos >= server_queue.songs.length && loop === 'no') {
+//         return undefined
+//     }
+//     if (next_song_pos >= server_queue.songs.length && loop === 'queue') {
+//         next_song_pos = 0
+//     }
+//     if (loop === 'track') {
+//         next_song_pos = last_song_pos
+//     }
+
+//     let song = server_queue.songs[next_song_pos]
+
+//     let resource = await getResource(song)
+//     return resource
+// }
+
+
+async function getSongObject(args, songs_length, guildID) {
     // isurl
-    let type_url = await play_dl.validate(input[0])
+    let type_url = await play_dl.validate(args[0])
     try {
         type_url = type_url.split('_')
     } catch (error) {
-        console.log(error)
+
     }
 
     switch (type_url[0]) {
         //youtube
         case 'yt':
             if (type_url[1] === 'video') {
-                let media = (await play_dl.video_basic_info(input[0])).video_details
+                let media = (await play_dl.video_basic_info(args[0])).video_details
                 console.log(media)
                 let song = [{
                     url: media.url,
                     title: media.title,
                     thumbnail: media.thumbnail,
                     duration: media.durationInSec,
+                    pos: songs_length,
                     guildID: guildID
                 }]
                 return song
             }
             if (type_url[1] === 'playlist') {
-                let playlist = (await play_dl.playlist_info(input[0]))
+                let playlist = (await play_dl.playlist_info(args[0]))
                 console.log(playlist)
                 let songs = []
                 for (let i = 0; i < playlist.videoCount; i++) {
@@ -590,6 +587,7 @@ async function getSongObject(input, guildID) {
                         title: playlist[i].video_details.title,
                         thumbnail: playlist[i].video_details.thumbnail,
                         duration: playlist[i].video_details.durationInSec,
+                        pos: songs_length + i,
                         guildID: guildID
                     }
                     songs.push(song)
@@ -600,15 +598,16 @@ async function getSongObject(input, guildID) {
             //spotify
         case 'sp':
             if (type_url[1] === 'album') {
-                let playlist = (await play_dl.spotify(input[0]))
+                let playlist = (await play_dl.spotify(args[0]))
                 console.log(playlist)
                 let songs = []
-                for (let i = 0; i < playlist.tracksCount; i++) {
+                for (let i = 0; i < playlist.videoCount; i++) {
                     let song = {
-                        url: playlist[i].url,
-                        title: playlist[i].title,
-                        thumbnail: playlist[i].thumbnail,
-                        duration: playlist[i].durationInSec,
+                        url: playlist[i].video_details.url,
+                        title: playlist[i].video_details.title,
+                        thumbnail: playlist[i].video_details.thumbnail,
+                        duration: playlist[i].video_details.durationInSec,
+                        pos: songs_length + i,
                         guildID: guildID
                     }
                     songs.push(song)
@@ -616,7 +615,7 @@ async function getSongObject(input, guildID) {
                 return songs
             }
             if (type_url[1] === 'playlist') {
-                let playlist = (await play_dl.spotify(input[0]))
+                let playlist = (await play_dl.spotify(args[0]))
                     // console.log(playlist)
                 let tracks = await playlist.fetched_tracks.get('1')
                     // console.log(tracks)
@@ -624,11 +623,15 @@ async function getSongObject(input, guildID) {
                 console.log('fetching...')
                 console.log(playlist.tracksCount)
                 for (let i = 0; i < playlist.tracksCount; i++) {
+
+                    let yt_video = (await play_dl.search(tracks[i].name, { limit: 1, type: 'video' }))[0]
+                    console.log(yt_video)
                     let song = {
-                        url: tracks[i].url,
-                        title: tracks[i].name,
-                        thumbnail: tracks[i].thumbnail,
-                        duration: tracks[i].durationInSec,
+                        url: yt_video.url,
+                        title: yt_video.title,
+                        thumbnail: yt_video.thumbnail,
+                        duration: yt_video.durationInSec,
+                        pos: songs_length + i,
                         guildID: guildID
                     }
                     songs.push(song)
@@ -637,13 +640,15 @@ async function getSongObject(input, guildID) {
                 return songs
             }
             if (type_url[1] === 'track') {
-                let track = (await play_dl.spotify(input[0]))
+                let track = (await play_dl.spotify(args[0]))
                 let yt_video = (await play_dl.search(track.name, { limit: 1, type: 'video' }))[0]
+
                 let song = [{
                     url: yt_video.url,
                     title: yt_video.name,
                     thumbnail: yt_video.thumbnail,
                     duration: yt_video.durationInSec,
+                    pos: songs_length + i,
                     guildID: guildID
                 }]
 
@@ -655,25 +660,31 @@ async function getSongObject(input, guildID) {
             break;
             //soundcloud
         case 'so':
-            //bruh
+
             break;
 
         default:
             let query = ''
-            if (input.length > 1) {
-                query = input.join(' ')
+            if (args.length > 1) {
+                query = args.join(' ')
             } else {
-                query = input[0]
+                query = args[0]
             }
             let media = (await play_dl.search(query, { type: 'video', limit: 1 }))[0]
-                // console.log(media)
+            console.log(media)
             song = [{
                 url: media.url,
                 title: media.title,
                 thumbnail: media.thumbnail,
                 duration: media.durationInSec,
+                pos: songs_length,
                 guildID: guildID
             }]
             return song
     }
+}
+
+
+function getIndex(target, array) {
+    return array.indexOf(target)
 }
