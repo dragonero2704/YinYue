@@ -423,7 +423,7 @@ module.exports = {
     // },
 
     async run(msg, args, bot) {
-        cmd = args.shift().toLowerCase()
+        const cmd = args.shift().toLowerCase()
 
         switch (cmd) {
             case 'play':
