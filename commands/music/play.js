@@ -388,12 +388,8 @@ async function sendReply(channel, embed, timeout = undefined) {
     } else {
         channel.send({ embeds: [embed] }).then(msg => {
             setTimeout(() => {
-                try {
+                if (msg.editable)
                     msg.delete()
-                } catch (error) {
-
-                }
-
             }, timeout)
         });
     }
