@@ -426,14 +426,19 @@ class serverQueue {
         return pages;
     }
 
-    startCollector(msg) {
+    async startCollector(msg) {
         this.pageIndex = 0;
         const filter = (inter) => {
             if (inter.componentType === 'BUTTON' && msg.id === inter.message.id) {
                 return true
             } else {
                 let repl = serverQueue.errors.oldQueue + '(' + (msg.url) + ')';
-                inter.reply(repl)
+                await inter.deferReply({ ephemeral: true });
+                inter.reply(repl).then(msg => {
+                    setTimeout(() => {
+                        if (msg.editable) msg.delete()
+                    }, 10000)
+                })
                 return false
             }
         }
