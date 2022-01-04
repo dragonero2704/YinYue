@@ -1,6 +1,6 @@
 module.exports = {
     name: 'interactionCreate',
-    run(interaction, bot, Discord) {
+    run(interaction, bot) {
         if (!interaction.isCommand()) return;
 
         const { commandName } = interaction;
