@@ -247,6 +247,7 @@ class serverQueue {
             const stream = await play_dl.stream(song.url);
             resource = voice.createAudioResource(stream.stream, {
                 metadata: song,
+                // Do not uncomment, errors with discord opus may come up
                 // inlineVolume: true,
                 // inputType: stream.type
             })
@@ -393,7 +394,7 @@ class serverQueue {
         let curPlayingSongIndex = this.curPlayingIndex();
         let queue = [];
         let counter = 1;
-        for (const song of songs) {
+        for (const song of this.songs) {
             let line = '';
             if (song === songs[curPlayingSongIndex]) {
                 //currently playing
