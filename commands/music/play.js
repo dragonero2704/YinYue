@@ -432,7 +432,8 @@ class serverQueue {
             if (inter.componentType === 'BUTTON' && msg.id === inter.message.id) {
                 return true
             } else {
-                inter.reply(serverQueue.errors.oldQueue + (msg.url))
+                let repl = serverQueue.errors.oldQueue + '(' + (msg.url) + ')';
+                inter.reply(repl)
                 return false
             }
         }
