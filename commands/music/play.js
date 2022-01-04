@@ -433,12 +433,7 @@ class serverQueue {
                 return true
             } else {
                 let repl = serverQueue.errors.oldQueue + '(' + (msg.url) + ')';
-                await inter.deferReply({ ephemeral: true });
-                inter.reply(repl).then(msg => {
-                    setTimeout(() => {
-                        if (msg.editable) msg.delete()
-                    }, 10000)
-                })
+                inter.reply({ content: repl, ephemeral: true })
                 return false
             }
         }
