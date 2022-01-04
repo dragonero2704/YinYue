@@ -247,14 +247,14 @@ class serverQueue {
             const stream = await play_dl.stream(song.url);
             resource = voice.createAudioResource(stream.stream, {
                 metadata: song,
-                inlineVolume: true,
-                inputType: stream.type
+                // inlineVolume: true,
+                // inputType: stream.type
             })
         } catch (error) {
             console.log(new Error(error));
             return undefined;
         }
-        resource.volume.setVolume(0.5);
+        // resource.volume.setVolume(0.5);
         console.log(resource)
 
         return resource;
