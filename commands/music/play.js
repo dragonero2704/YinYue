@@ -680,8 +680,9 @@ module.exports = {
                     }
 
                     //function in serverQueue
-                    let queue = server_queue.listQueue();
-
+                    let queue = [serverQueue.queueFormat.start];
+                    queue.concat(server_queue.listQueue());
+                    queue.push(serverQueue.queueFormat.end);
                     queue = queue.join('\n');
                     msg.channel.send({ content: queue })
 
