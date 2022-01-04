@@ -90,7 +90,7 @@ class serverQueue {
         voiceChannelNotFound: 'Devi essere in un canale vocale',
         invalidArgument: 'Inserire una parola chiave o un url',
         emptyQueue: 'La coda è vuota',
-        oldQueue: 'Questa coda non è più valida. Vai a quella più recente'
+        oldQueue: 'Questa coda non è più valida. Vai a quella più [recente]'
     }
 
     static responses = {
@@ -432,7 +432,7 @@ class serverQueue {
             if (inter.componentType === 'BUTTON' && msg.id === inter.message.id) {
                 return true
             } else {
-                inter.reply(serverQueue.errors.oldQueue)
+                inter.reply(serverQueue.errors.oldQueue + (msg.url))
                 return false
             }
         }
