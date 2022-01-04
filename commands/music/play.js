@@ -447,6 +447,7 @@ class serverQueue {
             if (!inter.message.editable) inter.message.fetch()
             inter.deferUpdate({
                 fetchReply: false,
+
             })
             switch (inter.component.customId) {
                 case 'FirstPage':
