@@ -89,7 +89,8 @@ class serverQueue {
         queueNotFound: 'Coda non trovata',
         voiceChannelNotFound: 'Devi essere in un canale vocale',
         invalidArgument: 'Inserire una parola chiave o un url',
-        emptyQueue: 'La coda è vuota'
+        emptyQueue: 'La coda è vuota',
+        oldQueue: 'Questa coda non è più valida. Vai a quella più recente'
     }
 
     static responses = {
@@ -101,7 +102,7 @@ class serverQueue {
     }
 
     static queueFormat = {
-        start: '```javascript',
+        start: '```Python',
         end: '```'
     }
 
@@ -428,7 +429,12 @@ class serverQueue {
     startCollector(msg) {
         this.pageIndex = 0;
         const filter = (inter) => {
-            return inter.componentType === 'BUTTON' && msg.id === inter.message.id;
+            if (inter.componentType === 'BUTTON' && msg.id === inter.message.id) {
+                return true
+            } else {
+                inter.reply(serverQueue.errors.oldQueue)
+                return false
+            }
         }
 
         let pages = this.queuePages();
