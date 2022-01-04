@@ -426,7 +426,7 @@ class serverQueue {
         return pages;
     }
 
-    async startCollector(msg) {
+    startCollector(msg) {
         this.pageIndex = 0;
         const filter = async(inter) => {
             if (inter.componentType === 'BUTTON' && msg.id === inter.message.id) {
