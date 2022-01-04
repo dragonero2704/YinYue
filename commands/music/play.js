@@ -69,6 +69,9 @@ class serverQueue {
         this.player.on('error', error => {
             console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
         });
+
+        //queue
+        this.queueMsgId = undefined;
     }
 
     static loopStates = {
@@ -90,6 +93,11 @@ class serverQueue {
         loopEnabledTrack: 'Loop abilitato sulla traccia',
         newTrack: 'Aggiunta alla coda',
         endQueue: 'Coda terminata',
+    }
+
+    static queueFormat = {
+        start: '```javascript',
+        end: '```'
     }
 
     static async getSongObject(args) {
@@ -231,12 +239,17 @@ class serverQueue {
         try {
             const stream = await play_dl.stream(song.url);
             resource = voice.createAudioResource(stream.stream, {
-                metadata: song
+                metadata: song,
+                inlineVolume: true,
+                inputType: stream.type
             })
         } catch (error) {
-            console.log(new Error(error))
+            console.log(new Error(error));
+            return undefined;
         }
-        // console.log(resource)
+        resource.volume.setVolume(0.5);
+        console.log(resource)
+
         return resource;
         // Resource for discord.js player to play
     }
@@ -293,8 +306,12 @@ class serverQueue {
             song = this.curPlayingSong;
         }
         let resource = await serverQueue.getResource(song);
-        this.player.play(resource);
-        this.curPlayingSong = song;
+        try {
+            this.player.play(resource);
+            this.curPlayingSong = song;
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     async jump(index) {
@@ -350,24 +367,42 @@ class serverQueue {
     die() {
         try {
             this.connection.destroy();
-        } catch (error) {
-
-        }
-
+        } catch (error) {}
     }
 
     static convertToRawDuration(seconds) {
+        let hours = Math.floor(seconds / 3600);
         let minutes = Math.floor(seconds / 60);
         seconds = Math.round(seconds % 60);
-        if (seconds < 10) {
-            return minutes.toString() + ':' + '0' + seconds.toString();
-        }
-        return minutes.toString() + ':' + seconds.toString();
+        if (hours !== 0) return hours.toString() + ':' + Math.floor(minutes / 10).toString() + Math.floor(minutes % 10).toString() + ':' + Math.floor(seconds / 10).toString() + Math.floor(seconds % 10).toString()
+        return minutes.toString() + ':' + Math.floor(seconds / 10).toString() + Math.floor(seconds % 10).toString();
     }
 
     getPlaybackDuration() {
-        return this.player.state.playbackDuration;
+            return this.player.state.playbackDuration;
+        }
+        //this function returns an array
+    listQueue() {
+        let curPlayingSongIndex = this.curPlayingIndex();
+        let queue = [];
+        let counter = 1;
+        for (const song of songs) {
+            let line = '';
+            if (song === songs[curPlayingSongIndex]) {
+                //currently playing
+                console.log(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))
+                line = `    ⬐In riproduzione\n${counter}. ${song.title}\t${serverQueue.convertToRawDuration(song.duration - (Math.round((this.getPlaybackDuration())/1000)))} rimasti\n    ⬑In riproduzione`
+            } else {
+                line = `${counter}. ${song.title}\t${song.durationRaw}`
+            }
+            queue.push(line);
+            counter++;
+        }
+
+        return queue
+
     }
+
 }
 
 function titleEmbed(guild, title) {
@@ -637,28 +672,16 @@ module.exports = {
                         sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.queueNotFound), 10000);
                         return;
                     }
-                    // ...
+
                     let songs = server_queue.getSongs();
                     if (songs.length === 0) {
                         sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.emptyQueue), 10000);
                         return;
                     }
-                    let curPlayingSongIndex = server_queue.curPlayingIndex();
-                    let queue = ['```javascript'];
-                    let counter = 1;
-                    for (const song of songs) {
-                        let line = '';
-                        if (song === songs[curPlayingSongIndex]) {
-                            //currently playing
-                            console.log(song.duration - (Math.round((server_queue.getPlaybackDuration()) / 1000)))
-                            line = `    ⬐In riproduzione\n${counter}. ${song.title}\t${serverQueue.convertToRawDuration(song.duration - (Math.round((server_queue.getPlaybackDuration())/1000)))} rimasti\n    ⬑In riproduzione`
-                        } else {
-                            line = `${counter}. ${song.title}\t${song.durationRaw}`
-                        }
-                        queue.push(line);
-                        counter++;
-                    }
-                    queue.push('```')
+
+                    //function in serverQueue
+                    let queue = server_queue.listQueue();
+
                     queue = queue.join('\n');
                     msg.channel.send({ content: queue })
 
