@@ -1,23 +1,27 @@
 const play_dl = require('play-dl')
 const voice = require('@discordjs/voice');
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const { MessageActionRow, MessageButton } = require('discord.js');
 
 
 let globalQueue = new Map()
 
 let blank_field = '\u200b'
 
+let client;
 
 class serverQueue {
     constructor(songs, txtChannel, voiceChannel, connection, player) {
 
         this.songs = [];
         if (Array.isArray(songs)) {
-            this.songs.concat(songs);
+            // console.log('Constructed an array of songs')
+            this.songs = songs;
         } else {
+            // console.log('Added a song')
             this.songs.push(songs);
         }
-        console.log(this.songs)
+        // console.log(this.songs)
         this.curPlayingSong = this.songs[0];
         this.loopState = serverQueue.loopStates.disabled;
 
@@ -71,7 +75,8 @@ class serverQueue {
         });
 
         //queue
-        this.queueMsgId = undefined;
+        this.queueCollector = undefined;
+        this.pageIndex = undefined;
     }
 
     static loopStates = {
@@ -256,7 +261,7 @@ class serverQueue {
             return undefined;
         }
         // resource.volume.setVolume(0.5);
-        console.log(resource)
+        // console.log(resource)
 
         return resource;
         // Resource for discord.js player to play
@@ -390,15 +395,15 @@ class serverQueue {
             return this.player.state.playbackDuration;
         }
         //this function returns an array
-    listQueue() {
-        let curPlayingSongIndex = this.curPlayingIndex();
+
+    queuePages() {
         let queue = [];
         let counter = 1;
         for (const song of this.songs) {
             let line = '';
-            if (song === songs[curPlayingSongIndex]) {
+            if (song === this.curPlayingSong) {
                 //currently playing
-                console.log(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))
+                // console.log(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))
                 line = `    ⬐In riproduzione\n${counter}. ${song.title}\t${serverQueue.convertToRawDuration(song.duration - (Math.round((this.getPlaybackDuration())/1000)))} rimasti\n    ⬑In riproduzione`
             } else {
                 line = `${counter}. ${song.title}\t${song.durationRaw}`
@@ -407,8 +412,76 @@ class serverQueue {
             counter++;
         }
 
-        return queue
+        let songsxpage = 20;
+        let pages = [];
+        while (queue.length !== 0) {
+            let tmp = [];
+            for (let i = 0; i < songsxpage; i++) {
+                if (queue.length === 0) break;
+                tmp.push(queue.shift());
+            }
+            pages.push(tmp);
+        }
+        return pages;
+    }
 
+    startCollector(msg) {
+        this.pageIndex = 0;
+        const filter = (inter) => {
+            return inter.componentType === 'BUTTON' && msg.id === inter.message.id;
+        }
+
+        let pages = this.queuePages();
+
+        this.queueCollector = msg.channel.createMessageComponentCollector({
+            filter
+        })
+
+        this.queueCollector.on('collect', (inter) => {
+            if (!inter.message.editable) inter.message.fetch()
+            inter.deferUpdate({
+                fetchReply: false,
+            })
+            switch (inter.component.customId) {
+                case 'FirstPage':
+                    this.pageIndex = 0;
+                    break;
+                case 'Previous':
+                    // console.log('Previous')
+
+                    this.pageIndex -= 1;
+                    if (this.pageIndex < 0) this.pageIndex = 0;
+                    break;
+
+                case 'Next':
+                    // console.log('Next')
+
+                    this.pageIndex += 1;
+                    if (this.pageIndex >= pages.length) this.pageIndex = pages.length - 1;
+                    break;
+                case 'LastPage':
+                    // console.log('LastPage')
+
+                    this.pageIndex = pages.length - 1;
+                    break;
+
+                default:
+                    // console.log('default event')
+                    break;
+            }
+
+            let content = [serverQueue.queueFormat.start];
+            content = content.concat(pages[this.pageIndex]);
+            content.push(serverQueue.queueFormat.end);
+            inter.message.edit(content.join('\n'));
+        })
+    }
+
+    stopCollector() {
+        if (!this.queueCollector) return
+        this.queueCollector.stop();
+        this.queueCollector = undefined;
+        return;
     }
 
 }
@@ -466,6 +539,7 @@ module.exports = {
     // },
 
     async run(msg, args, bot) {
+        client = bot;
         const cmd = args.shift().toLowerCase()
 
         switch (cmd) {
@@ -579,7 +653,7 @@ module.exports = {
                         return;
                     }
                     let song = server_queue.nextTrack(true);
-                    console.log(song);
+                    // console.log(song);
                     if (song) {
                         await server_queue.play(song);
                     } else {
@@ -687,13 +761,27 @@ module.exports = {
                         return;
                     }
 
+                    server_queue.stopCollector();
+
                     //function in serverQueue
+                    // takes the pages
+                    let pages = server_queue.queuePages();
+                    // console.log(pages)
+
                     let queue = [serverQueue.queueFormat.start];
-                    queue.concat(server_queue.listQueue());
+                    queue = queue.concat(pages[0]);
                     queue.push(serverQueue.queueFormat.end);
                     queue = queue.join('\n');
-                    msg.channel.send({ content: queue })
 
+                    const row = new MessageActionRow().addComponents(
+                        new MessageButton().setCustomId('FirstPage').setLabel('<<').setStyle('PRIMARY'),
+                        new MessageButton().setCustomId('Previous').setLabel('<').setStyle('SECONDARY'),
+                        new MessageButton().setCustomId('Next').setLabel('>').setStyle('SECONDARY'),
+                        new MessageButton().setCustomId('LastPage').setLabel('>>').setStyle('PRIMARY'),
+                    )
+
+                    let queueMsg = await msg.channel.send({ content: queue, components: [row] })
+                    server_queue.startCollector(queueMsg)
                 }
                 break
 
