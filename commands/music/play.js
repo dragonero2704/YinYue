@@ -107,7 +107,7 @@ class serverQueue {
         try {
             type_url = type_url.split('_')
         } catch (error) {}
-        let songs;
+        let songs = [];
         switch (type_url[0]) {
             //youtube
             case 'yt':
