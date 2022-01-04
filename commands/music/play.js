@@ -129,14 +129,15 @@ class serverQueue {
                     case 'playlist':
                         {
                             let playlist = (await play_dl.playlist_info(query))
+                            let videos = await playlist.all_videos()
                                 // console.log(playlist)
-                            for (let i = 0; i < playlist.videoCount; i++) {
+                            for (const video of videos) {
                                 let song = {
-                                    url: playlist[i].video_details.url,
-                                    title: playlist[i].video_details.title,
-                                    thumbnail: playlist[i].video_details.thumbnail,
-                                    duration: playlist[i].video_details.durationInSec,
-                                    durationRaw: playlist[i].video_details.durationRaw,
+                                    url: video.url,
+                                    title: video.title,
+                                    thumbnail: video.thumbnail,
+                                    duration: video.durationInSec,
+                                    durationRaw: video.durationRaw,
                                 }
                                 songs.push(song)
                             }
