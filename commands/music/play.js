@@ -107,7 +107,7 @@ class serverQueue {
         try {
             type_url = type_url.split('_')
         } catch (error) {}
-        let songs = [];
+        // let songs;
         switch (type_url[0]) {
             //youtube
             case 'yt':
@@ -116,18 +116,20 @@ class serverQueue {
                         {
                             let media = (await play_dl.video_basic_info(query)).video_details
                                 // console.log(media)
-                            songs = {
+                            let song = {
                                 url: media.url,
                                 title: media.title,
                                 thumbnail: media.thumbnail,
                                 duration: media.durationInSec,
                                 durationRaw: media.durationRaw,
                             }
+                            return song;
                         }
 
                         break;
                     case 'playlist':
                         {
+                            let songs = [];
                             let playlist = (await play_dl.playlist_info(query))
                             let videos = await playlist.all_videos()
                                 // console.log(playlist)
@@ -141,6 +143,7 @@ class serverQueue {
                                 }
                                 songs.push(song)
                             }
+                            return songs;
                         }
                         break;
                     case 'album':
@@ -166,6 +169,7 @@ class serverQueue {
                                 }
                                 songs.push(song)
                             }
+                            return songs
                         }
                         break;
                     case 'playlist':
@@ -174,7 +178,8 @@ class serverQueue {
                                 // console.log(playlist)
                             let tracks = await playlist.fetched_tracks.get('1')
                                 // console.log(tracks)
-                            console.log(`fetching ${playlist.tracksCount} tracks from Youtube...`)
+                            console.log(`fetching ${playlist.tracksCount} tracks from Youtube...`);
+                            let songs = [];
                             for (let i = 0; i < playlist.tracksCount; i++) {
 
                                 let yt_video = (await play_dl.search(tracks[i].name, { limit: 1, type: 'video' }))[0]
@@ -190,6 +195,7 @@ class serverQueue {
                                 songs.push(song)
                             }
                             console.log('done')
+                            return songs;
                         }
                         break;
                     case 'track':
@@ -197,14 +203,14 @@ class serverQueue {
                             let track = (await play_dl.spotify(query))
                             let yt_video = (await play_dl.search(track.name, { limit: 1, type: 'video' }))[0]
 
-                            songs = {
+                            let song = {
                                 url: yt_video.url,
                                 title: yt_video.name,
                                 thumbnail: yt_video.thumbnail,
                                 duration: yt_video.durationInSec,
                                 durationRaw: yt_video.durationRaw,
-
                             }
+                            return song;
                         }
                         break;
 
@@ -219,18 +225,18 @@ class serverQueue {
                 {
                     console.log(`Searching for '${query}' on YT`);
                     let media = (await play_dl.search(query, { type: 'video', limit: 1 }))[0]
-                    songs = {
+                    let song = {
                         url: media.url,
                         title: media.title,
                         thumbnail: media.thumbnail,
                         duration: media.durationInSec,
                         durationRaw: media.durationRaw,
                     }
+                    return song;
                 }
                 break;
         }
 
-        return songs
 
     }
 
