@@ -1,7 +1,7 @@
 module.exports = {
     name: 'messageCreate',
     once: false,
-    run(msg, bot, Discord) {
+    run(msg, bot) {
         if (msg.author.bot) return;
         let prefix = bot.prefix.get(msg.guild.id)
         if (!prefix) prefix = bot.prefix.get('default')
