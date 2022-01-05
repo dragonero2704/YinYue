@@ -4,6 +4,5 @@
     "redirect_url": "http://127.0.0.1/index.html",
     "expires_in": null,
     "expiry": null,
-    "market": "IT",
-    "file": true
+    "market": "IT"
 }

@@ -1,3 +1,5 @@
+const { setToken, getFreeClientID } = require('play-dl')
+
 module.exports = {
     name: 'ready',
     once: true,
@@ -6,6 +8,14 @@ module.exports = {
         bot.user.setActivity({
             type: 'WATCHING',
             name: '-help'
+        })
+
+        getFreeClientID().then(clientID => {
+            setToken({
+                soundcloud: {
+                    client_id: clientID
+                }
+            })
         })
     },
 }
