@@ -393,6 +393,7 @@ class serverQueue {
 
     static convertToRawDuration(seconds) {
         let hours = Math.floor(seconds / 3600);
+        seconds = Math.floor(seconds % 3600);
         let minutes = Math.floor(seconds / 60);
         seconds = Math.round(seconds % 60);
         if (hours < 10) {
