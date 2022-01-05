@@ -3,6 +3,7 @@ invite_link.txt
 .env
 #node modules
 node_modules
+.data
 # packages
 package-lock.json
 package.json
