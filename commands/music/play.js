@@ -359,7 +359,7 @@ class serverQueue {
 
     remove(index) {
         this.songs = this.songs.filter((val, i) => {
-            return i != index
+            return i !== index
         })
     }
 
