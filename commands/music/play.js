@@ -1,4 +1,4 @@
-const play_dl = require('play-dl')
+const play_dl = require('play-dl');
 const voice = require('@discordjs/voice');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton } = require('discord.js');
@@ -109,11 +109,11 @@ class serverQueue {
     static async getSongObject(args) {
         // isurl
         let query = args.join(' ');
+        console.log(query)
         let type_url = await play_dl.validate(query)
         try {
             type_url = type_url.split('_')
         } catch (error) {}
-        // let songs;
         switch (type_url[0]) {
             //youtube
             case 'yt':
@@ -158,11 +158,13 @@ class serverQueue {
                 break;
                 //spotify
             case 'sp':
+                if (play_dl.is_expired())
+                    await play_dl.refreshToken()
+
                 switch (type_url[1]) {
                     case 'album':
                         {
-                            let playlist = (await play_dl.spotify(query))
-                                // console.log(playlist)
+                            let playlist = await play_dl.spotify(query)
                             let songs = []
                             for (let i = 0; i < playlist.videoCount; i++) {
                                 let song = {
@@ -180,7 +182,7 @@ class serverQueue {
                         break;
                     case 'playlist':
                         {
-                            let playlist = (await play_dl.spotify(query))
+                            let playlist = await play_dl.spotify(query)
                                 // console.log(playlist)
                             let tracks = await playlist.fetched_tracks.get('1')
                                 // console.log(tracks)
@@ -206,7 +208,7 @@ class serverQueue {
                         break;
                     case 'track':
                         {
-                            let track = (await play_dl.spotify(query))
+                            let track = await (play_dl.spotify(query));
                             let yt_video = (await play_dl.search(track.name, { limit: 1, type: 'video' }))[0]
 
                             let song = {
@@ -225,6 +227,11 @@ class serverQueue {
                 //soundcloud
             case 'so':
                 //not implemented 
+                play_dl.getFreeClientID().then((clientID) => play_dl.setToken({
+                    soundcloud: {
+                        client_id: clientID
+                    }
+                }))
                 break;
 
             default:
@@ -448,28 +455,21 @@ class serverQueue {
             if (!inter.message.editable) inter.message.fetch()
             inter.deferUpdate({
                 fetchReply: false,
-
             })
             switch (inter.component.customId) {
                 case 'FirstPage':
                     this.pageIndex = 0;
                     break;
                 case 'Previous':
-                    // console.log('Previous')
-
                     this.pageIndex -= 1;
                     if (this.pageIndex < 0) this.pageIndex = 0;
                     break;
 
                 case 'Next':
-                    // console.log('Next')
-
                     this.pageIndex += 1;
                     if (this.pageIndex >= pages.length) this.pageIndex = pages.length - 1;
                     break;
                 case 'LastPage':
-                    // console.log('LastPage')
-
                     this.pageIndex = pages.length - 1;
                     break;
 
