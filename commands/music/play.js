@@ -11,7 +11,7 @@ let blank_field = '\u200b'
 let client;
 
 class serverQueue {
-    constructor(songs, txtChannel, voiceChannel, connection, player) {
+    constructor(songs, txtChannel, voiceChannel) {
 
         this.songs = [];
         if (Array.isArray(songs)) {
@@ -31,7 +31,7 @@ class serverQueue {
         try {
             this.connection = voice.joinVoiceChannel({
                 channelId: voice_channel.id,
-                guildId: msg.guild.id,
+                guildId: voice_channel.id,
                 adapterCreator: voice_channel.guild.voiceAdapterCreator,
             });
         } catch (error) {
