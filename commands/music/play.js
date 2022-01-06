@@ -19,7 +19,7 @@ class serverQueue {
             this.songs = songs;
         } else {
             // console.log('Added a song')
-            this.songs.push(songs);
+            this.songs = [songs];
         }
         // console.log(this.songs)
         this.curPlayingSong = this.songs[0];
@@ -28,7 +28,22 @@ class serverQueue {
         this.txtChannel = txtChannel;
         this.voiceChannel = voiceChannel;
 
-        this.connection = connection;
+        try {
+            this.connection = voice.joinVoiceChannel({
+                channelId: voice_channel.id,
+                guildId: msg.guild.id,
+                adapterCreator: voice_channel.guild.voiceAdapterCreator,
+            });
+        } catch (error) {
+            console.log(new Error(error))
+            return
+        }
+        // player
+        this.player = voice.createAudioPlayer({
+            behaviors: {
+                noSubscriber: voice.NoSubscriberBehavior.Play
+            }
+        })
 
         this.connection.on(voice.VoiceConnectionStatus.Disconnected, async(oldState, newState) => {
             try {
@@ -74,7 +89,8 @@ class serverQueue {
             console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
         });
 
-        //queue
+        this.connection.subscribe(this.player)
+            //queue 
         this.queueCollector = undefined;
         this.pageIndex = undefined;
     }
@@ -391,6 +407,7 @@ class serverQueue {
         try {
             this.connection.destroy();
         } catch (error) {}
+        globalQueue.delete(this.txtChannel.guild.id)
     }
 
     static convertToRawDuration(seconds) {
@@ -591,29 +608,7 @@ module.exports = {
                 let server_queue = globalQueue.get(msg.guild.id);
 
                 if (!server_queue) {
-                    // connection
-                    let connection;
-                    try {
-                        connection = voice.joinVoiceChannel({
-                            channelId: voice_channel.id,
-                            guildId: msg.guild.id,
-                            adapterCreator: voice_channel.guild.voiceAdapterCreator,
-                        });
-                    } catch (error) {
-                        console.log(new Error(error))
-                        return
-                    }
-                    // player
-                    let player = voice.createAudioPlayer({
-                        behaviors: {
-                            noSubscriber: voice.NoSubscriberBehavior.Play
-                        }
-                    })
-
-
-                    connection.subscribe(player)
-
-                    server_queue = new serverQueue(item, msg.channel, voice_channel, connection, player);
+                    server_queue = new serverQueue(item, msg.channel, voice_channel);
                     // adds songs to the global queue map
                     globalQueue.set(msg.guild.id, server_queue);
                     // plays the first song of the list
