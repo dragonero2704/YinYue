@@ -16,12 +16,16 @@
         "__Secure-1PAPISID": "uZoa8b8IyQCBX8-J/Avw1qcnB3wDsQJzJ9",
         "__Secure-3PAPISID": "uZoa8b8IyQCBX8-J/Avw1qcnB3wDsQJzJ9",
         "CONSISTENCY": "AGDxDeOScOklu4zjbhgyWpvaKJq0CaqnZvGe7mRpfSrG4xxooavqRVjdmoTtWWZbfMATZjlg6pw4K7Ti78ycQoWOtI8hkh66kjYTq8h6tTx4_mv2MFEbI2731mx4keu_nrkLUoXbTQ6D_W1h4VST3cXK",
-        "SIDCC": "AJi4QfHoOCvX-VWicBE-Mu1wSILMLY4kmmxK5e3XdXebe8R8s0G-iYLipa155QEY0ndaDPNeBA",
-        "__Secure-3PSIDCC": "AJi4QfFiodZmk3DrCzdawUhFF-ehX2sH6tPSfdR3OgY9OzGz4sC5NWjEm_54uhRe6O02QTJ0tw",
+        "SIDCC": "AJi4QfGjX8kbVd5zY2dcs_SzdDGNsFMaHA6amUwFDWrafzpLsJksVDDi81_7jINw4dIfEKkY6w",
+        "__Secure-3PSIDCC": "AJi4QfFaRsZfZ7jrwOTgYl4HT0lG2MwOi0o1z-q36fSbj8zYmfXqLuob6lGTgQQO0i5GHEu3nA",
         "Domain": ".youtube.com",
         "Expires": "Tue, 05-Jul-2022 18:08:58 GMT",
         "Path": "/",
-        "SameSite": "none"
+        "SameSite": "none",
+        "expires": "Fri, 06-Jan-2023 20:58:19 GMT",
+        "path": "/",
+        "domain": ".youtube.com",
+        "priority": "high"
     },
     "file": true
 }

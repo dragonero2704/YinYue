@@ -30,9 +30,9 @@ class serverQueue {
 
         try {
             this.connection = voice.joinVoiceChannel({
-                channelId: voice_channel.id,
-                guildId: voice_channel.id,
-                adapterCreator: voice_channel.guild.voiceAdapterCreator,
+                channelId: voiceChannel.id,
+                guildId: txtChannel.guild.id,
+                adapterCreator: voiceChannel.guild.voiceAdapterCreator,
             });
         } catch (error) {
             console.log(new Error(error))
