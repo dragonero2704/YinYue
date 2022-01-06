@@ -58,7 +58,6 @@ class serverQueue {
             }
         })
 
-        this.player = player;
         this.player.on('stateChange', (oldState, newState) => {
             console.log(`Player passato da ${oldState.status} a ${newState.status}`);
         })
