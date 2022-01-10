@@ -62,10 +62,10 @@ class serverQueue {
             console.log(`Player passato da ${oldState.status} a ${newState.status}`);
         })
 
-        this.player.on(voice.AudioPlayerStatus.Playing, (oldState, newState) => {
+        this.player.on(voice.AudioPlayerStatus.Playing, async(oldState, newState) => {
             let song = newState.resource.metadata;
             console.log(`Now playing: ${song.title}`);
-            sendReply(this.txtChannel, fieldEmbed(this.txtChannel.guild, 'In riproduzione', `[**${song.title}**](${song.url})`), 10000);
+            await sendReply(this.txtChannel, fieldEmbed(this.txtChannel.guild, 'In riproduzione', `[**${song.title}**](${song.url})`), 10000);
         })
 
         this.player.on(voice.AudioPlayerStatus.Buffering, (oldState, newState) => {
@@ -80,7 +80,7 @@ class serverQueue {
             } else {
                 this.die();
                 globalQueue.delete(this.txtChannel.guild.id);
-                sendReply(this.txtChannel, titleEmbed(this.txtChannel.guild, serverQueue.responses.endQueue))
+                await sendReply(this.txtChannel, titleEmbed(this.txtChannel.guild, serverQueue.responses.endQueue))
             }
 
         })
