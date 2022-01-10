@@ -1,3 +1,4 @@
+const { AudioPlayer } = require('@discordjs/voice')
 const Discord = require('discord.js')
 
 const { config } = require("dotenv")
@@ -45,6 +46,9 @@ keepAlive()
 //         inter.message.fetch()
 
 //     })
+
+//     let player = new AudioPlayer()
+//     player.removeAllListeners()
 // })
 
 bot.login(process.env.TOKEN)

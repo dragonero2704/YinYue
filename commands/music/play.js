@@ -401,7 +401,8 @@ class serverQueue {
     }
 
     die() {
-      this.player.stop();
+        this.player.stop(true);
+        this.player.removeAllListeners();
         try {
             this.connection.destroy();
         } catch (error) {}
