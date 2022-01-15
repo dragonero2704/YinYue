@@ -30,25 +30,4 @@ config({
 
 keepAlive()
 
-// bot.on('interactionCreate', (inter) => {
-//     inter.reply({ embeds: [embed] })
-//     const { commandName } = inter
-//     inter.member.voice.channel
-// })
-
-// bot.on('messageCreate', (msg) => {
-//     const filter = (inter) => {
-//         return true;
-//     }
-//     let collector = msg.channel.createMessageComponentCollector({ filter });
-//     collector.on('collect', (inter) => {
-//         inter.message.editable
-//         inter.message.fetch()
-
-//     })
-
-//     let player = new AudioPlayer()
-//     player.removeAllListeners()
-// })
-
 bot.login(process.env.TOKEN)
