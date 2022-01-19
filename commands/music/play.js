@@ -278,7 +278,7 @@ class serverQueue {
                 metadata: song,
                 // Do not uncomment, errors with discord opus may come up
                 // inlineVolume: true,
-                // inputType: stream.type
+                inputType: stream.type
             })
         } catch (error) {
             console.log(new Error(error));
