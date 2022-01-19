@@ -6,9 +6,9 @@
         "CONSENT": "YES+srp.gws-20211011-0-RC1.it+FX+829",
         "wide": "1",
         "PREF": "f6=40000080&tz=Europe.Rome&f5=30000",
-        "SID": "FgjrJeLknOGaOp9C2c-T8ISEoSAl8krtkPc4ASPNKxBXGCEIa_GUDmXTlYu6hD-ngIU0JA.",
-        "__Secure-1PSID": "FgjrJeLknOGaOp9C2c-T8ISEoSAl8krtkPc4ASPNKxBXGCEIihAMu5BXV0M8lKr-r4n6HQ.",
-        "__Secure-3PSID": "FgjrJeLknOGaOp9C2c-T8ISEoSAl8krtkPc4ASPNKxBXGCEILj3p9N7BULPi3dXW0XAbsw.",
+        "SID": "GAjrJf7h2Hve0xqT9d_Ux7cTmMZVt1umfJ01KC5B9ipGgc8ookPTljFnheDTQUporaNTWw.",
+        "__Secure-1PSID": "GAjrJf7h2Hve0xqT9d_Ux7cTmMZVt1umfJ01KC5B9ipGgc8o-mxKeh-TiBP3KBbmxBlr7g.",
+        "__Secure-3PSID": "GAjrJf7h2Hve0xqT9d_Ux7cTmMZVt1umfJ01KC5B9ipGgc8oSG1MQPq08cg1ZuhBvODx-w.",
         "HSID": "AYOaBeF-Di7gblF4I",
         "SSID": "AjHHgIeRP5yra1tCX",
         "APISID": "voMJ7IDD-W48ENQ4/AjltWVlcl7clENQI8",
@@ -19,13 +19,14 @@
         "SIDCC": "AJi4QfGjX8kbVd5zY2dcs_SzdDGNsFMaHA6amUwFDWrafzpLsJksVDDi81_7jINw4dIfEKkY6w",
         "__Secure-3PSIDCC": "AJi4QfFaRsZfZ7jrwOTgYl4HT0lG2MwOi0o1z-q36fSbj8zYmfXqLuob6lGTgQQO0i5GHEu3nA",
         "Domain": ".youtube.com",
-        "Expires": "Sat, 09-Jul-2022 22:26:43 GMT",
+        "Expires": "Sun, 17-Jul-2022 15:07:01 GMT",
         "Path": "/",
         "SameSite": "none",
         "expires": "Fri, 06-Jan-2023 20:58:19 GMT",
         "path": "/",
         "domain": ".youtube.com",
-        "priority": "high"
+        "priority": "high",
+        "Priority": "HIGH"
     },
     "file": true
 }
