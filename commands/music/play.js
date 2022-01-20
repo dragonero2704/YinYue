@@ -174,6 +174,7 @@ class serverQueue {
                 break;
                 //spotify
             case 'sp':
+            return undefined;
                 if (play_dl.is_expired())
                     await play_dl.refreshToken()
 
@@ -224,7 +225,7 @@ class serverQueue {
                         break;
                     case 'track':
                         {
-                            let track = await (play_dl.spotify(query));
+                            let track = await play_dl.spotify(query);
                             let yt_video = (await play_dl.search(track.name, { limit: 1, type: 'video' }))[0]
 
                             let song = {
@@ -599,6 +600,7 @@ module.exports = {
                 }
 
                 let item = await serverQueue.getSongObject(args);
+                if(!item) return sendReply(msg.channel, titleEmbed(msg.guild, 'Nessun risultato'));
                 if (Array.isArray(item)) {
                     sendReply(msg.channel, fieldEmbed(msg.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`));
                 } else {
