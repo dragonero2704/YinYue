@@ -174,7 +174,7 @@ class serverQueue {
                 break;
                 //spotify
             case 'sp':
-            return undefined;
+                return undefined;
                 if (play_dl.is_expired())
                     await play_dl.refreshToken()
 
@@ -378,12 +378,43 @@ class serverQueue {
         })
     }
 
-    changeLoopState() {
-        this.loopState += 1
-        if (this.loopState > serverQueue.loopStates.track) {
-            this.loopState = serverQueue.loopStates.disabled;
+    changeLoopState(arg = undefined) {
+        if (!arg) {
+            this.loopState += 1
+            if (this.loopState > serverQueue.loopStates.track) {
+                this.loopState = serverQueue.loopStates.disabled;
+            }
+            return this.loopState;
+        } else {
+            switch (arg.toLowerCase()) {
+                case 'off':
+                case 'disabled':
+                    this.loopState = serverQueue.loopStates.disabled;
+
+                    break;
+                case 'q':
+                case 'queue':
+                    this.loopState = serverQueue.loopStates.queue;
+
+                    break;
+
+                case 't':
+                case 'track':
+                    this.loopState = serverQueue.loopStates.track;
+                    break;
+
+                default:
+                    this.loopState += 1
+                    if (this.loopState > serverQueue.loopStates.track) {
+                        this.loopState = serverQueue.loopStates.disabled;
+                    }
+
+                    break;
+            }
+            return this.loopState;
         }
-        return this.loopState;
+
+
     }
 
     getLoopState() {
@@ -600,7 +631,7 @@ module.exports = {
                 }
 
                 let item = await serverQueue.getSongObject(args);
-                if(!item) return sendReply(msg.channel, titleEmbed(msg.guild, 'Nessun risultato'));
+                if (!item) return sendReply(msg.channel, titleEmbed(msg.guild, 'Nessun risultato'));
                 if (Array.isArray(item)) {
                     sendReply(msg.channel, fieldEmbed(msg.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`));
                 } else {
@@ -744,19 +775,22 @@ module.exports = {
                         sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.queueNotFound), 10000);
                         return;
                     }
+                    let mode = undefined
+                    if (args.length !== 0)
+                        mode = args[0];
 
-                    switch (server_queue.changeLoopState()) {
+                    switch (server_queue.changeLoopState(mode)) {
                         case serverQueue.loopStates.disabled:
-                            sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.responses.loopDisabled))
+                            // sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.responses.loopDisabled))
                             reactToMSg(msg, '➡️');
                             break;
                         case serverQueue.loopStates.queue:
-                            sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.responses.loopEnabled));
+                            // sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.responses.loopEnabled));
                             reactToMSg(msg, '🔁');
 
                             break;
                         case serverQueue.loopStates.track:
-                            sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.responses.loopEnabledTrack));
+                            // sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.responses.loopEnabledTrack));
                             reactToMSg(msg, '🔂');
                             break;
                     }
