@@ -1,0 +1,32 @@
+{
+    "cookie": {
+        "VISITOR_INFO1_LIVE": "Om5BcBMkl_0",
+        "YSC": "ObVrCeGPozU",
+        "LOGIN_INFO": "AFmmF2swRQIgbf-DeS5M0LWjQniXYru5jjjJDYF6mdi6u-u_DFS7vQACIQCRY8yDFU3x2lNMGQ7PxQ1f9cClDSf_tABqjKhXGtJw4A:QUQ3MjNmeGlYeGNncFRKRjQ3LVZ5RDZOaGRmQU1sck1lMllUY20xU1JOWGFoZGNxTXpIeHhvZHU4Q2lGNUpkUGFsbjBxUTk2NkZzWkp0UEQ4cDZmNDdVQzh3b1N1Q1E5c29pSW1McWNCbWVCR1RNdGdWTG40eEFYWEVoSGtnWDhha2lzaklkRXdlZEs3aGZqaGlISHF1eTRkRDNlcW5Rd1ZR",
+        "CONSENT": "YES+srp.gws-20211011-0-RC1.it+FX+829",
+        "wide": "1",
+        "PREF": "f6=40000080&tz=Europe.Rome&f5=30000",
+        "SID": "GAjrJf7h2Hve0xqT9d_Ux7cTmMZVt1umfJ01KC5B9ipGgc8ookPTljFnheDTQUporaNTWw.",
+        "__Secure-1PSID": "GAjrJf7h2Hve0xqT9d_Ux7cTmMZVt1umfJ01KC5B9ipGgc8o-mxKeh-TiBP3KBbmxBlr7g.",
+        "__Secure-3PSID": "GAjrJf7h2Hve0xqT9d_Ux7cTmMZVt1umfJ01KC5B9ipGgc8oSG1MQPq08cg1ZuhBvODx-w.",
+        "HSID": "AYOaBeF-Di7gblF4I",
+        "SSID": "AjHHgIeRP5yra1tCX",
+        "APISID": "voMJ7IDD-W48ENQ4/AjltWVlcl7clENQI8",
+        "SAPISID": "uZoa8b8IyQCBX8-J/Avw1qcnB3wDsQJzJ9",
+        "__Secure-1PAPISID": "uZoa8b8IyQCBX8-J/Avw1qcnB3wDsQJzJ9",
+        "__Secure-3PAPISID": "uZoa8b8IyQCBX8-J/Avw1qcnB3wDsQJzJ9",
+        "CONSISTENCY": "AGDxDeOScOklu4zjbhgyWpvaKJq0CaqnZvGe7mRpfSrG4xxooavqRVjdmoTtWWZbfMATZjlg6pw4K7Ti78ycQoWOtI8hkh66kjYTq8h6tTx4_mv2MFEbI2731mx4keu_nrkLUoXbTQ6D_W1h4VST3cXK",
+        "SIDCC": "AJi4QfHq_eGDuaWiyCBE3tD8-jjgaGq8JiY5AxjcA8VD3CBWlIt93CnFR3FTbg-Kio1MX4UyNw",
+        "__Secure-3PSIDCC": "AJi4QfEeUazOsT7YmWte3aMvqZ7YH-WtdcIlbIM3p-altyIr3Hf173I22PvTLpWKYLDEo5CbFg",
+        "Domain": ".youtube.com",
+        "Expires": "Sun, 17-Jul-2022 15:07:01 GMT",
+        "Path": "/",
+        "SameSite": "none",
+        "expires": "Thu, 19-Jan-2023 22:07:38 GMT",
+        "path": "/",
+        "domain": ".youtube.com",
+        "priority": "high",
+        "Priority": "HIGH"
+    },
+    "file": true
+}

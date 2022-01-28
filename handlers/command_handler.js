@@ -1,6 +1,6 @@
 const { readdirSync } = require('fs')
 const ascii_table = require('ascii-table')
-const chalk = require('chalk')
+
 
 
 module.exports = (bot) => {
@@ -13,7 +13,7 @@ module.exports = (bot) => {
 
         for (let file of commands) {
             let pull = require(`../commands/${dir}/${file}`)
-            if (pull.name) {
+            if (pull.name && !pull.disabled) {
                 bot.commands.set(pull.name, pull)
                 table.addRow(file, 'Online')
             } else {

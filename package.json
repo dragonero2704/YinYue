@@ -1,44 +1,45 @@
 {
-  "name": "music-discord-bot",
-  "version": "1.0.0",
-  "description": "A music bot for Discord",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ."
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/dragonero2704/Music-discord-bot.git"
-  },
-  "author": "dragonero2704",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/dragonero2704/Music-discord-bot/issues"
-  },
-  "homepage": "https://github.com/dragonero2704/Music-discord-bot#readme",
-  "dependencies": {
-    "@discordjs/builders": "^0.6.0",
-    "@discordjs/opus": "github:discordjs/opus",
-    "@discordjs/rest": "^0.1.0-canary.0",
-    "@discordjs/voice": "^0.6.0",
-    "@mapbox/node-pre-gyp": "^1.0.5",
-    "ansi-regex": "^6.0.1",
-    "ascii-table": "^0.0.9",
-    "chalk": "^4.1.2",
-    "discord-api-types": "^0.22.0",
-    "discord.js": "^13.1.0",
-    "dotenv": "^10.0.0",
-    "express": "^4.17.1",
-    "ffmpeg-static": "^4.4.0",
-    "libsodium-wrappers": "^0.7.9",
-    "npm": "^7.23.0",
-    "play-dl": "^0.9.9",
-    "sequelize": "^6.6.5",
-    "sqlite3": "^4.2.0"
-  },
-  "devDependencies": {
-    "node": "^16.9.1"
-  },
-  "keywords": []
+    "name": "music-discord-bot",
+    "version": "2.0.0",
+    "description": "A music bot for Discord",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node ."
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/dragonero2704/Music-discord-bot.git"
+    },
+    "author": "dragonero2704",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/dragonero2704/Music-discord-bot/issues"
+    },
+    "homepage": "https://github.com/dragonero2704/Music-discord-bot#readme",
+    "dependencies": {
+        "@discordjs/builders": "^0.11.0",
+        "@discordjs/opus": "github:discordjs/opus",
+        "@discordjs/rest": "^0.2.0-canary.0",
+        "@discordjs/voice": "^0.7.5",
+        "@mapbox/node-pre-gyp": "^1.0.8",
+        "ansi-regex": "^6.0.1",
+        "ascii-table": "^0.0.9",
+        "chalk": "^5.0.0",
+        "discord-api-types": "^0.26.1",
+        "discord.js": "^13.5.0",
+        "dotenv": "^10.0.0",
+        "express": "^4.17.2",
+        "ffmpeg-static": "^4.4.0",
+        "libsodium-wrappers": "^0.7.9",
+        "node-fetch": "^2.6.1",
+        "npm": "^8.3.0",
+        "play-dl": "^1.8.0",
+        "sequelize": "^6.12.4",
+        "sqlite3": "^5.0.2"
+    },
+    "devDependencies": {
+        "node": "^17.3.0"
+    },
+    "keywords": []
 }
