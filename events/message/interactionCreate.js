@@ -8,7 +8,7 @@ module.exports = {
         let cmd_name = bot.aliases.get(commandName.toLowerCase()) || commandName.toLowerCase();
         console.log(cmd_name)
         try {
-            bot.commands.get(cmd_name).run(msg, args, bot, Discord);
+            bot.commands.get(cmd_name).run(msg, args, bot);
         } catch (error) {
             console.log('Comando sconosciuto')
             console.log(error)
