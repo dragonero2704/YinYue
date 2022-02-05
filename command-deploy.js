@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+// const { SlashCommandBuilder } = require('@discordjs/builders');
 const { config } = require('dotenv')
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
@@ -16,7 +16,10 @@ readdirSync("./commands/").forEach(dir => {
     for (let file of files) {
         const pull = require(`./commands/${dir}/${file}`)
         if (pull.data) {
-            commands.push(pull.data.toJSON());
+            if (Array.isArray(pull.data)) {
+                pull.data.forEach(cmd => commands.push(cmd.toJSON()))
+            } else
+                commands.push(pull.data.toJSON());
         }
     }
 
