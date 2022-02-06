@@ -2,8 +2,6 @@ const play_dl = require('play-dl');
 const voice = require('@discordjs/voice');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton } = require('discord.js');
-const { isInteractionButton } = require('discord-api-types/utils/v9');
-
 
 let globalQueue = new Map()
 
@@ -11,7 +9,6 @@ let blank_field = '\u200b'
 
 class serverQueue {
     constructor(songs, txtChannel, voiceChannel) {
-
         this.songs = [];
         if (Array.isArray(songs)) {
             // console.log('Constructed an array of songs')
@@ -238,8 +235,6 @@ class serverQueue {
                             return song;
                         }
                         break;
-
-
                 }
                 //soundcloud
             case 'so':
@@ -267,8 +262,6 @@ class serverQueue {
                 }
                 break;
         }
-
-
     }
 
     static async getResource(song) {
@@ -317,7 +310,6 @@ class serverQueue {
                     break;
             }
         } else {
-
             switch (this.loopState) {
                 case serverQueue.loopStates.disabled:
                     if (nextIndex < songsLenght) {
@@ -414,8 +406,6 @@ class serverQueue {
             }
             return this.loopState;
         }
-
-
     }
 
     getLoopState() {
@@ -558,7 +548,6 @@ class serverQueue {
         this.queueCollector = undefined;
         return;
     }
-
 }
 
 function titleEmbed(guild, title) {
@@ -572,7 +561,6 @@ function fieldEmbed(guild, title, content) {
     let embed = require('../../embed')(guild)
     embed.addField(title, content)
     embed.setDescription('')
-        // console.log(embed)
     return embed;
 }
 
@@ -622,7 +610,6 @@ module.exports = {
         .setName('skip')
         .setDescription('Salta al brano successivo'),
 
-
         new SlashCommandBuilder()
         .setName('jump')
         .setDescription('Salta al brano n')
@@ -662,12 +649,7 @@ module.exports = {
         new SlashCommandBuilder()
         .setName('queue')
         .setDescription('Mostra la coda'),
-    ]
-
-
-
-
-    ,
+    ],
     async execute(interaction, bot) {
         const { commandName } = interaction
         let cmd = commandName
@@ -721,7 +703,6 @@ module.exports = {
                     }
                 }
                 // reactToMsg(interaction, '👌');
-
                 break;
 
             case 'pause':
@@ -740,7 +721,6 @@ module.exports = {
                     interaction.reply(`${serverQueue.queueFormat.start}\nPausa\n${serverQueue.queueFormat.end}`);
                     server_queue.pause();
                     // reactToMsg(interaction, '⏸️');
-
                 }
                 break;
 
@@ -952,9 +932,7 @@ module.exports = {
     },
 
     async run(msg, args, bot) {
-
         const cmd = args.shift().toLowerCase()
-
         switch (cmd) {
             case 'play':
             case 'p':
@@ -968,7 +946,6 @@ module.exports = {
                     // sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.invalidArgument), 10000);
                     return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.invalidArgument)], ephemeral: true });
                 }
-
 
                 let server_queue = globalQueue.get(msg.guild.id);
 
@@ -1041,7 +1018,7 @@ module.exports = {
                     server_queue.resume();
                     reactToMsg(msg, '▶️');
                 }
-                break
+                break;
 
             case 'skip':
             case 's':
@@ -1089,7 +1066,6 @@ module.exports = {
                         if (server_queue.voiceChannel !== voice_channel)
                             return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
                     }
-
 
                     let index = parseInt(args[0])
                     if (!index || index < 1 || index > server_queue.songs.length) {
@@ -1180,7 +1156,6 @@ module.exports = {
                             return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
                     }
 
-
                     let songs = server_queue.getSongs();
                     if (songs.length === 0) {
                         sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.emptyQueue), 10000);
@@ -1237,7 +1212,7 @@ module.exports = {
                     reactToMsg(msg, '❌')
                 }
                 break
-        }
 
+        }
     }
 }
