@@ -972,8 +972,10 @@ module.exports = {
 
                 let server_queue = globalQueue.get(msg.guild.id);
 
-                if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
-                    return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                if (server_queue !== undefined) {
+                    if (server_queue.voiceChannel !== voice_channel)
+                        return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                }
 
                 let item = await serverQueue.getSongObject(args);
                 if (!item) return msg.reply({ embeds: [titleEmbed(msg.guild, 'Nessun risultato')], ephemeral: true })
@@ -1010,8 +1012,11 @@ module.exports = {
                     if (!server_queue) {
                         return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.queueNotFound)], ephemeral: true });
                     }
-                    if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
-                        return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    if (server_queue !== undefined) {
+                        if (server_queue.voiceChannel !== voice_channel)
+                            return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    }
+
                     server_queue.pause();
                     reactToMsg(msg, '⏸️');
 
@@ -1028,8 +1033,11 @@ module.exports = {
                     if (!server_queue) {
                         return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.queueNotFound)], ephemeral: true });
                     }
-                    if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
-                        return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    if (server_queue !== undefined) {
+                        if (server_queue.voiceChannel !== voice_channel)
+                            return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    }
+
                     server_queue.resume();
                     reactToMsg(msg, '▶️');
                 }
@@ -1046,8 +1054,11 @@ module.exports = {
                     if (!server_queue) {
                         return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.queueNotFound)], ephemeral: true });
                     }
-                    if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
-                        return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    if (server_queue !== undefined) {
+                        if (server_queue.voiceChannel !== voice_channel)
+                            return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    }
+
                     let song = server_queue.nextTrack(true);
                     // console.log(song);
                     if (song) {
@@ -1074,8 +1085,11 @@ module.exports = {
                         sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.queueNotFound), 10000);
                         return;
                     }
-                    if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
-                        return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    if (server_queue !== undefined) {
+                        if (server_queue.voiceChannel !== voice_channel)
+                            return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    }
+
 
                     let index = parseInt(args[0])
                     if (!index || index < 1 || index > server_queue.songs.length) {
@@ -1101,8 +1115,11 @@ module.exports = {
                         sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.queueNotFound), 10000);
                         return;
                     }
-                    if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
-                        return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    if (server_queue !== undefined) {
+                        if (server_queue.voiceChannel !== voice_channel)
+                            return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    }
+
                     server_queue.die();
                     globalQueue.delete(msg.guild.id);
                     reactToMsg(msg, '👋');
@@ -1120,8 +1137,11 @@ module.exports = {
                     if (!server_queue) {
                         return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.queueNotFound)], ephemeral: true });
                     }
-                    if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
-                        return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    if (server_queue !== undefined) {
+                        if (server_queue.voiceChannel !== voice_channel)
+                            return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    }
+
                     let mode = undefined
                     if (args.length !== 0)
                         mode = args[0];
@@ -1155,8 +1175,11 @@ module.exports = {
                     if (!server_queue) {
                         return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.queueNotFound)], ephemeral: true });
                     }
-                    if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
-                        return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    if (server_queue !== undefined) {
+                        if (server_queue.voiceChannel !== voice_channel)
+                            return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    }
+
 
                     let songs = server_queue.getSongs();
                     if (songs.length === 0) {
@@ -1199,8 +1222,11 @@ module.exports = {
                     if (!server_queue) {
                         return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.queueNotFound)], ephemeral: true });
                     }
-                    if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
-                        return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    if (server_queue !== undefined) {
+                        if (server_queue.voiceChannel !== voice_channel)
+                            return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
+                    }
+
                     let index = parseInt(args[0])
                     if (!index || index < 1 || index > server_queue.songs.length) {
                         msg.reply({ embeds: [titleEmbed(msg.guild, `Inserire un numero tra 1 e ${server_queue.songs.length}`)], ephemeral: true });
