@@ -1,4 +1,3 @@
-const { AudioPlayer } = require('@discordjs/voice')
 const Discord = require('discord.js')
 
 const { config } = require("dotenv")
@@ -32,6 +31,9 @@ keepAlive()
 
 bot.login(process.env.TOKEN)
 
-// bot.on('interactionCreate', (i) => {
-//     i
+// bot.on('interactionCreate', (interaction) => {
+//     interaction.member.permissions.has()
+// })
+// bot.on('messageCreate', (msg) => {
+//     msg.member.permissions.has()
 // })

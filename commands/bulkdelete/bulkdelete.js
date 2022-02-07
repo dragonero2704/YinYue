@@ -1,15 +1,48 @@
+const { SlashCommandBuilder } = require('@discordjs/builders')
+const { Permissions } = require('discord.js')
+
 module.exports = {
     name: 'bulkdelete',
     aliases: ['clean', 'clear'],
     args: ['[number of messages]'],
+    data: new SlashCommandBuilder()
+        .setName('bulkdelete')
+        .setDescription('Cancella un certo numero di messaggi')
+        .addIntegerOption(opt =>
+            opt
+            .setName('numero')
+            .setDescription('Numero di messaggi da cancellare')
+            .setRequired(true)
+            .setMinValue(1)
+            .setMaxValue(500)),
+
+    execute: (interaction, bot) => {
+        //check for permission
+        if (!interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, true))
+            interaction.reply({ content: 'Non hai i permessi necessari', ephemeral: true });
+
+        let number = interaction.options.getInteger('numero');
+        //add 1 so it will delete also the command message
+        number = number + 1;
+        interaction.reply('Sto cancellando...');
+        try {
+            interaction.channel.bulkDelete(number)
+        } catch (error) {
+            console.log(error)
+            let embed = require('../../embed')(msg.guild)
+            embed.addField('Errore: messaggi troppo vecchi')
+            interaction.followUp({ embeds: [embed], ephemeral: true })
+        }
+    },
     run: (msg, args, bot) => {
+        //check permissions
+        if (!msg.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, true))
+            msg.reply({ content: 'Non hai i permessi necessari', ephemeral: true });
 
         if (!args[1]) {
             let embed = require('../../embed')(msg.guild)
             embed.addField('Inserisci un numero!')
-            msg.channel.send({ embeds: [embed] }).then(msg => {
-                setTimeout(() => msg.delete(), 10000)
-            })
+            msg.reply({ embeds: [embed], ephemeral: true })
         }
 
         try {
@@ -18,9 +51,7 @@ module.exports = {
             console.log(error)
             let embed = require('../../embed')(msg.guild)
             embed.addField('Errore')
-            msg.channel.send({ embeds: [embed] }).then(msg => {
-                setTimeout(() => msg.delete(), 10000)
-            })
+            msg.reply({ embeds: [embed], ephemeral: true })
         }
     }
 }
