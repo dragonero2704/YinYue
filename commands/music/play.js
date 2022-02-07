@@ -430,7 +430,7 @@ class serverQueue {
         try {
             this.connection.destroy();
         } catch (error) {}
-        globalQueue.delete(this.txtChannel.guild.id)
+        globalQueue.delete(this.txtChannel.guild.id);
     }
 
     static convertToRawDuration(seconds) {
@@ -628,15 +628,29 @@ module.exports = {
         new SlashCommandBuilder()
         .setName('loop')
         .setDescription('Cambia lo stato del loop')
-        .addStringOption(opt =>
-            opt
-            .setName('state')
-            .setDescription('stato del loop')
-            .addChoice('disabled', 'disabled')
-            .addChoice('queue', 'queue')
-            .addChoice('track', 'track')
+        // .addStringOption(opt =>
+        //     opt
+        //     .setName('state')
+        //     .setDescription('stato del loop')
+        //     .addChoice('disabled', 'disabled')
+        //     .addChoice('queue', 'queue')
+        //     .addChoice('track', 'track')
+        // ),
+        .addSubcommand(sub =>
+            sub
+            .setName('disabled')
+            .setDescription('Loop disabilitato')
+        )
+        .addSubcommand(sub =>
+            sub
+            .setName('queue')
+            .setDescription('Loop abilitato sulla coda')
+        )
+        .addSubcommand(sub =>
+            sub
+            .setName('track')
+            .setDescription('Loop sul brano')
         ),
-
         new SlashCommandBuilder()
         .setName('remove')
         .setDescription('rimuove un brano dalla coda')
@@ -817,7 +831,7 @@ module.exports = {
                     if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
                         return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
                     server_queue.die();
-                    globalQueue.delete(interaction.guild.id);
+                    server_queue = undefined;
                     interaction.reply(blank_field);
                     interaction.deleteReply();
                     // reactToMsg(interaction, '👋');
@@ -837,27 +851,38 @@ module.exports = {
                     }
                     if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
                         return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `@<${bot.user.id}>!`)], ephemeral: true });
-                    let mode = interaction.options.getString('state');
+                    // let mode = interaction.options.getString('state');
+                    switch (interaction.options.getSubCommand()) {
+                        case 'disabled':
+                            mode = 'disabled'
+                            break;
+                        case 'queue':
+                            mode = 'queue';
+                            break;
+                        case 'track':
+                            mode = 'track';
+                            break;
+
+                        default:
+                            mode = undefined;
+                            break;
+                    }
 
                     switch (server_queue.changeLoopState(mode)) {
                         case serverQueue.loopStates.disabled:
                             // sendReply(interaction.channel, titleEmbed(interaction.guild, serverQueue.responses.loopDisabled))
                             // reactToMsg(interaction, '➡️');
                             interaction.reply(`${serverQueue.queueFormat.start}\nLoop: disabled\n${serverQueue.queueFormat.end}`);
-
                             break;
                         case serverQueue.loopStates.queue:
                             // sendReply(interaction.channel, titleEmbed(interaction.guild, serverQueue.responses.loopEnabled));
                             // reactToMsg(interaction, '🔁');
                             interaction.reply(`${serverQueue.queueFormat.start}\nLoop: queue\n${serverQueue.queueFormat.end}`);
-
-
                             break;
                         case serverQueue.loopStates.track:
                             // sendReply(interaction.channel, titleEmbed(interaction.guild, serverQueue.responses.loopEnabledTrack));
                             // reactToMsg(interaction, '🔂');
                             interaction.reply(`${serverQueue.queueFormat.start}\nLoop: track\n${serverQueue.queueFormat.end}`);
-
                             break;
                     }
                 }
@@ -1097,7 +1122,7 @@ module.exports = {
                     }
 
                     server_queue.die();
-                    globalQueue.delete(msg.guild.id);
+                    server_queue = undefined;
                     reactToMsg(msg, '👋');
                 }
                 break;

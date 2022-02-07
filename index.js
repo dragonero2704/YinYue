@@ -33,5 +33,5 @@ keepAlive()
 bot.login(process.env.TOKEN)
 
 // bot.on('interactionCreate', (i) => {
-
+//     i
 // })
