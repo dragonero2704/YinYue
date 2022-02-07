@@ -497,7 +497,7 @@ class serverQueue {
                 return true
             } else {
                 let repl = serverQueue.errors.oldQueue + '(' + (msg.url) + ')';
-                inter.reply({ content: repl, ephemeral: true })
+                inter.channel.send({ content: repl, ephemeral: true })
                 return false
             }
         }
