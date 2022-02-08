@@ -16,7 +16,7 @@ module.exports = {
             .setMinValue(1)
             .setMaxValue(500)),
 
-    execute: (interaction, bot) => {
+    execute: async (interaction, bot) => {
         //check for permission
         if (!interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, true) || interaction.member.user.tag !== 'dragonero2704#7782')
             return interaction.reply({ content: 'Non hai i permessi necessari', ephemeral: true });
@@ -34,7 +34,7 @@ module.exports = {
             interaction.followUp({ embeds: [embed], ephemeral: true })
         }
     },
-    run: (msg, args, bot) => {
+    run: async (msg, args, bot) => {
         //check permissions
         if (!msg.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, true) || msg.member.user.tag !== 'dragonero2704#7782')
             return msg.reply({ content: 'Non hai i permessi necessari', ephemeral: true });
