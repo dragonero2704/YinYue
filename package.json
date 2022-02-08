@@ -32,11 +32,12 @@
         "express": "^4.17.2",
         "ffmpeg-static": "^4.4.0",
         "libsodium-wrappers": "^0.7.9",
-        "node-fetch": "^2.6.1",
+        "node-fetch": "^2.6.7",
         "npm": "^8.3.0",
         "play-dl": "^1.8.6",
         "sequelize": "^6.12.4",
-        "sqlite3": "^5.0.2"
+        "sqlite3": "^5.0.2",
+        "tar": "^4.4.18"
     },
     "devDependencies": {
         "node": "^17.3.0"
