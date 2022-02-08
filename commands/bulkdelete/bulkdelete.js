@@ -18,8 +18,8 @@ module.exports = {
 
     execute: (interaction, bot) => {
         //check for permission
-        if (!interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, true))
-            interaction.reply({ content: 'Non hai i permessi necessari', ephemeral: true });
+        if (!interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, true) || interaction.member.user.tag !== 'dragonero2704#7782')
+            return interaction.reply({ content: 'Non hai i permessi necessari', ephemeral: true });
 
         let number = interaction.options.getInteger('numero');
         //add 1 so it will delete also the command message
@@ -36,8 +36,8 @@ module.exports = {
     },
     run: (msg, args, bot) => {
         //check permissions
-        if (!msg.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, true))
-            msg.reply({ content: 'Non hai i permessi necessari', ephemeral: true });
+        if (!msg.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, true) || msg.member.user.tag !== 'dragonero2704#7782')
+            return msg.reply({ content: 'Non hai i permessi necessari', ephemeral: true });
 
         if (!args[1]) {
             let embed = require('../../embed')(msg.guild)
