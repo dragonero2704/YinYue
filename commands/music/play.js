@@ -852,7 +852,7 @@ module.exports = {
                     if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
                         return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
                     // let mode = interaction.options.getString('state');
-                    switch (interaction.options.getSubCommand()) {
+                    switch (interaction.options.getSubcommand()) {
                         case 'disabled':
                             mode = 'disabled'
                             break;
