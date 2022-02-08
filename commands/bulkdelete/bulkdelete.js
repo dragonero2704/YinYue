@@ -24,7 +24,7 @@ module.exports = {
         let number = interaction.options.getInteger('numero');
         //add 1 so it will delete also the command message
         number = number + 1;
-        interaction.reply('Sto cancellando...');
+        await interaction.reply('Sto cancellando...');
         try {
             interaction.channel.bulkDelete(number)
         } catch (error) {
@@ -42,7 +42,7 @@ module.exports = {
         if (!args[1]) {
             let embed = require('../../embed')(msg.guild)
             embed.addField('Inserisci un numero!')
-            msg.reply({ embeds: [embed], ephemeral: true })
+            await msg.reply({ embeds: [embed], ephemeral: true })
         }
 
         try {
