@@ -76,7 +76,7 @@ class serverQueue {
                 await this.play(song)
             } else {
                 this.die();
-                globalQueue.delete(this.txtChannel.guild.id);
+                globalQueue.delete(this.voiceChannel.guild.id);
                 await sendReply(this.txtChannel, titleEmbed(this.txtChannel.guild, serverQueue.responses.endQueue))
             }
 
@@ -492,7 +492,7 @@ class serverQueue {
 
     startCollector(msg) {
         this.pageIndex = 0;
-        const filter = async(inter) => {
+        const filter = (inter) => {
             if (inter.componentType === 'BUTTON' && msg.id === inter.message.id) {
                 return true
             } else {
@@ -708,7 +708,7 @@ module.exports = {
                     // adds songs to the global queue map
                     globalQueue.set(interaction.guild.id, server_queue);
                     // plays the first song of the list
-                    server_queue.play()
+                    await server_queue.play()
                 } else {
                     if (Array.isArray(item)) {
                         server_queue.addMultiple(item);
@@ -807,10 +807,9 @@ module.exports = {
                         interaction.reply({ embeds: [titleEmbed(interaction.guild, `Inserire un numero tra 1 e ${server_queue.getSongs().length}`)], ephemeral: true });
                         return;
                     }
-                    let songs = server_queue.getSongs();
                     interaction.reply(`${serverQueue.queueFormat.start}\nSalto a [${(server_queue.getSongs()[index-1]).title}](${(server_queue.getSongs()[index-1]).url})\n${serverQueue.queueFormat.end}`);
 
-                    server_queue.play(songs[index - 1]);
+                    await server_queue.jump(index - 1);
                     // reactToMsg(interaction, '👍')
                 }
                 break;
@@ -830,7 +829,7 @@ module.exports = {
                     }
                     if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
                         return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
-                    server_queue.die();
+                    await server_queue.die();
                     server_queue = undefined;
                     interaction.reply(blank_field);
                     interaction.deleteReply();
@@ -992,7 +991,7 @@ module.exports = {
                     // adds songs to the global queue map
                     globalQueue.set(msg.guild.id, server_queue);
                     // plays the first song of the list
-                    server_queue.play()
+                    await server_queue.play()
                 } else {
                     if (Array.isArray(item)) {
                         server_queue.addMultiple(item);
@@ -1098,7 +1097,7 @@ module.exports = {
                         return;
                     }
                     let songs = server_queue.getSongs();
-                    server_queue.play(songs[index - 1]);
+                    await server_queue.jump(index - 1);
                     reactToMsg(msg, '👍')
                 }
                 break;
