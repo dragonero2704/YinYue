@@ -85,7 +85,7 @@ class serverQueue {
             console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
         });
 
-        this.connection.subscribe(this.player)
+        this.sub = this.connection.subscribe(this.player)
             //queue 
         this.queueCollector = undefined;
         this.pageIndex = undefined;
@@ -425,7 +425,8 @@ class serverQueue {
     }
 
     die() {
-        // this.player.stop(true);
+        this.player.stop(true);
+        this.sub.unsubscribe();
         this.player = undefined;
         try {
             this.connection.destroy();
