@@ -668,7 +668,7 @@ module.exports = {
     async execute(interaction, bot) {
         const { commandName } = interaction
         let cmd = commandName
-        await interaction.deferReply();
+            // await interaction.deferReply();
         switch (cmd) {
             case 'play':
             case 'p':
