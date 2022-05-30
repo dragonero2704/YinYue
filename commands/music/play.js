@@ -266,20 +266,15 @@ class serverQueue {
 
     static async getResource(song) {
         // Stream first from play-dl.stream('url')
-        console.log(song)
+        // console.log(song)
         let resource;
         try {
             const stream = await play_dl.stream(song.url);
             resource = voice.createAudioResource(stream.stream, {
-                metadata: {
-                  "title": song.title,
-                  "duration": song.duration,
-                  "durationRaw": song.durationRaw,
-                  "url": song.url
-                },
+                metadata: song,
                 // Do not uncomment, errors with discord opus may come up
                 // inlineVolume: true,
-                //inputType: stream.type,
+                inputType: stream.type,
             });
         } catch (error) {
             console.log(new Error(error));
