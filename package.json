@@ -18,7 +18,6 @@
     },
     "homepage": "https://github.com/dragonero2704/Music-discord-bot#readme",
     "dependencies": {
-        "@discordjs/builders": "^0.11.0",
         "@discordjs/opus": "github:discordjs/opus",
         "@discordjs/rest": "^0.2.0-canary.0",
         "@discordjs/voice": "^0.7.5",

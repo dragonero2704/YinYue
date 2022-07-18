@@ -1,7 +1,6 @@
 const play_dl = require('play-dl');
 const voice = require('@discordjs/voice');
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle } = require('discord.js');
 
 let globalQueue = new Map()
 
@@ -555,14 +554,14 @@ class serverQueue {
 function titleEmbed(guild, title) {
     let embed = require('../../embed')(guild)
     embed.setTitle(title)
-    embed.setDescription('')
+    // embed.setDescription('')
     return embed;
 }
 
 function fieldEmbed(guild, title, content) {
     let embed = require('../../embed')(guild)
-    embed.addField(title, content)
-    embed.setDescription('')
+    embed.addFields([{name: title, value: content}])
+    // embed.setDescription('')
     return embed;
 }
 
@@ -918,11 +917,11 @@ module.exports = {
                     queue.push(serverQueue.queueFormat.end);
                     queue = queue.join('\n');
 
-                    const row = new MessageActionRow().addComponents(
-                        new MessageButton().setCustomId('FirstPage').setLabel('<<').setStyle('PRIMARY'),
-                        new MessageButton().setCustomId('Previous').setLabel('<').setStyle('SECONDARY'),
-                        new MessageButton().setCustomId('Next').setLabel('>').setStyle('SECONDARY'),
-                        new MessageButton().setCustomId('LastPage').setLabel('>>').setStyle('PRIMARY'),
+                    const row = new ActionRowBuilder().addComponents(
+                        new ButtonBuilder().setCustomId('FirstPage').setLabel('<<').setStyle(ButtonStyle.Primary),
+                        new ButtonBuilder().setCustomId('Previous').setLabel('<').setStyle(ButtonStyle.Secondary),
+                        new ButtonBuilder().setCustomId('Next').setLabel('>').setStyle(ButtonStyle.Secondary),
+                        new ButtonBuilder().setCustomId('LastPage').setLabel('>>').setStyle(ButtonStyle.Primary),
                     )
                     interaction.reply(blank_field);
                     interaction.deleteReply();
@@ -1201,10 +1200,10 @@ module.exports = {
                     queue = queue.join('\n');
 
                     const row = new MessageActionRow().addComponents(
-                        new MessageButton().setCustomId('FirstPage').setLabel('<<').setStyle('PRIMARY'),
-                        new MessageButton().setCustomId('Previous').setLabel('<').setStyle('SECONDARY'),
-                        new MessageButton().setCustomId('Next').setLabel('>').setStyle('SECONDARY'),
-                        new MessageButton().setCustomId('LastPage').setLabel('>>').setStyle('PRIMARY'),
+                        new ButtonBuilder().setCustomId('FirstPage').setLabel('<<').setStyle('PRIMARY'),
+                        new ButtonBuilder().setCustomId('Previous').setLabel('<').setStyle('SECONDARY'),
+                        new ButtonBuilder().setCustomId('Next').setLabel('>').setStyle('SECONDARY'),
+                        new ButtonBuilder().setCustomId('LastPage').setLabel('>>').setStyle('PRIMARY'),
                     )
 
                     let queueMsg = await msg.channel.send({ content: queue, components: [row] })

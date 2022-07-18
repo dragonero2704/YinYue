@@ -1,5 +1,4 @@
-const { SlashCommandBuilder } = require('@discordjs/builders')
-const { Permissions } = require('discord.js')
+const { Permissions, SlashCommandBuilder } = require('discord.js')
 
 module.exports = {
     name: 'bulkdelete',

@@ -1,7 +1,9 @@
+const {InteractionType} = require('discord.js')
+
 module.exports = {
     name: 'interactionCreate',
     run(interaction, bot) {
-        if (!interaction.isCommand()) return;
+        if (!interaction.type === InteractionType.ApplicationCommand) return;
 
         const { commandName } = interaction;
 

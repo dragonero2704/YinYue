@@ -1,4 +1,4 @@
-const Discord = require('discord.js')
+const {Client, GatewayIntentBits, Collection} = require('discord.js')
 
 const { config } = require("dotenv")
 
@@ -7,14 +7,14 @@ const { readdirSync } = require('fs')
 const keepAlive = require('./server')
 
 
-const Intents = Discord.Intents
 
-const bot = new Discord.Client({
-    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MEMBERS],
+
+const bot = new Client({
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMembers],
 })
 
-bot.commands = new Discord.Collection()
-bot.aliases = new Discord.Collection()
+bot.commands = new Collection()
+bot.aliases = new Collection()
 bot.prefix = new Map()
 bot.prefix.set('default', '-')
 
