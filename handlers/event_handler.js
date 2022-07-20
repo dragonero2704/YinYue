@@ -11,7 +11,7 @@ module.exports = (bot) => {
 
             let event = require(`../events/${dir}/${file}`)
 
-            let event_name = event.name || file.split('.')[0];
+            let event_name = event.name ?? file.split('.')[0];
 
             table.addRow(file, 'Online')
             if (event.once) {

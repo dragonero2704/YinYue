@@ -8,7 +8,7 @@ module.exports = {
         const { commandName } = interaction;
 
         let cmd_name = bot.aliases.get(commandName.toLowerCase()) || commandName.toLowerCase();
-        console.log(cmd_name)
+        console.log(`Comando in esecuzione: ${cmd_name}.js`)
         try {
             bot.commands.get(cmd_name).execute(interaction, bot);
         } catch (error) {
