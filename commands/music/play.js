@@ -121,7 +121,7 @@ class serverQueue {
     static async getSongObject(args) {
         // isurl
         let query = args.join(' ');
-        console.log(query)
+        // console.log(query)
         let type_url = await play_dl.validate(query)
         try {
             type_url = type_url.split('_')
@@ -147,9 +147,10 @@ class serverQueue {
                         break;
                     case 'playlist':
                         {
-                            let songs = [];
-                            let playlist = (await play_dl.playlist_info(query))
-                            let videos = await playlist.all_videos()
+                            let songs = []
+                            console.log(query)
+                            let videos = await (await play_dl.playlist_info(query)).all_videos()
+                            // let videos = await playlist.all_videos()
                                 // console.log(playlist)
                             for (const video of videos) {
                                 let song = {
@@ -354,7 +355,7 @@ class serverQueue {
     }
 
     addMultiple(songs) {
-        this.songs.concat(songs)
+        this.songs = this.songs.concat(songs)
     }
 
     curPlayingIndex() {
