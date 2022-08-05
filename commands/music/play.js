@@ -1,6 +1,6 @@
 const play_dl = require('play-dl');
 const voice = require('@discordjs/voice');
-const { ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle, InteractionType, InteractionResponseType, ButtonInteraction } = require('discord.js');
 
 let globalQueue = new Map()
 
@@ -40,13 +40,14 @@ class serverQueue {
             }
         })
 
-        this.connection.on(voice.VoiceConnectionStatus.Disconnected, async(oldState, newState) => {
+        this.connection.on(voice.VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
             try {
                 await Promise.race([
                     voice.entersState(connection, voice.VoiceConnectionStatus.Signalling, 5000),
                     voice.entersState(connection, voice.VoiceConnectionStatus.Connecting, 5000),
                 ]);
                 // Seems to be reconnecting to a new channel - ignore disconnect
+                this.voiceChannel = await this.txtChannel.guild.channels.cache.get(this.connection.joinConfig.channelId)
             } catch (error) {
                 // Seems to be a real disconnect which SHOULDN'T be recovered from
                 this.connection.destroy();
@@ -58,7 +59,7 @@ class serverQueue {
             console.log(`Player passato da ${oldState.status} a ${newState.status}`);
         })
 
-        this.player.on(voice.AudioPlayerStatus.Playing, async(oldState, newState) => {
+        this.player.on(voice.AudioPlayerStatus.Playing, async (oldState, newState) => {
             let song = newState.resource.metadata;
             console.log(`Now playing: ${song.title}`);
             await sendReply(this.txtChannel, fieldEmbed(this.txtChannel.guild, 'In riproduzione', `[**${song.title}**](${song.url})`), 10000);
@@ -68,7 +69,7 @@ class serverQueue {
             console.log(`Buffering ${newState.resource.metadata.title}`);
         })
 
-        this.player.on(voice.AudioPlayerStatus.Idle, async(oldState, newState) => {
+        this.player.on(voice.AudioPlayerStatus.Idle, async (oldState, newState) => {
             let song = this.nextTrack();
             // console.log(song)
             if (song) {
@@ -85,7 +86,7 @@ class serverQueue {
         });
 
         this.sub = this.connection.subscribe(this.player)
-            //queue 
+        //queue 
         this.queueCollector = undefined;
         this.pageIndex = undefined;
     }
@@ -125,7 +126,7 @@ class serverQueue {
         let type_url = await play_dl.validate(query)
         try {
             type_url = type_url.split('_')
-        } catch (error) {}
+        } catch (error) { }
         switch (type_url[0]) {
             //youtube
             case 'yt':
@@ -133,7 +134,7 @@ class serverQueue {
                     case 'video':
                         {
                             let media = (await play_dl.video_basic_info(query)).video_details
-                                // console.log(media)
+                            // console.log(media)
                             let song = {
                                 url: media.url,
                                 title: media.title,
@@ -151,7 +152,7 @@ class serverQueue {
                             console.log(query)
                             let videos = await (await play_dl.playlist_info(query)).all_videos()
                             // let videos = await playlist.all_videos()
-                                // console.log(playlist)
+                            // console.log(playlist)
                             for (const video of videos) {
                                 let song = {
                                     url: video.url,
@@ -169,11 +170,10 @@ class serverQueue {
                         break;
                 }
                 break;
-                //spotify
+            //spotify
             case 'sp':
                 return undefined;
-                if (play_dl.is_expired())
-                    await play_dl.refreshToken()
+                if (play_dl.is_expired()) { await play_dl.refreshToken() }
 
                 switch (type_url[1]) {
                     case 'album':
@@ -197,15 +197,15 @@ class serverQueue {
                     case 'playlist':
                         {
                             let playlist = await play_dl.spotify(query)
-                                // console.log(playlist)
+                            // console.log(playlist)
                             let tracks = await playlist.fetched_tracks.get('1')
-                                // console.log(tracks)
+                            // console.log(tracks)
                             console.log(`fetching ${playlist.tracksCount} tracks from Youtube...`);
                             let songs = [];
                             for (let i = 0; i < playlist.tracksCount; i++) {
 
                                 let yt_video = (await play_dl.search(tracks[i].name, { limit: 1, type: 'video' }))[0]
-                                    // console.log(yt_video)
+                                // console.log(yt_video)
                                 let song = {
                                     url: yt_video.url,
                                     title: yt_video.title,
@@ -236,7 +236,7 @@ class serverQueue {
                         }
                         break;
                 }
-                //soundcloud
+            //soundcloud
             case 'so':
                 //not implemented 
                 play_dl.getFreeClientID().then((clientID) => play_dl.setToken({
@@ -269,7 +269,7 @@ class serverQueue {
         // console.log(song)
         let resource;
         try {
-            const stream = await play_dl.stream(song.url, {discordPlayerCompatibility: true});
+            const stream = await play_dl.stream(song.url, { discordPlayerCompatibility: true });
             resource = voice.createAudioResource(stream.stream, {
                 metadata: song,
                 // Do not uncomment, errors with discord opus may come up
@@ -431,7 +431,7 @@ class serverQueue {
         this.player = undefined;
         try {
             this.connection.destroy();
-        } catch (error) {}
+        } catch (error) { }
         globalQueue.delete(this.txtChannel.guild.id);
     }
 
@@ -459,9 +459,14 @@ class serverQueue {
     }
 
     getPlaybackDuration() {
+        try {
             return this.player.state.playbackDuration;
+        } catch (error) {
+            return 0
         }
-        //this function returns an array
+        
+    }
+    //this function returns an array
 
     queuePages() {
         let queue = [];
@@ -471,7 +476,7 @@ class serverQueue {
             if (song === this.curPlayingSong) {
                 //currently playing
                 // console.log(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))
-                line = `    ⬐In riproduzione\n${counter}. ${song.title}\t${serverQueue.convertToRawDuration(song.duration - (Math.round((this.getPlaybackDuration())/1000)))} rimasti\n    ⬑In riproduzione`
+                line = `    ⬐In riproduzione\n${counter}. ${song.title}\t${serverQueue.convertToRawDuration(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))} rimasti\n    ⬑In riproduzione`
             } else {
                 line = `${counter}. ${song.title}\t${song.durationRaw}`
             }
@@ -495,11 +500,12 @@ class serverQueue {
     startCollector(msg) {
         this.pageIndex = 0;
         const filter = (inter) => {
-            if (inter.componentType === 'BUTTON' && msg.id === inter.message.id) {
+            if (inter.type === InteractionType.MessageComponent && msg.id === inter.message.id) {
                 return true
             } else {
-                let repl = serverQueue.errors.oldQueue + '(' + (msg.url) + ')';
-                inter.channel.send({ content: repl, ephemeral: true })
+                let repl = serverQueue.errors.oldQueue + '(' + (msg.url) + ')'
+                // let embed = fieldEmbed(msg.guild, 'Redirect', repl)
+                inter.channel.send({ content:repl, ephemeral: true })
                 return false
             }
         }
@@ -561,7 +567,7 @@ function titleEmbed(guild, title) {
 
 function fieldEmbed(guild, title, content) {
     let embed = require('../../embed')(guild)
-    embed.addFields([{name: title, value: content}])
+    embed.addFields([{ name: title, value: content }])
     // embed.setDescription('')
     return embed;
 }
@@ -596,38 +602,38 @@ module.exports = {
         .setDescription('Aggiunge le canzoni alla coda')
         .addStringOption(input =>
             input.setName('input')
-            .setDescription('Un link a Youtube o una stringa')
-            .setRequired(true)
+                .setDescription('Un link a Youtube o una stringa')
+                .setRequired(true)
         ),
 
-        new SlashCommandBuilder()
+    new SlashCommandBuilder()
         .setName('pause')
         .setDescription('Mette in pausa'),
 
-        new SlashCommandBuilder()
+    new SlashCommandBuilder()
         .setName('resume')
         .setDescription('Riprende la musica'),
 
-        new SlashCommandBuilder()
+    new SlashCommandBuilder()
         .setName('skip')
         .setDescription('Salta al brano successivo'),
 
-        new SlashCommandBuilder()
+    new SlashCommandBuilder()
         .setName('jump')
         .setDescription('Salta al brano n')
         .addNumberOption(option =>
             option
-            .setName('index')
-            .setDescription('Un numero da 0 al numero dei brani della coda')
-            .setMinValue(1)
-            .setRequired(true)
+                .setName('index')
+                .setDescription('Un numero da 0 al numero dei brani della coda')
+                .setMinValue(1)
+                .setRequired(true)
         ),
 
-        new SlashCommandBuilder()
+    new SlashCommandBuilder()
         .setName('die')
         .setDescription('Spegne la musica e svuota la coda'),
 
-        new SlashCommandBuilder()
+    new SlashCommandBuilder()
         .setName('loop')
         .setDescription('Cambia lo stato del loop')
         // .addStringOption(opt =>
@@ -640,36 +646,36 @@ module.exports = {
         // ),
         .addSubcommand(sub =>
             sub
-            .setName('disabled')
-            .setDescription('Loop disabilitato')
+                .setName('disabled')
+                .setDescription('Loop disabilitato')
         )
         .addSubcommand(sub =>
             sub
-            .setName('queue')
-            .setDescription('Loop abilitato sulla coda')
+                .setName('queue')
+                .setDescription('Loop abilitato sulla coda')
         )
         .addSubcommand(sub =>
             sub
-            .setName('track')
-            .setDescription('Loop sul brano')
+                .setName('track')
+                .setDescription('Loop sul brano')
         ),
-        new SlashCommandBuilder()
+    new SlashCommandBuilder()
         .setName('remove')
         .setDescription('rimuove un brano dalla coda')
         .addNumberOption(num =>
             num.setName('index')
-            .setDescription('Indice del brano che si vuole eliminare dalla coda')
-            .setMinValue(1)
-            .setRequired(true)),
+                .setDescription('Indice del brano che si vuole eliminare dalla coda')
+                .setMinValue(1)
+                .setRequired(true)),
 
-        new SlashCommandBuilder()
+    new SlashCommandBuilder()
         .setName('queue')
         .setDescription('Mostra la coda'),
     ],
     async execute(interaction, bot) {
         const { commandName } = interaction
         let cmd = commandName
-            // await interaction.deferReply();
+        // await interaction.deferReply();
         switch (cmd) {
             case 'play':
             case 'p':
@@ -692,7 +698,11 @@ module.exports = {
 
                 if (server_queue !== undefined) {
                     if (server_queue.voiceChannel !== voice_channel)
-                        return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
+                        {
+                            let content = serverQueue.queueFormat.start + serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`+serverQueue.queueFormat.end;
+                            return interaction.reply({content: content, ephemeral:true})
+                        }
+                        // return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
                 }
 
                 let item = await serverQueue.getSongObject(input);
@@ -809,7 +819,7 @@ module.exports = {
                         interaction.reply({ embeds: [titleEmbed(interaction.guild, `Inserire un numero tra 1 e ${server_queue.getSongs().length}`)], ephemeral: true });
                         return;
                     }
-                    interaction.reply(`${serverQueue.queueFormat.start}\nSalto a [${(server_queue.getSongs()[index-1]).title}](${(server_queue.getSongs()[index-1]).url})\n${serverQueue.queueFormat.end}`);
+                    interaction.reply(`${serverQueue.queueFormat.start}\nSalto a [${(server_queue.getSongs()[index - 1]).title}](${(server_queue.getSongs()[index - 1]).url})\n${serverQueue.queueFormat.end}`);
 
                     await server_queue.jump(index - 1);
                     // reactToMsg(interaction, '👍')
@@ -949,7 +959,7 @@ module.exports = {
                         interaction.reply({ embeds: [titleEmbed(interaction.guild, `Inserire un numero tra 1 e ${server_queue.songs.length}`)], ephemeral: true });
                         return;
                     }
-                    interaction.reply(`${serverQueue.queueFormat.start}\n${index}. [${(server_queue.getSongs()[index-1]).title}](${(server_queue.getSongs()[index-1]).url}) rimossa\n${serverQueue.queueFormat.end}`)
+                    interaction.reply(`${serverQueue.queueFormat.start}\n${index}. [${(server_queue.getSongs()[index - 1]).title}](${(server_queue.getSongs()[index - 1]).url}) rimossa\n${serverQueue.queueFormat.end}`)
                     server_queue.remove(index - 1);
                     // reactToMsg(interaction, '❌')
                 }

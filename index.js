@@ -36,4 +36,10 @@ bot.login(process.env.TOKEN)
 // })
 // bot.on('messageCreate', (msg) => {
 //     msg.member.permissions.has()
+//     let o = await msg.guild.fetchOwner()
+//     bot.guilds.cache.forEach(async (guild)=>{
+//         guild.fetchOwner().then(o=>{
+//             table.addRow(guild.name, guild.id, o.user.tag)
+//         })
+//     })
 // })

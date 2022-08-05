@@ -3,7 +3,7 @@ const {InteractionType} = require('discord.js')
 module.exports = {
     name: 'interactionCreate',
     run(interaction, bot) {
-        if (!interaction.type === InteractionType.ApplicationCommand) return;
+        if (interaction.type !== InteractionType.ApplicationCommand) return;
 
         const { commandName } = interaction;
 
