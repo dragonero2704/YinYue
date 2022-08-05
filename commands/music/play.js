@@ -269,7 +269,7 @@ class serverQueue {
         // console.log(song)
         let resource;
         try {
-            const stream = await play_dl.stream(song.url);
+            const stream = await play_dl.stream(song.url, {discordPlayerCompatibility: true});
             resource = voice.createAudioResource(stream.stream, {
                 metadata: song,
                 // Do not uncomment, errors with discord opus may come up
