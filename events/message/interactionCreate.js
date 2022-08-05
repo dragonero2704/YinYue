@@ -7,9 +7,9 @@ module.exports = {
 
         const { commandName } = interaction;
 
-        let cmd_name = bot.aliases.get(commandName.toLowerCase()) || commandName.toLowerCase();
-        console.log(`Comando in esecuzione: ${cmd_name}.js`)
         try {
+            let cmd_name = bot.aliases.get(commandName.toLowerCase()) || commandName.toLowerCase();
+            console.log(`Comando in esecuzione: ${cmd_name}.js`)
             bot.commands.get(cmd_name).execute(interaction, bot);
         } catch (error) {
             console.log('Comando sconosciuto')
