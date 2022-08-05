@@ -4,7 +4,7 @@ const { config } = require("dotenv")
 
 const { readdirSync } = require('fs')
 
-const keepAlive = require('./server')
+const keepAlive = require('./server/server')
 
 
 
