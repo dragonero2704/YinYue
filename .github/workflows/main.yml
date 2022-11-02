@@ -17,14 +17,5 @@ jobs:
             remote_path: '/var/www/app'
             sftp_only: true
             password: ${{ secrets.PASSWORD }}
-            exclude: |
-              **/.git*
-              **/.git*/**
-              **/node_modules/**
-              **/test-cmd-deploy.js
-              **/logs
-              **/log
-              **/authorize.js
-              **/command-deploy.js
-              **/.replit
+            
         
