@@ -13,8 +13,8 @@ jobs:
             username: ${{ secrets.USERNAME }}
             server: ${{ secrets.SERVER }}
             port: ${{ secrets.PORT }}
-            local_path: './'
-            remote_path: '/home/container/'
+            local_path: './static/*'
+            remote_path: '/var/www/app'
             sftp_only: true
             password: ${{ secrets.PASSWORD }}
             exclude: |
