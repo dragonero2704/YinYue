@@ -500,7 +500,7 @@ class serverQueue {
     startCollector(msg) {
         this.pageIndex = 0;
         const filter = (inter) => {
-            if (inter.type === InteractionType.MessageComponent && msg.id === inter.message.id) {
+            if (msg.id === inter.message.id) {
                 return true
             } else {
                 let repl = serverQueue.errors.oldQueue + '(' + (msg.url) + ')'
