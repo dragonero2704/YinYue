@@ -32,3 +32,4 @@ jobs:
           remote-port: ${{secrets.PORT}}
           remote-password: ${{ secrets.PASSWORD }}
           remote-path: "/home/container"
+          sync: delta
