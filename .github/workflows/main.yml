@@ -30,5 +30,5 @@ jobs:
           remote-host: ${{secrets.SERVER}}
           remote-user: ${{secrets.USERNAME}}
           remote-port: ${{secrets.PORT}}
-          password: ${{ secrets.PASSWORD }}
+          remote-password: ${{ secrets.PASSWORD }}
           remote-path: "/home/container"
