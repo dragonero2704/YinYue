@@ -843,6 +843,7 @@ module.exports = {
                         return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
                     await server_queue.die();
                     server_queue = undefined;
+                    globalQueue.delete(interaction.guild.id);
                     interaction.reply(blank_field);
                     interaction.deleteReply();
                     // reactToMsg(interaction, '👋');
