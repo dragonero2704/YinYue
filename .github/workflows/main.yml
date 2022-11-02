@@ -1,28 +1,30 @@
-on: push
-name: 🚀 Deploy website on push
-jobs:
-  web-deploy:
-    name: 🎉 Deploy
-    runs-on: ubuntu-latest
-    steps:
-    - name: 🚚 Get latest code
-      uses: actions/checkout@v2
+on: [push]
 
-    - name: 📂 Sync files
-      uses: SamKirkland/FTP-Deploy-Action@4.3.2
-      with:
-        server: ${{ secrets.server }}
-        username: ${{ secrets.username }}
-        password: ${{ secrets.password }}
-        protocol: sftp
-        exclude: |
-          **/.git*
-          **/.git*/**
-          **/node_modules/**
-          **/test-cmd-deploy.js
-          **/logs
-          **/log
-          **/authorize.js
-          **/command-deploy.js
-          **/.replit
+jobs:
+    deploy_job:
+    runs-on: ubuntu-latest
+    name: deploy
+    steps:
+        - name: Checkout
+        uses: actions/checkout@v3
+        - name: Deploy file
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+        with:
+            username: ${{ secrets.USERNAME }}
+            server: ${{ secrets.SERVER }}
+            port: ${{ secrets.PORT }}
+            local_path: './'
+            remote_path: '/home/container/'
+            sftp_only: true
+            password: ${{ secrets.PASSWORD }}
+            exclude: |
+              **/.git*
+              **/.git*/**
+              **/node_modules/**
+              **/test-cmd-deploy.js
+              **/logs
+              **/log
+              **/authorize.js
+              **/command-deploy.js
+              **/.replit
         
