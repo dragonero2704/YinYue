@@ -1,34 +1,19 @@
-name: Deploy Files
-
-on:
-  push:
-    branches:
-      - deploy
-  # Enables manually triggering of Workflow with file synchronization option
-  # workflow_dispatch:
-  #   inputs:
-  #     sync:
-  #       description: "File synchronization"
-  #       required: true
-  #       default: "delta"
+on: [push]
 
 jobs:
-  deploy-master:
-    name: "deploy branch"
-    if: ${{ github.ref == 'refs/heads/deploy' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: "Deploy"
-        uses: milanmk/actions-file-deployer@master
-        with:
-          remote-protocol: "sftp"
-          remote-host: ${{secrets.SERVER}}
-          remote-user: ${{secrets.USERNAME}}
-          remote-port: ${{secrets.PORT}}
-          remote-password: ${{ secrets.PASSWORD }}
-          sync: delta
+    deploy_job:
+      runs-on: ubuntu-latest
+      name: deploy
+      steps:
+          - name: "Checkout"
+            uses: actions/checkout@v2
+          - name: "deploy file"
+            uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+            with:
+                username: ${{secrets.USERNAME}}
+                server: ${{secrets.SERVER}}
+                password: ${{ secrets.PASSWORD }} 
+                local_path: './*'
+                remote_path: './*'
+                sftpArgs: '-o ConnectTimeout=5'
+                delete_remote_files: true
