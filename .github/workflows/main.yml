@@ -15,7 +15,7 @@ jobs:
                 password: ${{ secrets.PASSWORD }} 
                 port: ${{secrets.PORT}}
                 local_path: './*'
-                remote_path: './'
+                remote_path: './*'
                 sftp_only: true
                 sftpArgs: '-o ConnectTimeout=5'
                 # delete_remote_files: true
