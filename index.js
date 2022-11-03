@@ -4,7 +4,7 @@ const { config } = require("dotenv")
 
 const { readdirSync } = require('fs')
 
-const keepAlive = require('./server/server')
+// const keepAlive = require('./server/server')
 
 
 
@@ -27,7 +27,7 @@ config({
     path: __dirname + '/.env'
 })
 
-keepAlive()
+// keepAlive()
 
 bot.login(process.env.TOKEN)
 
