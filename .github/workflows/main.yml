@@ -53,10 +53,8 @@ jobs:
       - name: "Copy to staging directory for deployment"
         run: |
           mkdir deploy
-          rsync -av --progress . deploy --exclude .git --exclude deploy --exclude .gitignore 
-          --exclude .github --exclude server --exclude test-cmd-deploy.js --exclude node_modules 
-          --exclude authorize.js --exclude command-deploy.js --exclude .replit
-          --exclude *.jpg
+          rsync -av --progress . deploy --exclude .git --exclude deploy --exclude .gitignore --exclude .github --exclude server --exclude test-cmd-deploy.js --exclude node_modules --exclude authorize.js --exclude command-deploy.js --exclude .replit
+          
       - name: "Deploy"
         uses: milanmk/actions-file-deployer@master
         with:
