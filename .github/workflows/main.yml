@@ -7,6 +7,11 @@ jobs:
       steps:
           - name: "Checkout"
             uses: actions/checkout@v2
+
+          - name: Copy to staging directory for deployment
+            run: |
+              mkdir deploy
+              rsync -av --progress . deploy --exclude .git --exclude deploy --exclude .gitignore --exclude .github --exclude server --exclude test-cmd-deploy.js --exclude node_modules --exclude authorize.js --exclude command-deploy.js --exclude .replit
           - name: "deploy file"
             uses: wlixcc/SFTP-Deploy-Action@v1.2.4
             with:
@@ -14,7 +19,7 @@ jobs:
                 server: ${{secrets.SERVER}}
                 password: ${{ secrets.PASSWORD }} 
                 port: ${{secrets.PORT}}
-                local_path: './*'
+                local_path: './deploy'
                 remote_path: './*'
                 sftp_only: true
                 sftpArgs: '-o ConnectTimeout=5'
