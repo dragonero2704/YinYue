@@ -1,7 +1,7 @@
 // const { SlashCommandBuilder } = require('@discordjs/builders');
 const { config } = require('dotenv')
-const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
+const { REST, Routes } = require('discord.js');
+
 const { readdirSync } = require('fs')
 
 config({
@@ -14,12 +14,12 @@ readdirSync("./commands/").forEach(dir => {
     const files = readdirSync(`./commands/${dir}/`).filter(file => file.endsWith('.js'))
 
     for (let file of files) {
-        const pull = require(`./commands/${dir}/${file}`)
-        if (pull.data) {
-            if (Array.isArray(pull.data)) {
-                pull.data.forEach(cmd => commands.push(cmd.toJSON()))
+        const {data} = require(`./commands/${dir}/${file}`)
+        if (data) {
+            if (Array.isArray(data)) {
+                data.forEach(cmd => commands.push(cmd.toJSON()))
             } else
-                commands.push(pull.data.toJSON());
+                commands.push(data.toJSON());
         }
     }
 
@@ -27,11 +27,11 @@ readdirSync("./commands/").forEach(dir => {
 
 console.log(commands)
 
-const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
+const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
 (async() => {
 
-    await rest.put(Routes.applicationCommands(process.env.clientID), { body: commands })
+    await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands })
         .then(() => console.log('Successfully registered application commands.'))
         .catch(console.error());
 })();

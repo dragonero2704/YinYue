@@ -51,7 +51,7 @@ class serverQueue {
             } catch (error) {
                 // Seems to be a real disconnect which SHOULDN'T be recovered from
                 this.connection.destroy();
-                this.die();
+                this.die(true);
             }
         })
 
@@ -77,7 +77,6 @@ class serverQueue {
             } else {
                 this.die();
                 globalQueue.delete(this.voiceChannel.guild.id);
-                await sendReply(this.txtChannel, titleEmbed(this.txtChannel.guild, serverQueue.responses.endQueue))
             }
 
         })
@@ -425,14 +424,15 @@ class serverQueue {
         this.player.unpause();
     }
 
-    die() {
-        this.player.stop(true);
+    die(force=false) {
+        // this.player.stop()
         this.sub.unsubscribe();
         this.player = undefined;
         try {
             this.connection.destroy();
         } catch (error) { }
-        globalQueue.delete(this.txtChannel.guild.id);
+        globalQueue.delete(this.txtChannel.guild.id); 
+        if(!force) sendReply(this.txtChannel, titleEmbed(this.txtChannel.guild, serverQueue.responses.endQueue))
     }
 
     static convertToRawDuration(seconds) {
@@ -499,6 +499,7 @@ class serverQueue {
 
     startCollector(msg) {
         this.pageIndex = 0;
+        this.queueMsg = msg;
         const filter = (inter) => {
             if (msg.id === inter.message.id) {
                 return true
@@ -554,6 +555,8 @@ class serverQueue {
         if (!this.queueCollector) return
         this.queueCollector.stop();
         this.queueCollector = undefined;
+        if(!this.queueMsg.editable) this.queueMsg.fetch()
+        this.queueMsg.delete()
         return;
     }
 }
@@ -841,7 +844,7 @@ module.exports = {
                     }
                     if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
                         return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
-                    await server_queue.die();
+                    server_queue.die(true);
                     server_queue = undefined;
                     globalQueue.delete(interaction.guild.id);
                     interaction.reply(blank_field);
@@ -1133,8 +1136,9 @@ module.exports = {
                             return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
                     }
 
-                    server_queue.die();
+                    server_queue.die(true);
                     server_queue = undefined;
+                    globalQueue.delete(msg.guild.id);
                     reactToMsg(msg, '👋');
                 }
                 break;

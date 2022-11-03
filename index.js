@@ -10,13 +10,13 @@ const { readdirSync } = require('fs')
 
 
 const bot = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMembers],
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMembers, GatewayIntentBits.MessageContent],
 })
 
 bot.commands = new Collection()
 bot.aliases = new Collection()
-bot.prefix = new Map()
-bot.prefix.set('default', '-')
+// bot.prefix = new Map()
+// bot.prefix.set('default', '-')
 
 let handler_path = __dirname + '/handlers'
 readdirSync(handler_path).forEach((handler) => {

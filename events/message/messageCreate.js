@@ -1,12 +1,18 @@
+const {Prefixes} = require('../../database/tables')
+
+
 module.exports = {
     name: 'messageCreate',
     once: false,
     run(msg, bot) {
         if (msg.author.bot) return;
-        let prefix = bot.prefix.get(msg.guild.id)
-        if (!prefix) prefix = bot.prefix.get('default')
-        if (!msg.content.startsWith(prefix)) return;
-        let args = msg.content.substring(prefix.length).split(' ');
+        console.log(this.name + ' triggered')
+        let prefix = Prefixes.findOne({where:{serverId: msg.guild.id}}).prefix ?? '-'
+        console.log(`prefix: '${prefix}'`)
+        
+        if (!msg.cleanContent.startsWith(prefix)) return;
+    
+        let args = msg.cleanContent.substring(prefix.length).split(' ');
         let cmd_name = bot.aliases.get(args[0].toLowerCase()) || args[0].toLowerCase();
         console.log(`Comando in esecuzione: ${cmd_name}.js`)
         try {

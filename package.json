@@ -33,8 +33,8 @@
         "node-fetch": "^2.6.7",
         "npm": "^8.3.0",
         "play-dl": "^1.9.5",
-        "sequelize": "^6.12.4",
-        "sqlite3": "^5.0.2",
+        "sequelize": "^6.25.3",
+        "sqlite3": "^5.1.2",
         "tar": "^4.4.18"
     },
     "devDependencies": {
