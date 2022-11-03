@@ -41,7 +41,7 @@ module.exports = {
             }
         })
 
-        console.log(dbTable.toString());
+        console.log('\n'+dbTable.toString());
 
         // elenco dei server
         let serverTable = new ascii_table("Servers")
@@ -59,6 +59,6 @@ module.exports = {
         //     serverTable.addRow(guild.name, guild.id, owner)
         // })
 
-        console.log(serverTable.toString())
+        console.log('\n'+serverTable.toString())
     },
 }
