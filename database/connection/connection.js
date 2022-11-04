@@ -10,5 +10,5 @@ const connection = new Sequelize('database', 'root', '', {
 });
 
 
-module.exports = connection;
+module.exports = {connection};
 

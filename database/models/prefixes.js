@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize')
-const connection = require('./connection/connection');
+const {connection} = require('../connection/connection');
 
 const Prefixes = connection.define('prefix',{
     serverId:{
@@ -11,4 +11,4 @@ const Prefixes = connection.define('prefix',{
     }
 })
 
-module.exports = {Prefixes: Prefixes}
+module.exports = {Prefixes}
