@@ -9,7 +9,7 @@ module.exports = {
 
         try {
             let cmd_name = bot.aliases.get(commandName.toLowerCase()) || commandName.toLowerCase();
-            console.log(`Comando in esecuzione: ${cmd_name}.js`)
+            console.log(`${interaction.member.user.tag} executed /${commandName.toLowerCase()} in guild ${interaction.guild.name}`)
             bot.commands.get(cmd_name).execute(interaction, bot);
         } catch (error) {
             console.log('Comando sconosciuto')

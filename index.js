@@ -47,7 +47,10 @@ readdirSync(handler_path).forEach((handler) => {
 config({
     path: __dirname + '/.env'
 })
-
+// bot.on('messageCreate', (i)=>{
+//     i.guild.name
+//     i.author.tag
+// })
 bot.login(process.env.TOKEN)
 
 

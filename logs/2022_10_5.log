@@ -46,3 +46,110 @@
 | Sito Banfo            | 893827893661143090 | dragonero2704#7782 |
 | bed                   | 937490981387911259 | Senju#0483         |
 '-----------------------------------------------------------------'
+[5/10/2022 20:9:26]: 
+.------------------------.
+|        Commands        |
+|------------------------|
+|     File      | Status |
+|---------------|--------|
+| bulkdelete.js | Online |
+| help.js       | Online |
+| play.js       | Online |
+| prefix.js     | Online |
+| ping.js       | Online |
+'------------------------'
+[5/10/2022 20:9:26]: 
+.-------------------------------.
+|            Events             |
+|-------------------------------|
+|        Event         | Status |
+|----------------------|--------|
+| ready.js             | Online |
+| interactionCreate.js | Online |
+| messageCreate.js     | Online |
+'-------------------------------'
+[5/10/2022 20:9:27]: YinYue#5002 online!
+[5/10/2022 20:9:27]: 
+.-------------------.
+|     Database      |
+|-------------------|
+|  Table   | Status |
+|----------|--------|
+| Prefixes | ok     |
+'-------------------'
+[5/10/2022 20:9:27]: Fetching servers...
+[5/10/2022 20:9:29]: 
+.-----------------------------------------------------------------.
+|                             Servers                             |
+|-----------------------------------------------------------------|
+|        Server         |         Id         |    Proprietario    |
+|-----------------------|--------------------|--------------------|
+| AjaM CS:GO Community  | 688792417398423573 | $Nova$#4692        |
+| !Test!                | 689115254713745423 | dragonero2704#7782 |
+| er Supremo's ghetto   | 766961736774713386 | Tex#5457           |
+| Bin Chilling          | 780413363930660874 | dragonero2704#7782 |
+| Sacro Romano Impero🦅 | 850316731255357450 | Senju#0483         |
+| Sito Banfo            | 893827893661143090 | dragonero2704#7782 |
+| bed                   | 937490981387911259 | Senju#0483         |
+'-----------------------------------------------------------------'
+[5/10/2022 20:9:55]: dragonero2704#7782 executed /play in guild Bin Chilling
+[5/10/2022 20:9:55]: Searching for 'cas!no nella m!a testa' on YT
+[5/10/2022 20:9:57]: Player passato da idle a buffering
+[5/10/2022 20:9:57]: Buffering thasup - cas!no nella m!a testa (Visual Video) ft. Salmo
+[5/10/2022 20:9:57]: Player passato da buffering a playing
+[5/10/2022 20:9:57]: Now playing: thasup - cas!no nella m!a testa (Visual Video) ft. Salmo
+[5/10/2022 20:11:29]: dragonero2704#7782 executed /play in guild Bin Chilling
+[5/10/2022 20:12:24]: Player passato da playing a idle
+[5/10/2022 20:13:8]: 
+.------------------------.
+|        Commands        |
+|------------------------|
+|     File      | Status |
+|---------------|--------|
+| bulkdelete.js | Online |
+| help.js       | Online |
+| play.js       | Online |
+| prefix.js     | Online |
+| ping.js       | Online |
+'------------------------'
+[5/10/2022 20:13:8]: 
+.-------------------------------.
+|            Events             |
+|-------------------------------|
+|        Event         | Status |
+|----------------------|--------|
+| ready.js             | Online |
+| interactionCreate.js | Online |
+| messageCreate.js     | Online |
+'-------------------------------'
+[5/10/2022 20:13:9]: YinYue#5002 online!
+[5/10/2022 20:13:9]: 
+.-------------------.
+|     Database      |
+|-------------------|
+|  Table   | Status |
+|----------|--------|
+| Prefixes | ok     |
+'-------------------'
+[5/10/2022 20:13:9]: Fetching servers...
+[5/10/2022 20:13:11]: 
+.-----------------------------------------------------------------.
+|                             Servers                             |
+|-----------------------------------------------------------------|
+|        Server         |         Id         |    Proprietario    |
+|-----------------------|--------------------|--------------------|
+| AjaM CS:GO Community  | 688792417398423573 | $Nova$#4692        |
+| !Test!                | 689115254713745423 | dragonero2704#7782 |
+| er Supremo's ghetto   | 766961736774713386 | Tex#5457           |
+| Bin Chilling          | 780413363930660874 | dragonero2704#7782 |
+| Sacro Romano Impero🦅 | 850316731255357450 | Senju#0483         |
+| Sito Banfo            | 893827893661143090 | dragonero2704#7782 |
+| bed                   | 937490981387911259 | Senju#0483         |
+'-----------------------------------------------------------------'
+[5/10/2022 20:13:22]: dragonero2704#7782 executed /play in guild Bin Chilling
+[5/10/2022 20:13:22]: Searching for 'cas!no nella m!a testa' on YT
+[5/10/2022 20:13:25]: Player state: idle => buffering
+[5/10/2022 20:13:25]: Buffering thasup - cas!no nella m!a testa (Visual Video) ft. Salmo
+[5/10/2022 20:13:25]: Player state: buffering => playing
+[5/10/2022 20:13:25]: Now playing: thasup - cas!no nella m!a testa (Visual Video) ft. Salmo
+[5/10/2022 20:13:26]: dragonero2704#7782 executed /loop in guild Bin Chilling

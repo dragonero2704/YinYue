@@ -56,7 +56,7 @@ class serverQueue {
         })
 
         this.player.on('stateChange', (oldState, newState) => {
-            console.log(`Player passato da ${oldState.status} a ${newState.status}`);
+            console.log(`Player state: ${oldState.status} => ${newState.status}`);
         })
 
         this.player.on(voice.AudioPlayerStatus.Playing, async (oldState, newState) => {
