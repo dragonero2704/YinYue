@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { Prefixes } = require('../../database/tables')
+const { Prefixes } = require('../../database/models/prefixes')
 
 
 function fieldEmbed(guild, title, content) {

@@ -1,6 +1,5 @@
 const { setToken, getFreeClientID } = require('play-dl')
 const ascii_table = require('ascii-table')
-const tables = require('../../database/tables');
 
 module.exports = {
     name: 'ready',
@@ -26,23 +25,8 @@ module.exports = {
         })
 
         //sincronizzazione modelli
-        let dbTable = new ascii_table("Database");
-        dbTable.setHeading("Table", "Status")
-        Object.entries(tables).forEach(entry=>{
-            const [modelName, model] = entry;
-            try{
-                model.sync();
-            }catch(e){
-                // console.log(`Sincronizzazione ${modelName} fallita`)
-                dbTable.addRow(modelName, 'error')
-            }finally{
-                // console.log(`Sincronizzazione ${modelName} completata`)
-                dbTable.addRow(modelName, 'ok')
-            }
-        })
-
-        console.log('\n'+dbTable.toString());
-
+        require(`../../database/dbInit`)()
+        
         // elenco dei server
         let serverTable = new ascii_table("Servers")
 
@@ -50,14 +34,9 @@ module.exports = {
         console.log('Fetching servers...')
         let guilds = bot.guilds.cache.values()
         for (const guild of guilds) {
-            
             let owner = await guild.fetchOwner()
             serverTable.addRow(guild.name.trim(), guild.id, owner.user.tag)
         }
-        // .forEach(async (guild) => {
-        //     let owner = await bot.users.fetch(guild.ownerId).tag
-        //     serverTable.addRow(guild.name, guild.id, owner)
-        // })
 
         console.log('\n'+serverTable.toString())
     },

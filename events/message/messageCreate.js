@@ -1,5 +1,4 @@
-const {Prefixes} = require('../../database/tables')
-
+const {Prefixes} = require('../../database/models/prefixes')
 
 module.exports = {
     name: 'messageCreate',

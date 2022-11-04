@@ -12,3 +12,5 @@ const Prefixes = connection.define('prefix',{
 })
 
 module.exports = {Prefixes}
+
+

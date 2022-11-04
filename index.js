@@ -25,15 +25,6 @@ function getLogName(){
     return `${date.getFullYear()}_${date.getMonth()}_${date.getDay()}.log`
 }
 
-let handler_path = __dirname + '/handlers'
-readdirSync(handler_path).forEach((handler) => {
-    require(`${handler_path}/${handler}`)(bot)
-})
-
-config({
-    path: __dirname + '/.env'
-})
-
 console.log = function () {
     // origLog.call(console, getTimeStamp())
     process.stdout.write(getTimeStamp() + ': ')
@@ -47,6 +38,15 @@ console.log = function () {
     })
     origLog.apply(console, arguments)
 }
+
+let handler_path = __dirname + '/handlers'
+readdirSync(handler_path).forEach((handler) => {
+    require(`${handler_path}/${handler}`)(bot)
+})
+
+config({
+    path: __dirname + '/.env'
+})
 
 bot.login(process.env.TOKEN)
 

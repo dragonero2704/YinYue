@@ -3,7 +3,6 @@ const ascii_table = require('ascii-table')
 module.exports = (bot) => {
     let table = new ascii_table('Events')
     table.setHeading('Event', 'Status')
-
     readdirSync("./events/").forEach(dir => {
         const events = readdirSync(`./events/${dir}/`).filter(file => file.endsWith('.js'))
 
@@ -21,5 +20,5 @@ module.exports = (bot) => {
             }
         }
     })
-    console.log(table.toString())
+    console.log("\n"+table.toString())
 }

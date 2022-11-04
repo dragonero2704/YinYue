@@ -32,7 +32,7 @@
         "libsodium-wrappers": "^0.7.9",
         "node-fetch": "^2.6.7",
         "npm": "^8.3.0",
-        "play-dl": "^1.9.5",
+        "play-dl": "^1.9.6",
         "sequelize": "^6.25.3",
         "sqlite3": "^5.1.2",
         "tar": "^4.4.18"
