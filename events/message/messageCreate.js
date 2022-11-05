@@ -5,9 +5,7 @@ module.exports = {
     once: false,
     run(msg, bot) {
         if (msg.author.bot) return;
-        console.log(this.name + ' triggered')
         let prefix = Prefixes.findOne({where:{serverId: msg.guild.id}}).prefix ?? '-'
-        console.log(`prefix: '${prefix}'`)
         
         if (!msg.cleanContent.startsWith(prefix)) return;
     

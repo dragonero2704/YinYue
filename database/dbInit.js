@@ -22,4 +22,4 @@ module.exports = (force = false)=> {
     console.log('\n'+dbTable.toString());
 }
 
-//read and sync all models
+

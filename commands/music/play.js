@@ -416,6 +416,10 @@ class serverQueue {
         return this.songs;
     }
 
+    getSongsLength() {
+        return this.songs.length
+    }
+
     pause() {
         this.player.pause();
     }
@@ -423,16 +427,22 @@ class serverQueue {
     resume() {
         this.player.unpause();
     }
+    shuffle() {
+        for (let i = this.songs.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [this.songs[i], this.songs[j]] = [this.songs[j], this.songs[i]];
+        }
+    }
 
-    die(force=false) {
+    die(force = false) {
         // this.player.stop()
         this.sub.unsubscribe();
         this.player = undefined;
         try {
             this.connection.destroy();
         } catch (error) { }
-        globalQueue.delete(this.txtChannel.guild.id); 
-        if(!force) sendReply(this.txtChannel, titleEmbed(this.txtChannel.guild, serverQueue.responses.endQueue))
+        globalQueue.delete(this.txtChannel.guild.id);
+        if (!force) sendReply(this.txtChannel, titleEmbed(this.txtChannel.guild, serverQueue.responses.endQueue))
     }
 
     static convertToRawDuration(seconds) {
@@ -464,7 +474,7 @@ class serverQueue {
         } catch (error) {
             return 0
         }
-        
+
     }
     //this function returns an array
 
@@ -506,7 +516,7 @@ class serverQueue {
             } else {
                 let repl = serverQueue.errors.oldQueue + '(' + (msg.url) + ')'
                 // let embed = fieldEmbed(msg.guild, 'Redirect', repl)
-                inter.channel.send({ content:repl, ephemeral: true })
+                inter.channel.send({ content: repl, ephemeral: true })
                 return false
             }
         }
@@ -555,12 +565,12 @@ class serverQueue {
         if (!this.queueCollector) return
         this.queueCollector.stop();
         this.queueCollector = undefined;
-        if(!this.queueMsg.editable) this.queueMsg.fetch()
+        if (!this.queueMsg.editable) this.queueMsg.fetch()
         this.queueMsg.delete()
         return;
     }
 
-    getSongsJson(){
+    getSongsJson() {
         return JSON.stringify(this.getSongs())
     }
 }
@@ -599,7 +609,7 @@ async function reactToMsg(msg, emoji) {
 
 module.exports = {
     name: 'play',
-    aliases: ['p', 'pause', 'skip', 's', 'jump', 'j', 'stop', 'die', 'l', 'loop', 'resume', 'q', 'queue', 'remove', 'r'],
+    aliases: ['p', 'pause', 'skip', 's', 'jump', 'j', 'stop', 'die', 'l', 'loop', 'resume', 'q', 'queue', 'remove', 'r', 'shuffle'],
     args: ['[input]'],
     description: 'plays some music!',
     once: false,
@@ -678,6 +688,10 @@ module.exports = {
     new SlashCommandBuilder()
         .setName('queue')
         .setDescription('Mostra la coda'),
+
+    new SlashCommandBuilder()
+        .setName('shuffle')
+        .setDescription('Mixes the queue'),
     ],
     async execute(interaction, bot) {
         const { commandName } = interaction
@@ -704,12 +718,11 @@ module.exports = {
                 let server_queue = globalQueue.get(interaction.guild.id);
 
                 if (server_queue !== undefined) {
-                    if (server_queue.voiceChannel !== voice_channel)
-                        {
-                            let content = serverQueue.queueFormat.start + serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`+serverQueue.queueFormat.end;
-                            return interaction.reply({content: content, ephemeral:true})
-                        }
-                        // return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
+                    if (server_queue.voiceChannel !== voice_channel) {
+                        let content = serverQueue.queueFormat.start + serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !` + serverQueue.queueFormat.end;
+                        return interaction.reply({ content: content, ephemeral: true })
+                    }
+                    // return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
                 }
 
                 let item = await serverQueue.getSongObject(input);
@@ -737,7 +750,24 @@ module.exports = {
                 }
                 // reactToMsg(interaction, '👌');
                 break;
+            case 'shuffle':
+                {
+                    let voice_channel = await interaction.member.voice.channel;
+                    if (!voice_channel) {
+                        return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.voiceChannelNotFound)], ephemeral: true });
+                    }
+                    let server_queue = globalQueue.get(interaction.guild.id);
+                    if (!server_queue) {
+                        return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.queueNotFound)], ephemeral: true });
+                    }
+                    if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
+                        return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
+                    let song = server_queue.nextTrack(true);
 
+                    server_queue.shuffle()
+                    interaction.reply(`${serverQueue.queueFormat.start}\nShuffled ${server_queue.getSongsLength()} songs\n${serverQueue.queueFormat.end}`);
+                }
+                break
             case 'pause':
                 {
                     let voice_channel = await interaction.member.voice.channel;
@@ -1022,7 +1052,24 @@ module.exports = {
                 reactToMsg(msg, '👌');
 
                 break;
-
+            case 'shuffle':
+                {
+                    let voice_channel = await msg.member.voice.channel;
+                    if (!voice_channel) {
+                        return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.voiceChannelNotFound)], ephemeral: true });
+                    }
+                    let server_queue = globalQueue.get(msg.guild.id);
+                    if (!server_queue) {
+                        return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.queueNotFound)], ephemeral: true });
+                    }
+                    if (server_queue !== undefined) {
+                        if (server_queue.voiceChannel !== voice_channel)
+                            return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
+                    }
+                    server_queue.shuffle()
+                    reactToMsg(msg, '🔀');
+                }
+                break;
             case 'pause':
                 {
                     let voice_channel = await msg.member.voice.channel;
