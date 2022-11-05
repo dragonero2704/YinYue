@@ -559,6 +559,10 @@ class serverQueue {
         this.queueMsg.delete()
         return;
     }
+
+    getSongsJson(){
+        return JSON.stringify(this.getSongs())
+    }
 }
 
 function titleEmbed(guild, title) {
