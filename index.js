@@ -17,12 +17,12 @@ let origLog = console.log
 
 function getTimeStamp() {
     let date = new Date()
-    return `[${date.getDay()}/${date.getMonth()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}]`
+    return `[${date.getUTCDate()}/${date.getMonth()+1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}]`
 }
 
 function getLogName(){
     let date = new Date()
-    return `${date.getFullYear()}_${date.getMonth()}_${date.getDay()}.log`
+    return `${date.getFullYear()}_${date.getMonth()+1}_${date.getUTCDate()}.log`
 }
 
 console.log = function () {
