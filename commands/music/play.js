@@ -435,7 +435,7 @@ class serverQueue {
     }
 
     die(force = false) {
-        // this.player.stop()
+        this.player.stop()
         this.sub.unsubscribe();
         this.player = undefined;
         try {
