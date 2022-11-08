@@ -3,14 +3,14 @@ const { Prefixes } = require('../../database/models/prefixes')
 
 
 function fieldEmbed(guild, title, content) {
-    let embed = require('../../embed')(guild)
+    let embed = require('../../misc/embed')(guild)
     embed.addFields([{ name: title, value: content }])
     // embed.setDescription('')
     return embed;
 }
 
 function titleEmbed(guild, title) {
-    let embed = require('../../embed')(guild)
+    let embed = require('../../misc/embed')(guild)
     embed.setTitle(title)
     // embed.setDescription('')
     return embed;

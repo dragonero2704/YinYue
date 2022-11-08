@@ -29,7 +29,7 @@ module.exports = {
             interaction.channel.bulkDelete(number)
         } catch (error) {
             console.log(error)
-            let embed = require('../../embed')(msg.guild)
+            let embed = require('../../misc/embed')(msg.guild)
             embed.addField('Errore: messaggi troppo vecchi')
             interaction.followUp({ embeds: [embed], ephemeral: true })
         }

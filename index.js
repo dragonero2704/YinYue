@@ -1,19 +1,10 @@
-const { Client, GatewayIntentBits, Collection } = require('discord.js')
-
+const { ShardingManager } = require('discord.js');
+const { appendFile } = require('fs')
 const { config } = require("dotenv")
 
-const { readdirSync, appendFile } = require('fs')
-
-const bot = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMembers, GatewayIntentBits.MessageContent],
+config({
+    path: __dirname + '/.env'
 })
-
-bot.commands = new Collection()
-bot.aliases = new Collection()
-// bot.prefix = new Map()
-// bot.prefix.set('default', '-')
-
-let origLog = console.log
 
 function getTimeStamp() {
     let date = new Date()
@@ -25,6 +16,7 @@ function getLogName(){
     return `${date.getFullYear()}_${date.getMonth()+1}_${date.getUTCDate()}.log`
 }
 
+let origLog = console.log
 console.log = function () {
     // origLog.call(console, getTimeStamp())
     process.stdout.write(getTimeStamp() + ': ')
@@ -32,26 +24,26 @@ console.log = function () {
     appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${arguments[0]}\n`, (err)=>{
         if(err){
             origLog(err)
-        }else{
-            // origLog('file wrote successfully')
         }
     })
     origLog.apply(console, arguments)
 }
 
-let handler_path = __dirname + '/handlers'
-readdirSync(handler_path).forEach((handler) => {
-    require(`${handler_path}/${handler}`)(bot)
-})
+let warningLog = console.warn
+console.error = function(){
+    process.stdout.write(getTimeStamp() + ': ')
+    appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${arguments[0]}\n`, (err)=>{
+        if(err){
+            warningLog(err)
+        }
+    })
+    warningLog.apply(console, arguments)
+}
+const manager = new ShardingManager('./bot.js', { token: process.env.TOKEN });
 
-config({
-    path: __dirname + '/.env'
-})
-// bot.on('messageCreate', (i)=>{
-//     i.guild.name
-//     i.author.tag
-// })
-bot.login(process.env.TOKEN)
+manager.on('shardCreate', shard => console.log(`Launched shard ${shard.id}`));
+
+manager.spawn();
 
 
 
