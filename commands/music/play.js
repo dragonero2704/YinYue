@@ -171,39 +171,46 @@ class serverQueue {
                 break;
             //spotify
             case 'sp':
-                return undefined;
                 if (play_dl.is_expired()) { await play_dl.refreshToken() }
-
+                let playlist = await play_dl.spotify(query)
+                
                 switch (type_url[1]) {
                     case 'album':
                         {
-                            let playlist = await play_dl.spotify(query)
-                            let songs = []
-                            for (let i = 0; i < playlist.videoCount; i++) {
+                            // console.log(playlist)
+                            let tracks = await playlist.all_tracks()
+                            // console.log(tracks)
+                            console.log(`fetching ${playlist.tracksCount} tracks from Youtube...`);
+                            let songs = [];
+                            for (let i = 0; i < playlist.tracksCount; i++) {
+
+                                let yt_video = (await play_dl.search(tracks[i].name, { limit: 1 }))[0]
+                                // console.log(yt_video)
                                 let song = {
-                                    url: playlist[i].video_details.url,
-                                    title: playlist[i].video_details.title,
-                                    thumbnail: playlist[i].video_details.thumbnail,
-                                    duration: playlist[i].video_details.durationInSec,
-                                    durationRaw: playlist[i].video_details.durationRaw,
+                                    url: yt_video.url,
+                                    title: yt_video.title,
+                                    thumbnail: yt_video.thumbnail,
+                                    duration: yt_video.durationInSec,
+                                    durationRaw: yt_video.durationRaw,
 
                                 }
                                 songs.push(song)
                             }
-                            return songs
+                            console.log('done')
+                            return songs;
                         }
                         break;
                     case 'playlist':
                         {
                             let playlist = await play_dl.spotify(query)
                             // console.log(playlist)
-                            let tracks = await playlist.fetched_tracks.get('1')
+                            let tracks = await playlist.all_tracks()
                             // console.log(tracks)
                             console.log(`fetching ${playlist.tracksCount} tracks from Youtube...`);
                             let songs = [];
                             for (let i = 0; i < playlist.tracksCount; i++) {
 
-                                let yt_video = (await play_dl.search(tracks[i].name, { limit: 1, type: 'video' }))[0]
+                                let yt_video = (await play_dl.search(tracks[i].name, { limit: 1 }))[0]
                                 // console.log(yt_video)
                                 let song = {
                                     url: yt_video.url,
@@ -222,7 +229,7 @@ class serverQueue {
                     case 'track':
                         {
                             let track = await play_dl.spotify(query);
-                            let yt_video = (await play_dl.search(track.name, { limit: 1, type: 'video' }))[0]
+                            let yt_video = (await play_dl.search(track.name, { limit: 1 }))[0]
 
                             let song = {
                                 url: yt_video.url,
@@ -262,13 +269,12 @@ class serverQueue {
                 break;
         }
     }
-
+    // Builds the resource for discord.js player to play
     static async getResource(song) {
         // Stream first from play-dl.stream('url')
-        // console.log(song)
         let resource;
         try {
-            const stream = await play_dl.stream(song.url, { discordPlayerCompatibility: true });
+            const stream = await play_dl.stream(song.url);
             resource = voice.createAudioResource(stream.stream, {
                 metadata: song,
                 // Do not uncomment, errors with discord opus may come up
@@ -283,7 +289,6 @@ class serverQueue {
         // console.log(resource)
 
         return resource;
-        // Resource for discord.js player to play
     }
 
     nextTrack(forceskip = false) {
@@ -687,15 +692,13 @@ module.exports = {
                     }
                     // return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
                 }
-
+                interaction.deferReply()
                 let item = await serverQueue.getSongObject(input);
                 if (!item) return interaction.reply({ embeds: [titleEmbed(interaction.guild, 'Nessun risultato')], ephemeral: true })
                 if (Array.isArray(item)) {
-                    // sendReply(interaction.channel, fieldEmbed(interaction.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`));
-                    interaction.reply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)] });
+                    interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)] });
                 } else {
-                    // sendReply(interaction.channel, fieldEmbed(interaction.guild, 'Aggiunta alla coda', `[${item.title}](${item.url}) è in coda!`));
-                    interaction.reply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunta alla coda', `[${item.title}](${item.url}) è in coda!`)] })
+                    interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunta alla coda', `[${item.title}](${item.url}) è in coda!`)] })
                 }
 
                 if (!server_queue) {
@@ -711,7 +714,6 @@ module.exports = {
                         server_queue.add(item);
                     }
                 }
-                // reactToMsg(interaction, '👌');
                 break;
             case 'shuffle':
                 {
@@ -725,7 +727,6 @@ module.exports = {
                     }
                     if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
                         return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
-                    let song = server_queue.nextTrack(true);
 
                     server_queue.shuffle()
                     interaction.reply(`${serverQueue.queueFormat.start}\nShuffled ${server_queue.getSongsLength()} songs\n${serverQueue.queueFormat.end}`);
@@ -786,12 +787,11 @@ module.exports = {
                     // console.log(song);
 
                     if (song) {
-                        interaction.reply(`${serverQueue.queueFormat.start}\nSalto a [${song.title}](${song.url})\n${serverQueue.queueFormat.end}`);
+                        interaction.reply({embeds: [fieldEmbed(interaction.guild, 'Skip', `[${song.title}](${song.url})`)]});
                         await server_queue.play(song);
                     } else {
                         server_queue.die();
                         globalQueue.delete(interaction.guild.id);
-                        // sendReply(interaction.channel, titleEmbed(interaction.guild, serverQueue.responses.endQueue))
                         interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.responses.endQueue)] })
                     }
                     // reactToMsg(interaction, '⏭️');

@@ -16,11 +16,6 @@ module.exports = {
                 soundcloud: {
                     client_id: clientID
                 },
-                spotify: {
-                    client_id: process.env.sp_client_id,
-                    client_secret: process.env.sp_client_secret,
-                    market: process.env.market,
-                }
             })
         })
 
