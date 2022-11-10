@@ -692,9 +692,9 @@ module.exports = {
                     }
                     // return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
                 }
-                interaction.deferReply()
+                await interaction.deferReply()
                 let item = await serverQueue.getSongObject(input);
-                if (!item) return interaction.reply({ embeds: [titleEmbed(interaction.guild, 'Nessun risultato')], ephemeral: true })
+                if (!item) return interaction.editReply({ embeds: [titleEmbed(interaction.guild, 'Nessun risultato')], ephemeral: true })
                 if (Array.isArray(item)) {
                     interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)] });
                 } else {
