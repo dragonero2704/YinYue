@@ -70,16 +70,16 @@ class serverQueue {
         })
 
         this.player.on(voice.AudioPlayerStatus.Idle, async (oldState, newState) => {
+            if (!globalQueue.get(this.voiceChannel.guild.id)) return;
             let song = this.nextTrack();
-            // console.log(song)
             if (song) {
                 await this.play(song)
             } else {
                 this.die();
-                globalQueue.delete(this.voiceChannel.guild.id);
             }
 
         })
+
         this.player.on('error', error => {
             console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
         });
@@ -173,7 +173,7 @@ class serverQueue {
             case 'sp':
                 if (play_dl.is_expired()) { await play_dl.refreshToken() }
                 let playlist = await play_dl.spotify(query)
-                
+
                 switch (type_url[1]) {
                     case 'album':
                         {
@@ -189,7 +189,7 @@ class serverQueue {
                                 let song = {
                                     url: yt_video.url,
                                     title: yt_video.title,
-                                    thumbnail: yt_video.thumbnail,
+                                    thumbnail: yt_video.thumbnails,
                                     duration: yt_video.durationInSec,
                                     durationRaw: yt_video.durationRaw,
 
@@ -215,7 +215,7 @@ class serverQueue {
                                 let song = {
                                     url: yt_video.url,
                                     title: yt_video.title,
-                                    thumbnail: yt_video.thumbnail,
+                                    thumbnail: yt_video.thumbnails,
                                     duration: yt_video.durationInSec,
                                     durationRaw: yt_video.durationRaw,
 
@@ -233,8 +233,8 @@ class serverQueue {
 
                             let song = {
                                 url: yt_video.url,
-                                title: yt_video.name,
-                                thumbnail: yt_video.thumbnail,
+                                title: yt_video.title,
+                                thumbnail: yt_video.thumbnails,
                                 duration: yt_video.durationInSec,
                                 durationRaw: yt_video.durationRaw,
                             }
@@ -440,16 +440,18 @@ class serverQueue {
     }
 
     die(force = false) {
-        // try {
-        //     this.player.stop()
-        // } catch (error) {
+        try {
+            this.player.stop()
+        } catch (error) {
 
-        // }
+        }
         this.sub.unsubscribe();
         this.player = undefined;
         try {
             this.connection.destroy();
         } catch (error) { }
+
+        globalQueue.delete(this.voiceChannel.guild.id);
 
         if (!force) sendReply(this.txtChannel, titleEmbed(this.txtChannel.guild, serverQueue.responses.endQueue))
     }
@@ -783,11 +785,11 @@ module.exports = {
                     }
                     if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined)
                         return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
+
                     let song = server_queue.nextTrack(true);
-                    // console.log(song);
 
                     if (song) {
-                        interaction.reply({embeds: [fieldEmbed(interaction.guild, 'Skip', `[${song.title}](${song.url})`)]});
+                        interaction.reply({ embeds: [fieldEmbed(interaction.guild, 'Skip', `[${song.title}](${song.url})`)] });
                         await server_queue.play(song);
                     } else {
                         server_queue.die();
