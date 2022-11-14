@@ -2,12 +2,12 @@ const {appendFile} = require('fs')
 
 function getTimeStamp() {
     let date = new Date()
-    return `[${date.getUTCDate()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString(),padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}]`
+    return `[${date.getUTCDate()}/${(date.getMonth() + 1)}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes().toLocaleString(),padStart(2, '0')}:${date.getSeconds()}]`
 }
 
 function getLogName() {
     let date = new Date()
-    return `${date.getFullYear().toString().padStart(2, '0')}_${(date.getMonth() + 1).toString().padStart(2, '0')}_${date.getUTCDate().toString().padStart(2, '0')}.log`
+    return `${date.getFullYear()}_${(date.getMonth() + 1)}_${date.getUTCDate()}.log`
 }
 
 module.exports = () => {
