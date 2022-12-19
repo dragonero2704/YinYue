@@ -4,9 +4,17 @@ const { REST, Routes } = require('discord.js');
 
 const { readdirSync } = require('fs')
 
-config({
-    path: __dirname + '/.env'
-})
+const test = process.argv.includes('--test')
+
+if(test){
+    config({
+        path: __dirname + '/test.env'
+    })
+}else{
+    config({
+        path: __dirname + '/.env'
+    })
+}
 
 let commands = []
 

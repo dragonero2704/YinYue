@@ -1,7 +1,7 @@
 const { readdirSync } = require('fs')
 const ascii_table = require('ascii-table')
 
-module.exports = (force = false)=> { 
+const syncModels = (force = false)=> { 
     let dbTable = new ascii_table("Database");
     dbTable.setHeading("Table", "Status")
     const dir = "./database/models"
@@ -22,4 +22,5 @@ module.exports = (force = false)=> {
     console.log('\n'+dbTable.toString());
 }
 
+module.exports = {syncModels}
 

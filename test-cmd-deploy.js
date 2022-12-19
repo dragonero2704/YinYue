@@ -1,12 +1,19 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { config } = require('dotenv')
-const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
+const { REST, Routes } = require('discord.js');
 const { readdirSync } = require('fs')
 
-config({
-    path: __dirname + '/.env'
-})
+const test = process.argv.includes('--test')
+
+if(test){
+    config({
+        path: __dirname + '/test.env'
+    })
+}else{
+    config({
+        path: __dirname + '/.env'
+    })
+}
 
 let commands = []
 
@@ -25,13 +32,13 @@ readdirSync("./commands/").forEach(dir => {
 
 })
 
-console.log(commands)
+// console.log(commands)
 
-const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
+const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
 (async() => {
 
-    await rest.put(Routes.applicationGuildCommands(process.env.clientID, "689115254713745423"), { body: commands })
+    await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, "689115254713745423"), { body: commands })
         .then(() => console.log('Successfully registered application commands.'))
         .catch(console.error());
 })();

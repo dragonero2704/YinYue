@@ -1,47 +1,40 @@
 const { ShardingManager } = require('discord.js');
 const { appendFile } = require('fs')
 const { config } = require("dotenv")
+const { startWebServer } = require('./server/server');
+const { listContent } = require(`./database/dbContent`)
+const { syncModels } = require(`./database/dbInit`)
 
-config({
-    path: __dirname + '/.env'
-})
+require("./misc/consoleOverride")();
 
-function getTimeStamp() {
-    let date = new Date()
-    return `[${date.getUTCDate()}/${date.getMonth()+1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}]`
-}
+const test = process.argv.includes('--test')
 
-function getLogName(){
-    let date = new Date()
-    return `${date.getFullYear()}_${date.getMonth()+1}_${date.getUTCDate()}.log`
-}
-
-let origLog = console.log
-console.log = function () {
-    // origLog.call(console, getTimeStamp())
-    process.stdout.write(getTimeStamp() + ': ')
-    //write to file
-    appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${arguments[0]}\n`, (err)=>{
-        if(err){
-            origLog(err)
-        }
+if(test){
+    config({
+        path: __dirname + '/test.env'
     })
-    origLog.apply(console, arguments)
-}
-
-let warningLog = console.warn
-console.error = function(){
-    process.stdout.write(getTimeStamp() + ': ')
-    appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${arguments[0]}\n`, (err)=>{
-        if(err){
-            warningLog(err)
-        }
+}else{
+    config({
+        path: __dirname + '/.env'
     })
-    warningLog.apply(console, arguments)
 }
-const manager = new ShardingManager('./bot.js', { token: process.env.TOKEN });
 
-manager.on('shardCreate', shard => console.log(`Launched shard ${shard.id}`));
+// startWebServer();
+
+console.log('Syncing database')
+
+const force = process.argv.includes('-f')||process.argv.includes('--force')
+
+//sincronizzazione modelli
+syncModels(force)
+//contenuto tabelle database
+listContent()
+
+const manager = new ShardingManager('./bot.js', { token: process.env["TOKEN"] });
+
+manager.on('shardCreate', shard => {
+    console.log(`Launched shard ${shard.id}`)
+});
 
 manager.spawn();
 

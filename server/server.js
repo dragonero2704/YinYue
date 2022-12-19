@@ -1,4 +1,5 @@
-const express = require('express')
+const express = require('express');
+
 const path = require('path')
     // import express from 'express'
 const server = express()
@@ -6,15 +7,17 @@ const port = 3000
 
 server.use(express.static(__dirname));
 
-server.all("/", (req, res) => {
+server.get("/", (req, res) => {
     // res.send('bot running!')
-    res.sendFile(path.join(__dirname, 'index.html'))
+    res.render(path.join(__dirname, 'index.html'),(err)=>{
+        console.log(err);
+    })
 })
 
-function keepAlive() {
+function startWebServer() {
     server.listen(port, () => {
         console.log('Server pronto.')
     })
 }
 
-module.exports = keepAlive
+module.exports = {startWebServer}

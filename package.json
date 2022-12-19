@@ -4,7 +4,7 @@
     "description": "A music bot for Discord",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test": "node . --test",
         "start": "node ."
     },
     "repository": {
@@ -24,8 +24,9 @@
         "@mapbox/node-pre-gyp": "^1.0.8",
         "ansi-regex": "^6.0.1",
         "ascii-table": "^0.0.9",
+        "discord": "^0.8.2",
         "discord-api-types": "^0.26.1",
-        "discord.js": "^14.0.2",
+        "discord.js": "^14.7.1",
         "dotenv": "^10.0.0",
         "express": "^4.17.2",
         "ffmpeg-static": "^4.4.0",

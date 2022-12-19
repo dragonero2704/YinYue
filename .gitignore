@@ -1,6 +1,6 @@
 # files
 invite_link.txt
-.env
+*.env
 #node modules
 node_modules
 .data

@@ -1,5 +1,8 @@
 const { setToken, getFreeClientID } = require('play-dl')
 const ascii_table = require('ascii-table')
+const { listContent } = require(`../../database/dbContent`)
+const { syncModels } = require(`../../database/dbInit`)
+
 
 module.exports = {
     name: 'ready',
@@ -19,9 +22,6 @@ module.exports = {
             })
         })
 
-        //sincronizzazione modelli
-        require(`../../database/dbInit`)()
-        
         // elenco dei server
         let serverTable = new ascii_table("Servers")
 
@@ -33,6 +33,6 @@ module.exports = {
             serverTable.addRow(guild.name.trim(), guild.id, owner.user.tag)
         }
 
-        console.log('\n'+serverTable.toString())
+        console.log('\n' + serverTable.toString())
     },
 }
