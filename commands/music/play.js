@@ -32,6 +32,29 @@ function check(interaction, globalQueue) {
     return true;
 }
 
+class Cache{
+    constructor(limit = 20){
+        this.cache = new Map();
+        this.chrono = [];
+        this.limit = limit
+    }
+
+    set(url, value){
+        if(this.get(url)) return;
+        this.cache.set(url, value)
+        this.chrono.push(url)
+
+        if(this.chrono.lenght > this.limit){
+            let url = this.chrono.shift()
+            this.cache.delete(url)
+        }
+    }
+
+    get(url){
+        return this.cache.get(url)
+    }
+}
+
 class serverQueue {
     constructor(songs, txtChannel, voiceChannel) {
         this.songs = [];
@@ -56,7 +79,7 @@ class serverQueue {
                 adapterCreator: voiceChannel.guild.voiceAdapterCreator,
             });
         } catch (error) {
-            console.log(new Error(error))
+            console.log(error)
             return
         }
         // player
@@ -76,6 +99,7 @@ class serverQueue {
                 this.voiceChannel = await this.txtChannel.guild.channels.cache.get(this.connection.joinConfig.channelId)
             } catch (error) {
                 // Seems to be a real disconnect which SHOULDN'T be recovered from
+                console.log("Disconnected")
                 this.connection.destroy();
                 this.die(true);
             }
@@ -114,6 +138,7 @@ class serverQueue {
         //queue 
         this.queueCollector = undefined;
         this.pageIndex = undefined;
+        this.cache = new Cache();
     }
 
     static loopStates = {
@@ -163,7 +188,7 @@ class serverQueue {
                             let song = {
                                 url: media.url,
                                 title: media.title,
-                                thumbnail: media.thumbnail,
+                                
                                 duration: media.durationInSec,
                                 durationRaw: media.durationRaw,
                             }
@@ -182,7 +207,7 @@ class serverQueue {
                                 let song = {
                                     url: video.url,
                                     title: video.title,
-                                    thumbnail: video.thumbnail,
+                                    
                                     duration: video.durationInSec,
                                     durationRaw: video.durationRaw,
                                 }
@@ -215,7 +240,7 @@ class serverQueue {
                                 let song = {
                                     url: yt_video.url,
                                     title: yt_video.title,
-                                    thumbnail: yt_video.thumbnails,
+                                    
                                     duration: yt_video.durationInSec,
                                     durationRaw: yt_video.durationRaw,
 
@@ -241,7 +266,7 @@ class serverQueue {
                                 let song = {
                                     url: yt_video.url,
                                     title: yt_video.title,
-                                    thumbnail: yt_video.thumbnails,
+                                    
                                     duration: yt_video.durationInSec,
                                     durationRaw: yt_video.durationRaw,
 
@@ -260,7 +285,7 @@ class serverQueue {
                             let song = {
                                 url: yt_video.url,
                                 title: yt_video.title,
-                                thumbnail: yt_video.thumbnails,
+                                
                                 duration: yt_video.durationInSec,
                                 durationRaw: yt_video.durationRaw,
                             }
@@ -296,7 +321,7 @@ class serverQueue {
                     let song = {
                         url: media.url,
                         title: media.title,
-                        thumbnail: media.thumbnail,
+                        
                         duration: media.durationInSec,
                         durationRaw: media.durationRaw,
                     }
@@ -307,7 +332,7 @@ class serverQueue {
         }
     }
     // Builds the resource for discord.js player to play
-    static async getResource(song) {
+    async getResource(song) {
         // Stream first from play-dl.stream('url')
         let resource, stream;
         try {
@@ -385,7 +410,9 @@ class serverQueue {
         if (!song) {
             song = this.curPlayingSong;
         }
-        let resource = await serverQueue.getResource(song);
+       
+        let resource = await this.getResource(song);
+
         try {
             this.player.play(resource);
             this.curPlayingSong = song;
