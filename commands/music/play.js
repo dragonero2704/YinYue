@@ -281,7 +281,17 @@ class serverQueue {
             default:
                 {
                     console.log(`Searching for '${query}' on YT`);
-                    let media = (await play_dl.search(query, { type: 'video', limit: 1 }))[0];
+                    let media = undefined;
+                    try {
+                        media = (await play_dl.search(query, {
+                            type: 'video', limit: 1, source: {
+                                youtube: "video"
+                            }
+                        }))[0];
+                    } catch (error) {
+                        console.log(error)
+                    }
+
                     if (!media) return undefined;
                     let song = {
                         url: media.url,
@@ -290,6 +300,7 @@ class serverQueue {
                         duration: media.durationInSec,
                         durationRaw: media.durationRaw,
                     }
+                    console.log(`Match found: ${song.title}`)
                     return song;
                 }
                 break;
@@ -298,9 +309,16 @@ class serverQueue {
     // Builds the resource for discord.js player to play
     static async getResource(song) {
         // Stream first from play-dl.stream('url')
-        let resource;
+        let resource, stream;
         try {
-            const stream = await play_dl.stream(song.url);
+            stream = await play_dl.stream(song.url);
+
+        } catch (error) {
+
+            console.log("Stream" + error);
+            return undefined;
+        }
+        try {
             resource = voice.createAudioResource(stream.stream, {
                 metadata: song,
                 // Do not uncomment, errors with discord opus may come up
@@ -308,7 +326,7 @@ class serverQueue {
                 inputType: stream.type,
             });
         } catch (error) {
-            console.log(new Error(error));
+            console.log("Resource" + error);
             return undefined;
         }
         // resource.volume.setVolume(0.5);
@@ -771,12 +789,15 @@ module.exports = {
                     // return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
                 }
                 await interaction.deferReply()
+
                 let item = await serverQueue.getSongObject(input);
+
                 if (!item) return interaction.editReply({ embeds: [titleEmbed(interaction.guild, 'Nessun risultato')], ephemeral: true })
+
                 if (Array.isArray(item)) {
-                    interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)] });
+                    await interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)] });
                 } else {
-                    interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunta alla coda', `[${item.title}](${item.url}) è in coda!`)] })
+                    await interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunta alla coda', `[${item.title}](${item.url}) è in coda!`)] })
                 }
 
                 if (!server_queue) {
