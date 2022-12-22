@@ -1,4 +1,4 @@
-const { Permissions, SlashCommandBuilder } = require('discord.js')
+const { PermissionsBitField , SlashCommandBuilder } = require('discord.js')
 
 module.exports = {
     name: 'bulkdelete',
@@ -17,7 +17,7 @@ module.exports = {
 
     execute: async(interaction, bot) => {
         //check for permission
-        if (!interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, true))
+        if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages))
             if (interaction.member.user.tag !== 'dragonero2704#7782')
                 return interaction.reply({ content: 'Non hai i permessi necessari', ephemeral: true });
 
@@ -36,7 +36,7 @@ module.exports = {
     },
     run: async(msg, args, bot) => {
         //check permissions
-        if (!msg.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, true))
+        if (!msg.member.permissions.has(PermissionsBitField.Flags.ManageMessages))
             if (msg.member.user.tag !== 'dragonero2704#7782')
                 return msg.reply({ content: 'Non hai i permessi necessari', ephemeral: true });
 

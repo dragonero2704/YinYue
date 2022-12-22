@@ -32,25 +32,25 @@ function check(interaction, globalQueue) {
     return true;
 }
 
-class Cache{
-    constructor(limit = 20){
+class Cache {
+    constructor(limit = 20) {
         this.cache = new Map();
         this.chrono = [];
         this.limit = limit
     }
 
-    set(url, value){
-        if(this.get(url)) return;
+    set(url, value) {
+        if (this.get(url)) return;
         this.cache.set(url, value)
         this.chrono.push(url)
 
-        if(this.chrono.lenght > this.limit){
+        if (this.chrono.lenght > this.limit) {
             let url = this.chrono.shift()
             this.cache.delete(url)
         }
     }
 
-    get(url){
+    get(url) {
         return this.cache.get(url)
     }
 }
@@ -188,7 +188,7 @@ class serverQueue {
                             let song = {
                                 url: media.url,
                                 title: media.title,
-                                
+
                                 duration: media.durationInSec,
                                 durationRaw: media.durationRaw,
                             }
@@ -207,7 +207,7 @@ class serverQueue {
                                 let song = {
                                     url: video.url,
                                     title: video.title,
-                                    
+
                                     duration: video.durationInSec,
                                     durationRaw: video.durationRaw,
                                 }
@@ -240,7 +240,7 @@ class serverQueue {
                                 let song = {
                                     url: yt_video.url,
                                     title: yt_video.title,
-                                    
+
                                     duration: yt_video.durationInSec,
                                     durationRaw: yt_video.durationRaw,
 
@@ -266,7 +266,7 @@ class serverQueue {
                                 let song = {
                                     url: yt_video.url,
                                     title: yt_video.title,
-                                    
+
                                     duration: yt_video.durationInSec,
                                     durationRaw: yt_video.durationRaw,
 
@@ -285,7 +285,7 @@ class serverQueue {
                             let song = {
                                 url: yt_video.url,
                                 title: yt_video.title,
-                                
+
                                 duration: yt_video.durationInSec,
                                 durationRaw: yt_video.durationRaw,
                             }
@@ -321,7 +321,7 @@ class serverQueue {
                     let song = {
                         url: media.url,
                         title: media.title,
-                        
+
                         duration: media.durationInSec,
                         durationRaw: media.durationRaw,
                     }
@@ -334,6 +334,7 @@ class serverQueue {
     // Builds the resource for discord.js player to play
     async getResource(song) {
         // Stream first from play-dl.stream('url')
+        console.time("stream")
         let resource, stream;
         try {
             stream = await play_dl.stream(song.url);
@@ -343,6 +344,9 @@ class serverQueue {
             console.log("Stream" + error);
             return undefined;
         }
+        console.timeEnd("stream")
+
+        console.time("resource")
         try {
             resource = voice.createAudioResource(stream.stream, {
                 metadata: song,
@@ -354,8 +358,8 @@ class serverQueue {
             console.log("Resource" + error);
             return undefined;
         }
-        // resource.volume.setVolume(0.5);
-        // console.log(resource)
+        console.timeEnd("resource")
+
 
         return resource;
     }
@@ -410,7 +414,7 @@ class serverQueue {
         if (!song) {
             song = this.curPlayingSong;
         }
-       
+
         let resource = await this.getResource(song);
 
         try {
@@ -667,7 +671,7 @@ class serverQueue {
             new ButtonBuilder().setCustomId('Next').setLabel('>').setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId('LastPage').setLabel('>>').setStyle(ButtonStyle.Primary),
         )
-        await interaction.reply({ content: queue, components: [row] });
+        await interaction.reply(blank_field);
         interaction.deleteReply();
         let queueinteraction = await interaction.channel.send({ content: queue, components: [row] });
         this.startCollector(queueinteraction, ['FirstPage', 'Previous', 'Next', 'LastPage'])
@@ -816,17 +820,18 @@ module.exports = {
                     // return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
                 }
                 await interaction.deferReply()
-
+                console.time("songObject")
                 let item = await serverQueue.getSongObject(input);
+                console.timeEnd("songObject")
 
                 if (!item) return interaction.editReply({ embeds: [titleEmbed(interaction.guild, 'Nessun risultato')], ephemeral: true })
 
                 if (Array.isArray(item)) {
-                    await interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)] });
+                    interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)] }).catch(error => console.log(error));
                 } else {
-                    await interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunta alla coda', `[${item.title}](${item.url}) è in coda!`)] })
+                    interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunta alla coda', `[${item.title}](${item.url}) è in coda!`)] }).catch(error => console.log(error))
                 }
-
+                console.log("Creating server queue")
                 if (!server_queue) {
                     server_queue = new serverQueue(item, interaction.channel, voice_channel);
                     // adds songs to the global queue map
