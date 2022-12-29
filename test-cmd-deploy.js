@@ -3,7 +3,8 @@ const { config } = require('dotenv')
 const { REST, Routes } = require('discord.js');
 const { readdirSync } = require('fs')
 
-const test = process.argv.includes('--test')
+// const test = process.argv.includes('--test')
+const test = true
 
 if(test){
     config({

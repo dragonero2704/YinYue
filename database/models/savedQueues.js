@@ -5,9 +5,6 @@ const SavedQueues = connection.define('savedQueues', {
     guildId: {
         type: Sequelize.STRING
     },
-    queueSlot: {
-        type: Sequelize.INTEGER
-    },
     queueName: {
         type: Sequelize.STRING
     },
@@ -16,25 +13,23 @@ const SavedQueues = connection.define('savedQueues', {
     }
 })
 
-Reflect.defineProperty(SavedQueues, 'getQueue', {
-    value: async function getQueue(guildId, queueSlot) {
-        const queueJson = await SavedQueues.findOne({
+Reflect.defineProperty(SavedQueues, 'getQueues', {
+    value: async function getQueue(guildId) {
+        const queueJson = await SavedQueues.findAll({
             where: {
-                guildId: guildId,
-                queueId: queueSlot
+                guildId: guildId
             }
         })
 
-        if (queueJson) return queueJson.songsJson
+        if (queueJson) return queueJson
         else return undefined;
     }
 })
 
 Reflect.defineProperty(SavedQueues, 'saveQueue', {
-    value: async function saveQueue(guildId, queueSlot, songsJson, queueName) {
+    value: async function saveQueue(guildId, songsJson, queueName) {
       return await SavedQueues.upsert({
         guildId:guildId,
-        queueSlot:queueSlot,
         queueName:queueName,
         songsJson:songsJson
       })

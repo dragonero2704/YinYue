@@ -13,10 +13,20 @@ const listContent = async (force = false) => {
         } catch (e) {
             console.log('Could not sync ' + modelName + ': ' + e)
         }
-        modelTable.setHeading(Object.keys(model.rawAttributes))
+        // modelTable.setHeading(Object.keys(model.rawAttributes))
         let values = await model.findAll()
+        values = JSON.parse(JSON.stringify(values))
+        console.log(values[0])
+        if(values.length == 0) return
+
+        modelTable.setHeading(Object.keys(values[0]))
         // modelTable.addRow("sample", "sample", "sample","sample","sample","sample")
-        modelTable.addRowMatrix(values)
+        // modelTable.addRow(values.dataValues.values())
+
+        values.forEach((v)=>{
+            
+            modelTable.addRow(Object.values(v))
+        })
         console.log('\n' + modelTable.toString());
 
     })

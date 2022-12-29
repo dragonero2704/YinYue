@@ -1,6 +1,6 @@
 const play_dl = require('play-dl');
 const voice = require('@discordjs/voice');
-const { ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle, InteractionType, InteractionResponseType, ButtonInteraction } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder } = require('discord.js');
 const { titleEmbed, fieldEmbed, sendReply, reactToMsg } = require('../../misc/functions')
 const { SavedQueues } = require('../../database/models/savedQueues')
 const { SlotLimits } = require('../../database/models/slotLimits')
@@ -121,7 +121,7 @@ class serverQueue {
 
         this.player.on(voice.AudioPlayerStatus.Idle, async (oldState, newState) => {
             if (!globalQueue.get(this.voiceChannel.guild.id)) return;
-            let song = this.nextTrack();
+            let song = await this.nextTrack();
             if (song) {
                 await this.play(song)
             } else {
@@ -532,6 +532,7 @@ class serverQueue {
     }
 
     static convertToRawDuration(seconds) {
+
         let hours = Math.floor(seconds / 3600);
         seconds = Math.floor(seconds % 3600);
         let minutes = Math.floor(seconds / 60);
@@ -555,11 +556,7 @@ class serverQueue {
     }
 
     getPlaybackDuration() {
-        try {
-            return this.player.state.playbackDuration;
-        } catch (error) {
-            return 0
-        }
+        return this.player.state.playbackDuration??0;
     }
 
     //this function returns an array
@@ -755,7 +752,7 @@ module.exports = {
 
         new SlashCommandBuilder()
             .setName('queue')
-            .setDescription('Mostra la coda')
+            .setDescription('Queue options')
             .addSubcommand(sub =>
                 sub.setName('save')
                     .setDescription('Saves the queue')
@@ -763,25 +760,21 @@ module.exports = {
                         option
                             .setName('name')
                             .setDescription('Sets the name of the queue')
+                            .setRequired(true)
                     ))
             .addSubcommand(sub =>
                 sub.setName('show')
-                    .setDescription('Shows the current queue')
-                    .addStringOption(option =>
-                        option
-                            .setName('name')
-                            .setDescription('Sets the name of the queue')
-                    ))
+                    .setDescription('Shows the current queue'))
             .addSubcommand(sub =>
                 sub.setName('load')
                     .setDescription('Loads a saved queue')
                     .addStringOption(option =>
                         option
-                            .setName('id')
-                            .setDescription('The slot of queue')
+                            .setName('name')
+                            .setDescription('The name of queue')
                     ))
             .addSubcommand(sub =>
-                sub.setName('slots')
+                sub.setName('list')
                     .setDescription('Shows saved queue slots')),
 
         new SlashCommandBuilder()
@@ -819,6 +812,7 @@ module.exports = {
                     }
                     // return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
                 }
+                // await interaction.reply(`${serverQueue.queueFormat.start}\n${bot.user.username} is working, this may take some time ${serverQueue.queueFormat.end}`)
                 await interaction.deferReply()
                 console.time("songObject")
                 let item = await serverQueue.getSongObject(input);
@@ -980,6 +974,13 @@ module.exports = {
                         case 'save':
                             {
                                 if (!check(interaction, globalQueue)) return;
+                                let server_queue = globalQueue.get(interaction.guild.id);
+
+                                const name = interaction.options.getString('name')
+                                // check limit
+                                SavedQueues.saveQueue(interaction.guild.id, server_queue.getSongsJson(), name)
+                                    .then(() => interaction.reply({ embeds: [titleEmbed(interaction.guild, `Queue saved as '${name}'`)] }))
+                                    .catch(console.error)
 
                                 break;
                             }
@@ -995,6 +996,59 @@ module.exports = {
                             }
                         case 'load':
                             {
+                                //check if the user in a voice channel
+                                let voice_channel = interaction.member.voice.channel;
+                                if (!voice_channel) {
+                                    interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.voiceChannelNotFound)], ephemeral: true });
+                                    return;
+                                }
+                                let server_queue = globalQueue.get(interaction.guild.id);
+
+                                let name = interaction.options.getString('name')
+
+                                if (name) {
+                                    if (!server_queue) {
+                                        //create a new server queue
+
+                                    } else {
+                                        if (server_queue.voiceChannel !== voice_channel) {
+                                            interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
+                                            return;
+                                        }
+                                        //add songs to the existing queue
+                                    }
+                                    break;
+                                }
+
+                                const row = new ActionRowBuilder()
+                                let selectMenu = new StringSelectMenuBuilder()
+                                    .setCustomId('queues')
+                                    .setPlaceholder('Select a queue')
+                                    .setMaxValues(1)
+                                    .setMinValues(1)
+
+
+                                let songs = await SavedQueues.getQueues(interaction.guild.id)
+                                for (const song of songs) {
+                                    selectMenu.addOptions({
+                                        label: song.queueName,
+                                        value: song.queueName
+                                    })
+                                }
+
+                                row.addComponents(selectMenu)
+
+                                if (!server_queue) {
+                                    //create a new server queue
+
+                                } else {
+                                    if (server_queue.voiceChannel !== voice_channel) {
+                                        interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
+                                        return;
+                                    }
+                                    //add songs to the existing queue
+                                }
+
 
 
                                 break;
