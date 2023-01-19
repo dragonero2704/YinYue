@@ -26,6 +26,20 @@ Reflect.defineProperty(SavedQueues, 'getQueues', {
     }
 })
 
+Reflect.defineProperty(SavedQueues, 'getQueue', {
+    value: async function getQueue(guildId, name) {
+        const queueJson = await SavedQueues.findOne({
+            where: {
+                guildId: guildId,
+                queueName: name
+            }
+        })
+
+        if (queueJson) return queueJson
+        else return undefined;
+    }
+})
+
 Reflect.defineProperty(SavedQueues, 'saveQueue', {
     value: async function saveQueue(guildId, songsJson, queueName) {
       return await SavedQueues.upsert({

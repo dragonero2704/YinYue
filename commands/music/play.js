@@ -767,12 +767,8 @@ module.exports = {
                     .setDescription('Shows the current queue'))
             .addSubcommand(sub =>
                 sub.setName('load')
-                    .setDescription('Loads a saved queue')
-                    .addStringOption(option =>
-                        option
-                            .setName('name')
-                            .setDescription('The name of queue')
-                    ))
+                    .setDescription('Loads a saved queue'))
+                    
             .addSubcommand(sub =>
                 sub.setName('list')
                     .setDescription('Shows saved queue slots')),
@@ -1004,22 +1000,6 @@ module.exports = {
                                 }
                                 let server_queue = globalQueue.get(interaction.guild.id);
 
-                                let name = interaction.options.getString('name')
-
-                                if (name) {
-                                    if (!server_queue) {
-                                        //create a new server queue
-
-                                    } else {
-                                        if (server_queue.voiceChannel !== voice_channel) {
-                                            interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
-                                            return;
-                                        }
-                                        //add songs to the existing queue
-                                    }
-                                    break;
-                                }
-
                                 const row = new ActionRowBuilder()
                                 let selectMenu = new StringSelectMenuBuilder()
                                     .setCustomId('queues')
@@ -1040,6 +1020,10 @@ module.exports = {
 
                                 if (!server_queue) {
                                     //create a new server queue
+                                    let queueJson = await SavedQueues.getQueue(interaction.guild.id, name)
+                                        server_queue = new serverQueue(queueJson, interaction.channel, voice_channel)
+                                        globalQueue.set(interaction.guild.id, server_queue)
+                                        await server_queue.play()
 
                                 } else {
                                     if (server_queue.voiceChannel !== voice_channel) {
@@ -1047,6 +1031,9 @@ module.exports = {
                                         return;
                                     }
                                     //add songs to the existing queue
+                                    //add songs to the existing queue
+                                    let queueJson = await SavedQueues.getQueue(interaction.guild.id, name)
+                                    server_queue.addMultiple(queueJson)
                                 }
 
 
