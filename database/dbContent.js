@@ -24,8 +24,13 @@ const listContent = async (force = false) => {
         // modelTable.addRow(values.dataValues.values())
 
         values.forEach((v)=>{
-            
-            modelTable.addRow(Object.values(v))
+            const vals = Object.values(v).map(val=>{
+                // console.log(val)
+                if (typeof val === 'string' && val.length > 30)
+                    return val.substring(0,27)+'...'
+                return val
+            })
+            modelTable.addRow(vals)
         })
         console.log('\n' + modelTable.toString());
 
