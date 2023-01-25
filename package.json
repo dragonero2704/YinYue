@@ -9,7 +9,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/dragonero2704/Music-discord-bot.git"
+        "url": "https://github.com/dragonero2704/Music-discord-bot.git"
     },
     "author": "dragonero2704",
     "license": "ISC",
@@ -21,10 +21,8 @@
         "@discordjs/opus": "github:discordjs/opus",
         "@discordjs/rest": "^0.2.0-canary.0",
         "@discordjs/voice": "^0.7.5",
-        "@mapbox/node-pre-gyp": "^1.0.8",
         "ansi-regex": "^6.0.1",
         "ascii-table": "^0.0.9",
-        "discord": "^0.8.2",
         "discord-api-types": "^0.26.1",
         "discord.js": "^14.7.1",
         "dotenv": "^10.0.0",
@@ -35,7 +33,7 @@
         "npm": "^8.3.0",
         "play-dl": "^1.9.6",
         "sequelize": "^6.25.3",
-        "sqlite3": "^5.1.2",
+        "sqlite3": "^5.1.4",
         "tar": "^4.4.18"
     },
     "devDependencies": {
