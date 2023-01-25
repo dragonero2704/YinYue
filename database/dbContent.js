@@ -32,7 +32,7 @@ const listContent = async (force = false) => {
             })
             modelTable.addRow(vals)
         })
-        console.log('\n' + modelTable.toString());
+        if(modelTable.toString()) console.log('\n' + modelTable.toString());
 
     })
 }
