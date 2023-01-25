@@ -16,7 +16,7 @@ const listContent = async (force = false) => {
         // modelTable.setHeading(Object.keys(model.rawAttributes))
         let values = await model.findAll()
         values = JSON.parse(JSON.stringify(values))
-        console.log(values[0])
+        // console.log(values[0])
         if(values.length == 0) return
 
         modelTable.setHeading(Object.keys(values[0]))
