@@ -1,6 +1,6 @@
 const play_dl = require('play-dl');
 const voice = require('@discordjs/voice');
-const { ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder } = require('discord.js');
 const { titleEmbed, fieldEmbed, sendReply, reactToMsg } = require('../../misc/functions')
 const { SavedQueues } = require('../../database/models/savedQueues')
 const { SlotLimits } = require('../../database/models/slotLimits')
@@ -59,8 +59,8 @@ class serverQueue {
     constructor(songs, txtChannel, voiceChannel) {
         this.songs = [];
         if (Array.isArray(songs)) {
-            // console.log('Constructed an array of songs')
             this.songs = songs;
+            // console.log('Constructed an array of songs: '+this.songs)
         } else {
             // console.log('Added a song')
             this.songs = [songs];
@@ -127,7 +127,6 @@ class serverQueue {
             } else {
                 this.die();
             }
-
         })
 
         this.player.on('error', error => {
@@ -532,7 +531,6 @@ class serverQueue {
     }
 
     static convertToRawDuration(seconds) {
-
         let hours = Math.floor(seconds / 3600);
         seconds = Math.floor(seconds % 3600);
         let minutes = Math.floor(seconds / 60);
@@ -556,7 +554,7 @@ class serverQueue {
     }
 
     getPlaybackDuration() {
-        return this.player.state.playbackDuration??0;
+        return this.player.state.playbackDuration ?? 0;
     }
 
     //this function returns an array
@@ -596,9 +594,6 @@ class serverQueue {
             if (msg.id === inter.message.id && buttonIds.includes(inter.customId)) {
                 return true
             } else {
-                // let repl = serverQueue.errors.oldQueue + '(' + (msg.url) + ')'
-                // let embed = fieldEmbed(msg.guild, 'Redirect', repl)
-                // inter.channel.send({ content: repl, ephemeral: true })
                 return false
             }
         }
@@ -648,7 +643,11 @@ class serverQueue {
         this.queueCollector.stop();
         this.queueCollector = undefined;
         if (!this.queueMsg.editable) this.queueMsg.fetch()
-        this.queueMsg.delete()
+        try {
+            this.queueMsg.delete()
+        } catch (error) {
+            //message is too old
+        }
         return;
     }
 
@@ -681,7 +680,7 @@ class serverQueue {
 
 module.exports = {
     name: 'play',
-    aliases: ['p', 'pause', 'skip', 's', 'jump', 'j', 'stop', 'die', 'l', 'loop', 'resume', 'q', 'queue', 'remove', 'r', 'shuffle'],
+    aliases: ['p', 'pause', 'skip', 's', 'jump', 'j', 'stop', 'die', 'l', 'loop', 'resume', 'q', 'queue', 'remove', 'r', 'shuffle', 'playlist'],
     args: ['[input]'],
     description: 'plays some music!',
     once: false,
@@ -752,7 +751,18 @@ module.exports = {
 
         new SlashCommandBuilder()
             .setName('queue')
-            .setDescription('Queue options')
+            .setDescription('Mostra la coda'),
+
+        new SlashCommandBuilder()
+            .setName('playlist')
+            .setDescription('Playlist command list')
+            .addSubcommand(sub =>
+                sub.setName('load')
+                    .setDescription('Loads a saved queue'))
+
+            .addSubcommand(sub =>
+                sub.setName('list')
+                    .setDescription('Shows saved queue slots'))
             .addSubcommand(sub =>
                 sub.setName('save')
                     .setDescription('Saves the queue')
@@ -761,17 +771,7 @@ module.exports = {
                             .setName('name')
                             .setDescription('Sets the name of the queue')
                             .setRequired(true)
-                    ))
-            .addSubcommand(sub =>
-                sub.setName('show')
-                    .setDescription('Shows the current queue'))
-            .addSubcommand(sub =>
-                sub.setName('load')
-                    .setDescription('Loads a saved queue'))
-                    
-            .addSubcommand(sub =>
-                sub.setName('list')
-                    .setDescription('Shows saved queue slots')),
+                    )),
 
         new SlashCommandBuilder()
             .setName('shuffle')
@@ -964,9 +964,24 @@ module.exports = {
             case 'queue':
             case 'q':
                 {
+                    if (!check(interaction, globalQueue)) return;
+                    let server_queue = globalQueue.get(interaction.guild.id);
 
+                    await server_queue.showQueue(interaction)
+                    break;
+                }
+                break
 
+            case 'playlist':
+                {
                     switch (interaction.options.getSubcommand()) {
+                        default:
+                            {
+                                if (!check(interaction, globalQueue)) return;
+                                let server_queue = globalQueue.get(interaction.guild.id);
+                                await server_queue.showQueue(interaction)
+                                break;
+                            }
                         case 'save':
                             {
                                 if (!check(interaction, globalQueue)) return;
@@ -979,16 +994,6 @@ module.exports = {
                                     .catch(console.error)
 
                                 break;
-                            }
-
-                        case 'show':
-                            {
-                                if (!check(interaction, globalQueue)) return;
-                                let server_queue = globalQueue.get(interaction.guild.id);
-
-                                await server_queue.showQueue(interaction)
-                                break;
-
                             }
                         case 'load':
                             {
@@ -1009,6 +1014,9 @@ module.exports = {
 
 
                                 let songs = await SavedQueues.getQueues(interaction.guild.id)
+                                if (!songs) {
+                                    return interaction.reply("Non ci sono playlist salvate in questo server")
+                                }
                                 for (const song of songs) {
                                     selectMenu.addOptions({
                                         label: song.queueName,
@@ -1017,43 +1025,38 @@ module.exports = {
                                 }
 
                                 row.addComponents(selectMenu)
+                                let msgmenu = await interaction.reply({ contents: 'Select your playlist', components: [row] })
+                                const filter = i => {
+                                    i.deferUpdate();
+                                    return i.user.id === interaction.user.id;
+                                };
+                                msgmenu.awaitMessageComponent({ filter, componentType: ComponentType.StringSelect })
+                                    .catch(e => console.log)
+                                    .then(async i => {
+                                        // i.editReply("Hai selezionato" + i.values.join(', '))
+                                        const name = i.values[0]
+                                        if (!server_queue) {
+                                            //create a new server queue
+                                            let queueJson = await SavedQueues.getQueue(interaction.guild.id, name)
+                                            console.log(queueJson)
+                                            server_queue = new serverQueue(queueJson, interaction.channel, voice_channel)
+                                            globalQueue.set(interaction.guild.id, server_queue)
+                                            await server_queue.play()
 
-                                if (!server_queue) {
-                                    //create a new server queue
-                                    let queueJson = await SavedQueues.getQueue(interaction.guild.id, name)
-                                        server_queue = new serverQueue(queueJson, interaction.channel, voice_channel)
-                                        globalQueue.set(interaction.guild.id, server_queue)
-                                        await server_queue.play()
-
-                                } else {
-                                    if (server_queue.voiceChannel !== voice_channel) {
-                                        interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
-                                        return;
-                                    }
-                                    //add songs to the existing queue
-                                    //add songs to the existing queue
-                                    let queueJson = await SavedQueues.getQueue(interaction.guild.id, name)
-                                    server_queue.addMultiple(queueJson)
-                                }
-
-
+                                        } else {
+                                            if (server_queue.voiceChannel !== voice_channel) {
+                                                interaction.followUp({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
+                                                return;
+                                            }
+                                            //add songs to the existing queue
+                                            //add songs to the existing queue
+                                            let queueJson = await SavedQueues.getQueue(interaction.guild.id, name)
+                                            server_queue.addMultiple(queueJson)
+                                        }
+                                    })
 
                                 break;
                             }
-                        case 'slots':
-                            {
-                                let limit = await SlotLimits.getLimit(interaction.guild.id);
-                                break;
-                            }
-
-                        default:
-                            {
-                                if (!check(interaction, globalQueue)) return;
-                                let server_queue = globalQueue.get(interaction.guild.id);
-                                await server_queue.showQueue(interaction)
-                                break;
-                            }
-
                     }
                 }
                 break
@@ -1063,6 +1066,7 @@ module.exports = {
                 {
                     if (!check(interaction, globalQueue)) return;
                     let index = interaction.options.getNumber('index');
+                    let server_queue = globalQueue.get(interaction.guild.id);
                     if (!index || index < 1 || index > server_queue.songs.length) {
                         interaction.reply({ embeds: [titleEmbed(interaction.guild, `Inserire un numero tra 1 e ${server_queue.songs.length}`)], ephemeral: true });
                         return;

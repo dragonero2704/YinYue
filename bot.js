@@ -16,6 +16,10 @@ readdirSync(handler_path).forEach((handler) => {
     require(`${handler_path}/${handler}`)(bot)
 })
 
+// bot.on("interactionCreate", i=>{
+    
+// })
+
 bot.login(process.env.TOKEN)
 
 
