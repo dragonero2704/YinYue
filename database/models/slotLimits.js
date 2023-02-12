@@ -1,6 +1,8 @@
 const { connection } = require('../connection/connection')
 const Sequelize = require('sequelize')
 
+const defaultSlotLimit = 5
+
 const SlotLimits = connection.define('slotLimits', {
     guildId: {
         type: Sequelize.DataTypes.STRING
@@ -17,7 +19,7 @@ Reflect.defineProperty(SlotLimits, 'getLimit', {
                 guildId: guildId
             }
         })
-        return limit??5
+        return limit.slots??defaultSlotLimit
     }
 })
 

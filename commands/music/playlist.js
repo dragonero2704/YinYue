@@ -42,13 +42,16 @@ module.exports = {
                 {
                     if (!check(interaction, globalQueue)) return;
                     let server_queue = globalQueue.get(interaction.guild.id);
-
+                    //save the queue
                     const name = interaction.options.getString('name')
                     // check limit
+                    const limit = await SlotLimits.getLimit(interaction.guild.id)
+                    //check how many queues I have already
+                    const queueNumber = await SavedQueues.getQueueTotal(interaction.guild.id)
+                    if(queueNumber >= limit) return interaction.reply({embeds: [titleEmbed(interaction.guild, 'Queue limit reached for this server: '+limit)]})
                     SavedQueues.saveQueue(interaction.guild.id, server_queue.getSongsJson(), name)
                         .then(() => interaction.reply({ embeds: [titleEmbed(interaction.guild, `Queue saved as '${name}'`)] }))
                         .catch(console.error)
-
                     break;
                 }
             case 'load':
@@ -73,6 +76,7 @@ module.exports = {
                     if (!songs) {
                         return interaction.reply("Non ci sono playlist salvate in questo server")
                     }
+                    console.log(songs)
                     for (const song of songs) {
                         selectMenu.addOptions({
                             label: song.queueName,
@@ -81,7 +85,7 @@ module.exports = {
                     }
 
                     row.addComponents(selectMenu)
-                    let msgmenu = await interaction.reply({ contents: 'Select your playlist', components: [row] })
+                    let msgmenu = await interaction.reply({ content: 'Select your playlist', components: [row] })
                     const filter = i => {
                         i.deferUpdate();
                         return i.user.id === interaction.user.id;
