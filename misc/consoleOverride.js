@@ -21,7 +21,7 @@ module.exports = () => {
                 origLog(err)
             }
         })
-        origLog.apply(console, arguments)
+        origLog.apply(console, ...arguments)
     }
 
     let warningLog = console.warn
@@ -32,7 +32,7 @@ module.exports = () => {
                 warningLog(err)
             }
         })
-        warningLog.apply(console, arguments)
+        warningLog.apply(console, ...arguments)
     }
 
     let errorLog = console.error
@@ -43,6 +43,6 @@ module.exports = () => {
                 warningLog(err)
             }
         })
-        errorLog.apply(console,arguments)
+        errorLog.apply(console,...arguments)
     }
 }

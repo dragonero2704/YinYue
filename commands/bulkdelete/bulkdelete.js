@@ -24,7 +24,7 @@ module.exports = {
         let number = interaction.options.getInteger('numero');
         //add 1 so it will delete also the command message
         number = number + 1;
-        await interaction.reply('Sto cancellando...');
+        await interaction.reply({content:'Sto cancellando...', ephemeral:true});
         try {
             interaction.channel.bulkDelete(number)
         } catch (error) {

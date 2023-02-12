@@ -22,7 +22,8 @@ readdirSync("./commands/").forEach(dir => {
     const files = readdirSync(`./commands/${dir}/`).filter(file => file.endsWith('.js'))
 
     for (let file of files) {
-        const {data} = require(`./commands/${dir}/${file}`)
+        const {data, disabled} = require(`./commands/${dir}/${file}`)
+        if(disabled) continue;
         if (data) {
             if (Array.isArray(data)) {
                 data.forEach(cmd => commands.push(cmd.toJSON()))
@@ -33,12 +34,11 @@ readdirSync("./commands/").forEach(dir => {
 
 })
 
-console.log(commands)
+// console.log(commands)
 
 const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
 (async() => {
-
     await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands })
         .then(() => console.log('Successfully registered application commands.'))
         .catch(console.error());

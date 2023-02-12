@@ -30,4 +30,9 @@ async function reactToMsg(msg, emoji) {
     await msg.react(emoji)
 }
 
-module.exports = {titleEmbed, fieldEmbed, sendReply, reactToMsg}
+module.exports = {
+    titleEmbed, 
+    fieldEmbed, 
+    sendReply, 
+    reactToMsg
+}
