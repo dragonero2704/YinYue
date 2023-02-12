@@ -1,7 +1,8 @@
 const { globalQueue } = require('../../misc/globals')
 
-const { serverQueue, check } = require('./serverQueue');
+const { ServerQueue, check } = require('./ServerQueue');
 const { SlashCommandBuilder } = require('discord.js');
+const { titleEmbed, fieldEmbed, sendReply, reactToMsg } = require('../../misc/functions')
 
 module.exports = {
     name: "shuffle",
@@ -12,11 +13,11 @@ module.exports = {
         if (!check(interaction, globalQueue)) return;
         let server_queue = globalQueue.get(interaction.guild.id);
         server_queue.shuffle()
-        interaction.reply(`${serverQueue.queueFormat.start}\nShuffled ${server_queue.getSongsLength()} songs\n${serverQueue.queueFormat.end}`);
+        interaction.reply(`${ServerQueue.queueFormat.start}\nShuffled ${server_queue.getSongsLength()} songs\n${ServerQueue.queueFormat.end}`);
     },
     async run(msg, args, bot) {
         if (!check(msg, globalQueue)) return;
-        let server_queue = globalQueue.get(interaction.guild.id);
+        let server_queue = globalQueue.get(msg.guild.id);
         server_queue.shuffle()
         reactToMsg(msg, '🔀');
     }

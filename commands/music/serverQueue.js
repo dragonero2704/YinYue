@@ -2,31 +2,32 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ModalBuilde
 const { titleEmbed, fieldEmbed, sendReply } = require('../../misc/functions')
 const voice = require('@discordjs/voice');
 const play_dl = require('play-dl')
+let blank_field = '\u200b'
 
 function check(interaction, globalQueue) {
     let voice_channel = interaction.member.voice.channel;
     if (!voice_channel) {
-        interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.voiceChannelNotFound)], ephemeral: true });
+        interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.voiceChannelNotFound)], ephemeral: true });
         return false;
     }
     let server_queue = globalQueue.get(interaction.guild.id);
     if (!server_queue) {
-        interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.queueNotFound)], ephemeral: true });
+        interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.queueNotFound)], ephemeral: true });
         return false;
     }
     if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined) {
-        interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
+        interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
         return false;
     }
     let songs = server_queue.getSongs();
     if (songs.length === 0) {
-        interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.emptyQueue)] });
+        interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.emptyQueue)],ephemeral: true });
         return false;
     }
     return true;
 }
 
-class serverQueue {
+class ServerQueue {
     constructor(songs, txtChannel, voiceChannel) {
         this.songs = [];
         if (Array.isArray(songs)) {
@@ -38,7 +39,7 @@ class serverQueue {
         }
         // console.log(this.songs)
         this.curPlayingSong = this.songs[0];
-        this.loopState = serverQueue.loopStates.disabled;
+        this.loopState = ServerQueue.loopStates.disabled;
 
         this.txtChannel = txtChannel;
         this.voiceChannel = voiceChannel;
@@ -340,31 +341,31 @@ class serverQueue {
         let nextSong = undefined;
         if (!forceskip) {
             switch (this.loopState) {
-                case serverQueue.loopStates.disabled:
+                case ServerQueue.loopStates.disabled:
                     if (nextIndex < songsLenght) {
                         nextSong = this.songs[nextIndex];
                     }
                     break;
-                case serverQueue.loopStates.queue:
+                case ServerQueue.loopStates.queue:
                     if (nextIndex >= songsLenght) {
                         nextIndex = 0;
                     }
                     nextSong = this.songs[nextIndex];
                     break;
-                case serverQueue.loopStates.track:
+                case ServerQueue.loopStates.track:
                     nextIndex = curIndex;
                     nextSong = this.songs[nextIndex];
                     break;
             }
         } else {
             switch (this.loopState) {
-                case serverQueue.loopStates.disabled:
+                case ServerQueue.loopStates.disabled:
                     if (nextIndex < songsLenght) {
                         nextSong = this.songs[nextIndex];
                     }
                     break;
-                case serverQueue.loopStates.queue:
-                case serverQueue.loopStates.track:
+                case ServerQueue.loopStates.queue:
+                case ServerQueue.loopStates.track:
                     if (nextIndex >= songsLenght) {
                         nextIndex = 0;
                     }
@@ -423,32 +424,32 @@ class serverQueue {
     changeLoopState(arg = undefined) {
         if (!arg) {
             this.loopState += 1
-            if (this.loopState > serverQueue.loopStates.track) {
-                this.loopState = serverQueue.loopStates.disabled;
+            if (this.loopState > ServerQueue.loopStates.track) {
+                this.loopState = ServerQueue.loopStates.disabled;
             }
             return this.loopState;
         } else {
             switch (arg.toLowerCase()) {
                 case 'off':
                 case 'disabled':
-                    this.loopState = serverQueue.loopStates.disabled;
+                    this.loopState = ServerQueue.loopStates.disabled;
 
                     break;
                 case 'q':
                 case 'queue':
-                    this.loopState = serverQueue.loopStates.queue;
+                    this.loopState = ServerQueue.loopStates.queue;
 
                     break;
 
                 case 't':
                 case 'track':
-                    this.loopState = serverQueue.loopStates.track;
+                    this.loopState = ServerQueue.loopStates.track;
                     break;
 
                 default:
                     this.loopState += 1
-                    if (this.loopState > serverQueue.loopStates.track) {
-                        this.loopState = serverQueue.loopStates.disabled;
+                    if (this.loopState > ServerQueue.loopStates.track) {
+                        this.loopState = ServerQueue.loopStates.disabled;
                     }
 
                     break;
@@ -497,7 +498,7 @@ class serverQueue {
 
         globalQueue.delete(this.voiceChannel.guild.id);
 
-        if (!force) sendReply(this.txtChannel, titleEmbed(this.txtChannel.guild, serverQueue.responses.endQueue))
+        if (!force) sendReply(this.txtChannel, titleEmbed(this.txtChannel.guild, ServerQueue.responses.endQueue))
     }
 
     static convertToRawDuration(seconds) {
@@ -536,7 +537,7 @@ class serverQueue {
             if (song === this.curPlayingSong) {
                 //currently playing
                 // console.log(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))
-                line = `    ⬐In riproduzione\n${counter}. ${song.title}\t${serverQueue.convertToRawDuration(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))} rimasti\n    ⬑In riproduzione`
+                line = `    ⬐In riproduzione\n${counter}. ${song.title}\t${ServerQueue.convertToRawDuration(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))} rimasti\n    ⬑In riproduzione`
             } else {
                 line = `${counter}. ${song.title}\t${song.durationRaw}`
             }
@@ -597,9 +598,9 @@ class serverQueue {
                     break;
             }
 
-            let content = [serverQueue.queueFormat.start];
+            let content = [ServerQueue.queueFormat.start];
             content = content.concat(pages[this.pageIndex]);
-            content.push(serverQueue.queueFormat.end);
+            content.push(ServerQueue.queueFormat.end);
             inter.message.edit(content.join('\n'));
         })
     }
@@ -622,9 +623,9 @@ class serverQueue {
 
         let pages = this.queuePages();
 
-        let queue = [serverQueue.queueFormat.start];
+        let queue = [ServerQueue.queueFormat.start];
         queue = queue.concat(pages[0]);
-        queue.push(serverQueue.queueFormat.end);
+        queue.push(ServerQueue.queueFormat.end);
         queue = queue.join('\n');
 
         const row = new ActionRowBuilder().addComponents(
@@ -633,9 +634,10 @@ class serverQueue {
             new ButtonBuilder().setCustomId('Next').setLabel('>').setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId('LastPage').setLabel('>>').setStyle(ButtonStyle.Primary),
         )
-        await interaction.reply(blank_field);
-        interaction.deleteReply();
-        let queueinteraction = await interaction.channel.send({ content: queue, components: [row] });
+        // await interaction.reply(blank_field);
+        // interaction.deleteReply();
+        // let queueinteraction = await interaction.channel.send({ content: queue, components: [row] });
+        let queueinteraction = await interaction.reply({ content: queue, components: [row] });
         this.startCollector(queueinteraction, ['FirstPage', 'Previous', 'Next', 'LastPage'])
     }
 
@@ -646,6 +648,7 @@ class serverQueue {
 
 module.exports = {
     module:true,
-    serverQueue,
+
+    ServerQueue,
     check
 }

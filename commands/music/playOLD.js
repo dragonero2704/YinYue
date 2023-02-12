@@ -10,9 +10,6 @@ let globalQueue = new Map()
 let blank_field = '\u200b'
 
 
-
-
-
 module.exports = {
     name: 'play',
     aliases: ['p', 'pause', 'skip', 's', 'jump', 'j', 'stop', 'die', 'l', 'loop', 'resume', 'q', 'queue', 'remove', 'r', 'shuffle', 'playlist'],
@@ -21,38 +18,7 @@ module.exports = {
     once: false,
     disabled: true,
     data: [
-
-        new SlashCommandBuilder()
-            .setName('pause')
-            .setDescription('Mette in pausa'),
-
-        
-
-        
-
-        new SlashCommandBuilder()
-            .setName('jump')
-            .setDescription('Salta al brano n')
-            .addNumberOption(option =>
-                option
-                    .setName('index')
-                    .setDescription('Un numero da 0 al numero dei brani della coda')
-                    .setMinValue(1)
-                    .setRequired(true)
-            ),
-
-        
-        new SlashCommandBuilder()
-            .setName('remove')
-            .setDescription('rimuove un brano dalla coda')
-            .addNumberOption(num =>
-                num.setName('index')
-                    .setDescription('Indice del brano che si vuole eliminare dalla coda')
-                    .setMinValue(1)
-                    .setRequired(true)),
-
-        
-
+    
         new SlashCommandBuilder()
             .setName('playlist')
             .setDescription('Playlist command list')
@@ -92,17 +58,6 @@ module.exports = {
                     // reactToMsg(interaction, '⏸️');
                 }
                 break;
-
-            case 'resume':
-                {
-                    if (!check(interaction, globalQueue)) return;
-                    interaction.reply(`${serverQueue.queueFormat.start}\nRiprendo\n${serverQueue.queueFormat.end}`);
-                    let server_queue = globalQueue.get(interaction.guild.id);
-
-                    server_queue.resume();
-                    // reactToMsg(interaction, '▶️');
-                }
-                break
 
             
             case 'jump':
@@ -300,32 +255,7 @@ module.exports = {
                 }
                 break
 
-            case 'remove':
-            case 'r':
-                {
-                    let voice_channel = await msg.member.voice.channel;
-                    if (!voice_channel) {
-                        return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.voiceChannelNotFound)], ephemeral: true });
-                    }
-                    let server_queue = globalQueue.get(msg.guild.id);
-                    if (!server_queue) {
-                        return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.queueNotFound)], ephemeral: true });
-                    }
-                    if (server_queue !== undefined) {
-                        if (server_queue.voiceChannel !== voice_channel)
-                            return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
-                    }
-
-                    let index = parseInt(args[0])
-                    if (!index || index < 1 || index > server_queue.songs.length) {
-                        msg.reply({ embeds: [titleEmbed(msg.guild, `Inserire un numero tra 1 e ${server_queue.songs.length}`)], ephemeral: true });
-                        return;
-                    }
-
-                    server_queue.remove(index - 1);
-                    reactToMsg(msg, '❌')
-                }
-                break
+            
 
         }
     }

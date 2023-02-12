@@ -20,7 +20,7 @@ Reflect.defineProperty(SavedQueues, 'getQueues', {
                 guildId: guildId
             }
         })
-        queueJson.songsJson = JSON.parse(queueJson.songsJson)
+        // queueJson.songsJson = JSON.parse(queueJson.songsJson)
         if (queueJson) return queueJson
         else return undefined;
     }

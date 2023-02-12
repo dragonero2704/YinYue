@@ -1,7 +1,9 @@
 const { globalQueue } = require('../../misc/globals')
 
-const { serverQueue, check } = require('./serverQueue');
+const { ServerQueue, check } = require('./ServerQueue');
 const { SlashCommandBuilder } = require('discord.js');
+const { titleEmbed, fieldEmbed, sendReply, reactToMsg } = require('../../misc/functions')
+
 
 module.exports = {
     name: "loop",
@@ -31,38 +33,38 @@ module.exports = {
         let mode = interaction.options.getSubcommand()
         if (!mode) return
         switch (server_queue.changeLoopState(mode)) {
-            case serverQueue.loopStates.disabled:
-                interaction.reply(`${serverQueue.queueFormat.start}\nLoop: disabled\n${serverQueue.queueFormat.end}`);
+            case ServerQueue.loopStates.disabled:
+                interaction.reply(`${ServerQueue.queueFormat.start}\nLoop: disabled\n${ServerQueue.queueFormat.end}`);
                 break;
-            case serverQueue.loopStates.queue:
-                interaction.reply(`${serverQueue.queueFormat.start}\nLoop: queue\n${serverQueue.queueFormat.end}`);
+            case ServerQueue.loopStates.queue:
+                interaction.reply(`${ServerQueue.queueFormat.start}\nLoop: queue\n${ServerQueue.queueFormat.end}`);
                 break;
-            case serverQueue.loopStates.track:
-                interaction.reply(`${serverQueue.queueFormat.start}\nLoop: track\n${serverQueue.queueFormat.end}`);
+            case ServerQueue.loopStates.track:
+                interaction.reply(`${ServerQueue.queueFormat.start}\nLoop: track\n${ServerQueue.queueFormat.end}`);
                 break;
         }
     },
 
     async run(msg, args, bot) {
-        if (!check(interaction, globalQueue)) return;
-        let server_queue = globalQueue.get(interaction.guild.id);
+        if (!check(msg, globalQueue)) return;
+        let server_queue = globalQueue.get(msg.guild.id);
 
         let mode = undefined
         if (args.length !== 0)
             mode = args[0];
 
         switch (server_queue.changeLoopState(mode)) {
-            case serverQueue.loopStates.disabled:
-                // sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.responses.loopDisabled))
+            case ServerQueue.loopStates.disabled:
+                // sendReply(msg.channel, titleEmbed(msg.guild, ServerQueue.responses.loopDisabled))
                 reactToMsg(msg, '➡️');
                 break;
-            case serverQueue.loopStates.queue:
-                // sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.responses.loopEnabled));
+            case ServerQueue.loopStates.queue:
+                // sendReply(msg.channel, titleEmbed(msg.guild, ServerQueue.responses.loopEnabled));
                 reactToMsg(msg, '🔁');
 
                 break;
-            case serverQueue.loopStates.track:
-                // sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.responses.loopEnabledTrack));
+            case ServerQueue.loopStates.track:
+                // sendReply(msg.channel, titleEmbed(msg.guild, ServerQueue.responses.loopEnabledTrack));
                 reactToMsg(msg, '🔂');
                 break;
         }

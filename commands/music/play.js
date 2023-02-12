@@ -1,9 +1,9 @@
 const { globalQueue } = require('../../misc/globals')
 
-const { serverQueue } = require('./serverQueue');
+const { ServerQueue } = require('./ServerQueue');
 
 const { titleEmbed, fieldEmbed, sendReply, reactToMsg } = require('../../misc/functions')
-const { ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, ButtonStyle, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 
 
 module.exports = {
@@ -21,15 +21,15 @@ module.exports = {
     async execute(interaction, bot) {
         let voice_channel = await interaction.member.voice.channel;
         if (!voice_channel) {
-            // sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.voiceChannelNotFound), 10000);
-            return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.voiceChannelNotFound)], ephemeral: true });
+            // sendReply(msg.channel, titleEmbed(msg.guild, ServerQueue.errors.voiceChannelNotFound), 10000);
+            return interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.voiceChannelNotFound)], ephemeral: true });
         }
 
         let input = interaction.options.getString('input');
 
         if (!input) {
-            // sendReply(interaction.channel, titleEmbed(interaction.guild, serverQueue.errors.invalidArgument), 10000);
-            return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.invalidArgument)], ephemeral: true });
+            // sendReply(interaction.channel, titleEmbed(interaction.guild, ServerQueue.errors.invalidArgument), 10000);
+            return interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.invalidArgument)], ephemeral: true });
         }
 
         input = input.split(' ');
@@ -38,15 +38,15 @@ module.exports = {
 
         if (server_queue !== undefined) {
             if (server_queue.voiceChannel !== voice_channel) {
-                let content = serverQueue.queueFormat.start + serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !` + serverQueue.queueFormat.end;
+                let content = ServerQueue.queueFormat.start + ServerQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !` + ServerQueue.queueFormat.end;
                 return interaction.reply({ content: content, ephemeral: true })
             }
-            // return interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
+            // return interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
         }
-        // await interaction.reply(`${serverQueue.queueFormat.start}\n${bot.user.username} is working, this may take some time ${serverQueue.queueFormat.end}`)
+        // await interaction.reply(`${ServerQueue.queueFormat.start}\n${bot.user.username} is working, this may take some time ${ServerQueue.queueFormat.end}`)
         await interaction.deferReply()
         console.time("songObject")
-        let item = await serverQueue.getSongObject(input);
+        let item = await ServerQueue.getSongObject(input);
         console.timeEnd("songObject")
 
         if (!item) return interaction.editReply({ embeds: [titleEmbed(interaction.guild, 'Nessun risultato')], ephemeral: true })
@@ -58,7 +58,7 @@ module.exports = {
         }
         console.log("Creating server queue")
         if (!server_queue) {
-            server_queue = new serverQueue(item, interaction.channel, voice_channel);
+            server_queue = new ServerQueue(item, interaction.channel, voice_channel);
             // adds songs to the global queue map
             globalQueue.set(interaction.guild.id, server_queue);
             // plays the first song of the list
@@ -74,23 +74,23 @@ module.exports = {
     async run(msg, args, bot) {
         let voice_channel = await msg.member.voice.channel;
         if (!voice_channel) {
-            // sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.voiceChannelNotFound), 10000);
-            return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.voiceChannelNotFound)], ephemeral: true });
+            // sendReply(msg.channel, titleEmbed(msg.guild, ServerQueue.errors.voiceChannelNotFound), 10000);
+            return msg.reply({ embeds: [titleEmbed(msg.guild, ServerQueue.errors.voiceChannelNotFound)], ephemeral: true });
         }
 
         if (!args[0]) {
-            // sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.errors.invalidArgument), 10000);
-            return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.invalidArgument)], ephemeral: true });
+            // sendReply(msg.channel, titleEmbed(msg.guild, ServerQueue.errors.invalidArgument), 10000);
+            return msg.reply({ embeds: [titleEmbed(msg.guild, ServerQueue.errors.invalidArgument)], ephemeral: true });
         }
 
         let server_queue = globalQueue.get(msg.guild.id);
 
         if (server_queue !== undefined) {
             if (server_queue.voiceChannel !== voice_channel)
-                return msg.reply({ embeds: [titleEmbed(msg.guild, serverQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
+                return msg.reply({ embeds: [titleEmbed(msg.guild, ServerQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
         }
 
-        let item = await serverQueue.getSongObject(args);
+        let item = await ServerQueue.getSongObject(args);
         if (!item) return msg.reply({ embeds: [titleEmbed(msg.guild, 'Nessun risultato')], ephemeral: true })
         if (Array.isArray(item)) {
             sendReply(msg.channel, fieldEmbed(msg.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`));
@@ -99,7 +99,7 @@ module.exports = {
         }
 
         if (!server_queue) {
-            server_queue = new serverQueue(item, msg.channel, voice_channel);
+            server_queue = new ServerQueue(item, msg.channel, voice_channel);
             // adds songs to the global queue map
             globalQueue.set(msg.guild.id, server_queue);
             // plays the first song of the list

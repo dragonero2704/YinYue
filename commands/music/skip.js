@@ -1,6 +1,7 @@
 const { globalQueue } = require('../../misc/globals')
-const { serverQueue, check } = require('./serverQueue');
+const { ServerQueue, check } = require('./ServerQueue');
 const { SlashCommandBuilder } = require('discord.js');
+const { titleEmbed, fieldEmbed, sendReply, reactToMsg } = require('../../misc/functions')
 
 module.exports = {
     name: "skip",
@@ -20,13 +21,13 @@ module.exports = {
         } else {
             server_queue.die();
             globalQueue.delete(interaction.guild.id);
-            interaction.reply({ embeds: [titleEmbed(interaction.guild, serverQueue.responses.endQueue)] })
+            interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.responses.endQueue)] })
         }
     },
 
     async run(msg, args, bot) {
-        if (!check(interaction, globalQueue)) return;
-        let server_queue = globalQueue.get(interaction.guild.id);
+        if (!check(msg, globalQueue)) return;
+        let server_queue = globalQueue.get(msg.guild.id);
 
         let song = server_queue.nextTrack(true);
         // console.log(song);
@@ -35,7 +36,7 @@ module.exports = {
         } else {
             server_queue.die();
             globalQueue.delete(msg.guild.id);
-            sendReply(msg.channel, titleEmbed(msg.guild, serverQueue.responses.endQueue))
+            sendReply(msg.channel, titleEmbed(msg.guild, ServerQueue.responses.endQueue))
         }
         reactToMsg(msg, '⏭️');
     }

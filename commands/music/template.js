@@ -1,13 +1,13 @@
 const { globalQueue } = require('../../misc/globals')
 
-const { serverQueue, check } = require('./serverQueue');
+const { ServerQueue, check } = require('./ServerQueue');
 const { SlashCommandBuilder } = require('discord.js');
 
 module.exports={
     name:"",
     aliases:"",
     data: "",
-    disabled,
+    disabled:true,
     async execute(interaction, bot){
 
     },
