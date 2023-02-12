@@ -19,7 +19,7 @@ Reflect.defineProperty(SlotLimits, 'getLimit', {
                 guildId: guildId
             }
         })
-        return limit.slots??defaultSlotLimit
+        return limit?limit.slots:defaultSlotLimit
     }
 })
 

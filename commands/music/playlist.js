@@ -1,7 +1,7 @@
 const { globalQueue } = require('../../misc/globals')
 
 const { ServerQueue, check } = require('./ServerQueue');
-const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { titleEmbed, fieldEmbed, sendReply, reactToMsg } = require('../../misc/functions')
 const { SavedQueues } = require('../../database/models/savedQueues')
 const { SlotLimits } = require('../../database/models/slotLimits')
@@ -12,7 +12,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('playlist')
         .setDescription('Playlist command list')
-        
+
         .addSubcommand(sub =>
             sub.setName('load')
                 .setDescription('Loads a saved queue'))
@@ -49,7 +49,7 @@ module.exports = {
                     const limit = await SlotLimits.getLimit(interaction.guild.id)
                     //check how many queues I have already
                     const queueNumber = await SavedQueues.getQueueTotal(interaction.guild.id)
-                    if(queueNumber >= limit) return interaction.reply({embeds: [titleEmbed(interaction.guild, 'Queue limit reached for this server: '+limit)]})
+                    if (queueNumber >= limit) return interaction.reply({ embeds: [titleEmbed(interaction.guild, 'Queue limit reached for this server: ' + limit)] })
                     SavedQueues.saveQueue(interaction.guild.id, server_queue.getSongsJson(), name)
                         .then(() => interaction.reply({ embeds: [titleEmbed(interaction.guild, `Queue saved as '${name}'`)] }))
                         .catch(console.error)
@@ -118,6 +118,38 @@ module.exports = {
 
                     break;
                 }
+            case 'delete':
+                {
+                    const row = new ActionRowBuilder()
+                    let selectMenu = new StringSelectMenuBuilder()
+                        .setCustomId('queues')
+                        .setPlaceholder('Seleziona una playist')
+                        .setMaxValues(1)
+                        .setMinValues(1)
+
+
+                    let songs = await SavedQueues.getQueues(interaction.guild.id)
+                    if (!songs) {
+                        return interaction.reply("Non ci sono playlist salvate in questo server")
+                    }
+                    console.log(songs)
+                    for (const song of songs) {
+                        selectMenu.addOptions({
+                            label: song.queueName,
+                            value: song.queueName
+                        })
+                    }
+
+                    const row2 = new ActionRowBuilder().addComponents(new ButtonBuilder()
+                    .setCustomId('delete')
+                    .setLabel('Delete')
+                    .setStyle(ButtonStyle.Danger))
+                    row.addComponents(selectMenu)
+
+                    let msgmenu = await interaction.reply({ components: [row, row2] })
+
+                }
+                break;
         }
     },
 
