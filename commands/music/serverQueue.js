@@ -1,5 +1,6 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder } = require('discord.js');
 const { titleEmbed, fieldEmbed, sendReply } = require('../../misc/functions')
+const { globalQueue } = require('../../misc/globals')
 const voice = require('@discordjs/voice');
 const play_dl = require('play-dl')
 let blank_field = '\u200b'
@@ -21,7 +22,7 @@ function check(interaction, globalQueue) {
     }
     let songs = server_queue.getSongs();
     if (songs.length === 0) {
-        interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.emptyQueue)],ephemeral: true });
+        interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.emptyQueue)], ephemeral: true });
         return false;
     }
     return true;
@@ -84,7 +85,9 @@ class ServerQueue {
         this.player.on(voice.AudioPlayerStatus.Playing, async (oldState, newState) => {
             let song = newState.resource.metadata;
             console.log(`Now playing: ${song.title}`);
-            await sendReply(this.txtChannel, fieldEmbed(this.txtChannel.guild, 'In riproduzione', `[**${song.title}**](${song.url})`), 10000);
+            let embed = titleEmbed(this.txtChannel.guild, `**${song.title}**`, 'In riproduzione', song.url)
+            embed.setImage(song.thumbnailUrl)
+            await sendReply(this.txtChannel, embed, 10000);
         })
 
         this.player.on(voice.AudioPlayerStatus.Buffering, (oldState, newState) => {
@@ -104,6 +107,10 @@ class ServerQueue {
         this.player.on('error', error => {
             console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
         });
+
+        this.connection.on('error', e => {
+            console.error
+        })
 
         this.sub = this.connection.subscribe(this.player)
         //queue 
@@ -158,7 +165,7 @@ class ServerQueue {
                             let song = {
                                 url: media.url,
                                 title: media.title,
-
+                                thumbnailUrl: media.thumbnails[0].url,
                                 duration: media.durationInSec,
                                 durationRaw: media.durationRaw,
                             }
@@ -177,7 +184,7 @@ class ServerQueue {
                                 let song = {
                                     url: video.url,
                                     title: video.title,
-
+                                    thumbnailUrl: video.thumbnails[0].url,
                                     duration: video.durationInSec,
                                     durationRaw: video.durationRaw,
                                 }
@@ -210,7 +217,7 @@ class ServerQueue {
                                 let song = {
                                     url: yt_video.url,
                                     title: yt_video.title,
-
+                                    thumbnailUrl: yt_video.thumbnails[0].url,
                                     duration: yt_video.durationInSec,
                                     durationRaw: yt_video.durationRaw,
 
@@ -236,7 +243,7 @@ class ServerQueue {
                                 let song = {
                                     url: yt_video.url,
                                     title: yt_video.title,
-
+                                    thumbnailUrl: yt_video.thumbnails[0].url,
                                     duration: yt_video.durationInSec,
                                     durationRaw: yt_video.durationRaw,
 
@@ -255,7 +262,7 @@ class ServerQueue {
                             let song = {
                                 url: yt_video.url,
                                 title: yt_video.title,
-
+                                thumbnailUrl: yt_video.thumbnails[0].url,
                                 duration: yt_video.durationInSec,
                                 durationRaw: yt_video.durationRaw,
                             }
@@ -291,7 +298,7 @@ class ServerQueue {
                     let song = {
                         url: media.url,
                         title: media.title,
-
+                        thumbnailUrl: media.thumbnails[0].url,
                         duration: media.durationInSec,
                         durationRaw: media.durationRaw,
                     }
@@ -545,7 +552,7 @@ class ServerQueue {
             counter++;
         }
 
-        let songsxpage = 20;
+        const songsxpage = 20;
         let pages = [];
         while (queue.length !== 0) {
             let tmp = [];
@@ -647,7 +654,7 @@ class ServerQueue {
 }
 
 module.exports = {
-    module:true,
+    module: true,
 
     ServerQueue,
     check

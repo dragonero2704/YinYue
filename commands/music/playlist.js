@@ -12,13 +12,14 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('playlist')
         .setDescription('Playlist command list')
+        
         .addSubcommand(sub =>
             sub.setName('load')
                 .setDescription('Loads a saved queue'))
 
         .addSubcommand(sub =>
-            sub.setName('list')
-                .setDescription('Shows saved queue slots'))
+            sub.setName('delete')
+                .setDescription('Deletes a playlist'))
         .addSubcommand(sub =>
             sub.setName('save')
                 .setDescription('Saves the queue')
@@ -67,7 +68,7 @@ module.exports = {
                     const row = new ActionRowBuilder()
                     let selectMenu = new StringSelectMenuBuilder()
                         .setCustomId('queues')
-                        .setPlaceholder('Select a queue')
+                        .setPlaceholder('Seleziona una playist')
                         .setMaxValues(1)
                         .setMinValues(1)
 
