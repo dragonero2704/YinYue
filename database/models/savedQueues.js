@@ -40,7 +40,7 @@ Reflect.defineProperty(SavedQueues, 'getQueues', {
 Reflect.defineProperty(SavedQueues, 'getQueue', {
     value: async function getQueue(guildId, name) {
         let q = queueCache.get(name)
-        if (q) return q
+        if (q!== undefined) return q
         const queueJson = await SavedQueues.findOne({
             where: {
                 guildId: guildId,
