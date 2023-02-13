@@ -4,6 +4,7 @@ module.exports = {
     name: 'bulkdelete',
     aliases: ['clean', 'clear'],
     args: ['[number of messages]'],
+    disabled:true,
     data: new SlashCommandBuilder()
         .setName('bulkdelete')
         .setDescription('Cancella un certo numero di messaggi')
@@ -13,7 +14,7 @@ module.exports = {
             .setDescription('Numero di messaggi da cancellare')
             .setRequired(true)
             .setMinValue(1)
-            .setMaxValue(500)),
+            .setMaxValue(100)),
 
     execute: async(interaction, bot) => {
         //check for permission
@@ -23,8 +24,10 @@ module.exports = {
 
         let number = interaction.options.getInteger('numero');
         //add 1 so it will delete also the command message
-        number = number + 1;
-        await interaction.reply({content:'Sto cancellando...', ephemeral:true});
+        // number = number;
+        
+        // interaction.reply({content:'Sto cancellando...', ephemeral:true}).then(i=>i.delete());
+
         try {
             interaction.channel.bulkDelete(number)
         } catch (error) {

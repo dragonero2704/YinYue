@@ -58,7 +58,11 @@ Reflect.defineProperty(SavedQueues, 'getQueue', {
 
 Reflect.defineProperty(SavedQueues, 'saveQueue', {
     value: async function saveQueue(guildId, songsJson, queueName) {
-        queueCache.clear()
+        queueCache.unset(queueName)
+        let q = await SavedQueues.getQueue(guildId, songsJson)
+        if(q){
+            return await SavedQueues.update({songsJson}, {where:{guildId, queueName}})
+        }
         return await SavedQueues.upsert({
             guildId: guildId,
             queueName: queueName,
@@ -81,6 +85,16 @@ Reflect.defineProperty(SavedQueues, 'getQueueTotal', {
             return queueJson.length
         }
         else { return undefined; }
+    }
+})
+
+Reflect.defineProperty(SavedQueues, 'deleteQueue', {
+    value: async function deleteQueue(guildId, queueName) {
+        queueCache.clear()
+        return await SavedQueues.destroy({where:{
+            guildId: guildId,
+            queueName: queueName,
+        }})
     }
 })
 
