@@ -636,7 +636,7 @@ class ServerQueue {
             this.queueMsg.fetch()
         }
         try {
-            this.queueMsg.message.delete()
+            this.queueMsg.delete()
         } catch (error) {
             //message is too old
         }
