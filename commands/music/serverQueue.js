@@ -177,7 +177,7 @@ class ServerQueue {
                         {
                             let songs = []
                             console.log(query)
-                            let videos = await (await play_dl.playlist_info(query)).all_videos()
+                            let videos = await play_dl.playlist_info(query).all_videos()
                             // let videos = await playlist.all_videos()
                             // console.log(playlist)
                             for (const video of videos) {
@@ -205,53 +205,68 @@ class ServerQueue {
                 switch (type_url[1]) {
                     case 'album':
                         {
-                            // console.log(playlist)
                             let tracks = await playlist.all_tracks()
-                            // console.log(tracks)
                             console.log(`fetching ${playlist.tracksCount} tracks from Youtube...`);
-                            let songs = [];
-                            for (let i = 0; i < playlist.tracksCount; i++) {
+                            let promises = [];
+                            tracks.forEach(track => {
+                                promises.push(new Promise((resolve, reject) => {
+                                    play_dl.search(track.name, {
+                                        type: 'video', limit: 1, source: {
+                                            youtube: "video"
+                                        }
+                                    }).then(ytVideo => {
+                                        ytVideo = ytVideo[0]
+                                        if (ytVideo) {
+                                            resolve({
+                                                url: ytVideo.url,
+                                                title: ytVideo.title,
+                                                thumbnailUrl: ytVideo.thumbnails[0].url,
+                                                duration: ytVideo.durationInSec,
+                                                durationRaw: ytVideo.durationRaw,
+                                            })
+                                        } else
+                                            reject()
+                                    })
 
-                                let yt_video = (await play_dl.search(tracks[i].name, { limit: 1 }))[0]
-                                // console.log(yt_video)
-                                let song = {
-                                    url: yt_video.url,
-                                    title: yt_video.title,
-                                    thumbnailUrl: yt_video.thumbnails[0].url,
-                                    duration: yt_video.durationInSec,
-                                    durationRaw: yt_video.durationRaw,
+                                }))
+                            })
+                            return Promise.allSettled(promises)
+                                .then(results => results.filter(val => val.status === 'fulfilled').map(val => val.value))
+                                .catch(e => console.log)
 
-                                }
-                                songs.push(song)
-                            }
-                            console.log('done')
-                            return songs;
                         }
                         break;
                     case 'playlist':
                         {
                             let playlist = await play_dl.spotify(query)
-                            // console.log(playlist)
                             let tracks = await playlist.all_tracks()
-                            // console.log(tracks)
                             console.log(`fetching ${playlist.tracksCount} tracks from Youtube...`);
-                            let songs = [];
-                            for (let i = 0; i < playlist.tracksCount; i++) {
+                            let promises = [];
+                            tracks.forEach(track => {
+                                promises.push(new Promise((resolve, reject) => {
+                                    play_dl.search(track.name, {
+                                        type: 'video', limit: 1, source: {
+                                            youtube: "video"
+                                        }
+                                    }).then(ytVideo => {
+                                        ytVideo = ytVideo[0]
+                                        if (ytVideo) {
+                                            resolve({
+                                                url: ytVideo.url,
+                                                title: ytVideo.title,
+                                                thumbnailUrl: ytVideo.thumbnails[0].url,
+                                                duration: ytVideo.durationInSec,
+                                                durationRaw: ytVideo.durationRaw,
+                                            })
+                                        } else
+                                            reject()
+                                    })
 
-                                let yt_video = (await play_dl.search(tracks[i].name, { limit: 1 }))[0]
-                                // console.log(yt_video)
-                                let song = {
-                                    url: yt_video.url,
-                                    title: yt_video.title,
-                                    thumbnailUrl: yt_video.thumbnails[0].url,
-                                    duration: yt_video.durationInSec,
-                                    durationRaw: yt_video.durationRaw,
-
-                                }
-                                songs.push(song)
-                            }
-                            console.log('done')
-                            return songs;
+                                }))
+                            })
+                            return Promise.allSettled(promises)
+                                .then(results => results.filter(val => val.status === 'fulfilled').map(val => val.value))
+                                .catch(e => console.log)
                         }
                         break;
                     case 'track':
@@ -307,6 +322,7 @@ class ServerQueue {
                 }
                 break;
         }
+        return undefined
     }
     // Builds the resource for discord.js player to play
     async getResource(song) {
@@ -616,12 +632,22 @@ class ServerQueue {
         if (!this.queueCollector) return
         this.queueCollector.stop();
         this.queueCollector = undefined;
-        if (!this.queueMsg.editable) this.queueMsg.fetch()
+        if (!this.queueMsg.editable) {
+            this.queueMsg.fetch()
+        }
         try {
-            this.queueMsg.delete()
+            this.queueMsg.message.delete()
         } catch (error) {
             //message is too old
         }
+
+        try{
+            this.queueMsg.deleteReply()
+        }
+        catch(error){
+
+        }
+
         return;
     }
 
