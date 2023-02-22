@@ -75,7 +75,7 @@ module.exports = {
                     if (!songs) {
                         return interaction.reply("Non ci sono playlist salvate in questo server")
                     }
-                    console.log(songs)
+                    // console.log(songs)
                     for (const song of songs) {
                         selectMenu.addOptions({
                             label: song.queueName,
@@ -132,7 +132,7 @@ module.exports = {
                                 }
                                 //add songs to the existing queue
                                 let queueJson = await SavedQueues.getQueue(interaction.guild.id, name)
-                                server_queue.addMultiple(queueJson)
+                                server_queue.add(queueJson)
                             }
                             collector.stop()
                             collected.deleteReply()
@@ -154,7 +154,7 @@ module.exports = {
                                     remaining = 0;
                                 }
                                 // page = []
-                                page = page.slice(0, 20)
+                                page = page.slice(0, 20).join('\n')
                             } else {
                                 page = `${1}. ${songsJson.title}\t${songsJson.durationRaw}`
                                 remaining = 0;
@@ -184,7 +184,7 @@ module.exports = {
                     if (!songs) {
                         return interaction.reply("Non ci sono playlist salvate in questo server")
                     }
-                    console.log(songs)
+                    // console.log(songs)
                     for (const song of songs) {
                         selectMenu.addOptions({
                             label: song.queueName,
@@ -244,7 +244,8 @@ module.exports = {
                                     remaining = 0;
                                 }
                                 // page = []
-                                page = page.slice(0, 20)
+                                page = page.slice(0, 20).join("\n")
+                                // console.log(page)
                             } else {
                                 page = `${1}. ${songsJson.title}\t${songsJson.durationRaw}`
                                 remaining = 0;

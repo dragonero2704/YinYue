@@ -40,7 +40,6 @@ class ServerQueue {
         }
         // console.log(this.songs)
         this.curPlayingSong = this.songs[0];
-        this.curPlayingIndex = 0;
         this.loopState = ServerQueue.loopStates.disabled;
 
         this.txtChannel = txtChannel;
@@ -429,12 +428,8 @@ class ServerQueue {
         await this.play(this.songs[index]);
     }
 
-    add(song) {
-        this.songs.push(song);
-    }
-
-    addMultiple(songs) {
-        this.songs = this.songs.concat(songs)
+    add(...songs) {
+        songs.forEach(song => this.songs.push(song))
     }
 
     curPlayingIndex() {
@@ -562,29 +557,28 @@ class ServerQueue {
     queuePages() {
         let queue = [];
         let counter = 1;
-        for (const song of this.songs) {
-            let line = '';
+        this.songs.forEach((song, index) => {
+            let line = ''
             if (song === this.curPlayingSong) {
-                //currently playing
-                // console.log(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))
-                line = `    ⬐In riproduzione\n${counter}. ${song.title}\t${ServerQueue.convertToRawDuration(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))} rimasti\n    ⬑In riproduzione`
+                line = `    ⬐In riproduzione\n${index + 1}. ${song.title}\t${ServerQueue.convertToRawDuration(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))} rimasti\n    ⬑In riproduzione`
             } else {
-                line = `${counter}. ${song.title}\t${song.durationRaw}`
+                line = `${index + 1}. ${song.title}\t${song.durationRaw}`
             }
             queue.push(line);
-            counter++;
-        }
-
+        })
+        console.log(queue)
         const songsxpage = 20;
-        let pages = [];
-        while (queue.length !== 0) {
-            let tmp = [];
-            for (let i = 0; i < songsxpage; i++) {
-                if (queue.length === 0) break;
-                tmp.push(queue.shift());
+        const pages = queue.reduce((resultArray, item, index) => {
+            const chunkIndex = Math.floor(index / songsxpage)
+
+            if (!resultArray[chunkIndex]) {
+                resultArray[chunkIndex] = [] // start a new chunk
             }
-            pages.push(tmp);
-        }
+
+            resultArray[chunkIndex].push(item)
+
+            return resultArray
+        }, [])
         return pages;
     }
 
@@ -674,10 +668,10 @@ class ServerQueue {
             new ButtonBuilder().setCustomId('Next').setLabel('>').setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId('LastPage').setLabel('>>').setStyle(ButtonStyle.Primary),
         )
-        // await interaction.reply(blank_field);
-        // interaction.deleteReply();
-        // let queueinteraction = await interaction.channel.send({ content: queue, components: [row] });
-        let queueinteraction = await interaction.reply({ content: queue, components: [row] });
+        await interaction.reply(blank_field);
+        interaction.deleteReply();
+        let queueinteraction = await interaction.channel.send({ content: queue, components: [row] });
+        // let queueinteraction = await interaction.reply({ content: queue, components: [row] });
         this.startCollector(queueinteraction, ['FirstPage', 'Previous', 'Next', 'LastPage'])
     }
 

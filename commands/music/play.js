@@ -65,9 +65,13 @@ module.exports = {
             await server_queue.play()
         } else {
             if (Array.isArray(item)) {
-                server_queue.addMultiple(item);
+                item.forEach(v => {
+                    if (!server_queue.getSongs().includes(v))
+                        server_queue.add(v);
+                })
             } else {
-                server_queue.add(item);
+                if (!server_queue.getSongs().includes(item))
+                    server_queue.add(item);
             }
         }
     },
@@ -106,9 +110,13 @@ module.exports = {
             await server_queue.play()
         } else {
             if (Array.isArray(item)) {
-                server_queue.addMultiple(item);
+                item.forEach(v => {
+                    if (!server_queue.getSongs().includes(v))
+                        server_queue.add(v);
+                })
             } else {
-                server_queue.add(item);
+                if (!server_queue.getSongs().includes(item))
+                    server_queue.add(item);
             }
         }
         reactToMsg(msg, '👌');
