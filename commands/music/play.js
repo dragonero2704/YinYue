@@ -1,6 +1,6 @@
 const { globalQueue } = require('../../misc/globals')
 
-const { ServerQueue } = require('./ServerQueue');
+const { ServerQueue } = require('./serverQueue');
 
 const { titleEmbed, fieldEmbed, sendReply, reactToMsg } = require('../../misc/functions')
 const { SlashCommandBuilder } = require('discord.js');
