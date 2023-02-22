@@ -19,7 +19,7 @@ if(test){
     })
 }
 
-// startWebServer();
+startWebServer();
 
 console.log('Syncing database')
 

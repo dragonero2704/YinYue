@@ -3,7 +3,7 @@ const express = require('express');
 const path = require('path')
     // import express from 'express'
 const server = express()
-const port = 3000
+const port = 80
 
 server.use(express.static(__dirname));
 
