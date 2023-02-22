@@ -4,8 +4,10 @@
     "description": "A music bot for Discord",
     "main": "index.js",
     "scripts": {
+        "start": "node .",
         "test": "node . --test",
-        "start": "node ."
+        "gRegister": "node ./command-deploy.js",
+        "testRegister": "node ./tst-cmd-deploy.js"
     },
     "repository": {
         "type": "git",
