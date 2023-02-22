@@ -1,4 +1,4 @@
-const { ShardingManager } = require('discord.js');
+const { ShardingManager, VoiceChannel } = require('discord.js');
 const { appendFile } = require('fs')
 const { config } = require("dotenv")
 const { startWebServer } = require('./server/server');
@@ -35,6 +35,9 @@ const manager = new ShardingManager('./bot.js', { token: process.env["TOKEN"] })
 manager.on('shardCreate', shard => {
     console.log(`Launched shard ${shard.id}`)
 });
+
+// const v = new VoiceChannel()
+// v.members.size()
 
 manager.spawn();
 

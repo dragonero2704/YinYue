@@ -29,7 +29,7 @@ function check(interaction, globalQueue) {
 }
 
 class ServerQueue {
-    constructor(songs, txtChannel, voiceChannel) {
+    constructor(songs, txtChannel, voiceChannel, autodie = true) {
         this.songs = [];
         if (Array.isArray(songs)) {
             this.songs = songs;
@@ -40,11 +40,20 @@ class ServerQueue {
         }
         // console.log(this.songs)
         this.curPlayingSong = this.songs[0];
+        this.curPlayingIndex = 0;
         this.loopState = ServerQueue.loopStates.disabled;
 
         this.txtChannel = txtChannel;
         this.voiceChannel = voiceChannel;
-
+        const interval = 60_000
+        if (autodie) {
+            setInterval(() => {
+                if (voiceChannel.members.size <= 1) {
+                    //il bot è da solo
+                    this.die(true)
+                }
+            }, interval)
+        }
         try {
             this.connection = voice.joinVoiceChannel({
                 channelId: voiceChannel.id,
@@ -352,8 +361,6 @@ class ServerQueue {
             return undefined;
         }
         console.timeEnd("resource")
-
-
         return resource;
     }
 
@@ -641,10 +648,10 @@ class ServerQueue {
             //message is too old
         }
 
-        try{
+        try {
             this.queueMsg.deleteReply()
         }
-        catch(error){
+        catch (error) {
 
         }
 
