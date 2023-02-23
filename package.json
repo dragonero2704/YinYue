@@ -30,13 +30,15 @@
         "dotenv": "^10.0.0",
         "express": "^4.17.2",
         "ffmpeg-static": "^4.4.0",
+        "http-cache-semantics": "^4.1.1",
         "libsodium-wrappers": "^0.7.9",
         "node-fetch": "^2.6.7",
         "npm": "^8.3.0",
         "play-dl": "^1.9.6",
-        "sequelize": "^6.25.3",
+        "sequelize": "^6.28.2",
         "sqlite3": "^5.1.4",
-        "tar": "^4.4.18"
+        "tar": "^4.4.18",
+        "undici": "^5.20.0"
     },
     "devDependencies": {
         "node": "^18.5.0"
