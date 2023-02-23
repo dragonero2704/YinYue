@@ -429,7 +429,10 @@ class ServerQueue {
     }
 
     add(...songs) {
-        songs.forEach(song => this.songs.push(song))
+        songs.flatMap(val=>val).forEach(song =>{
+            if(this.indexOfSong(song) === -1)
+                this.songs.push(song)
+        })
     }
 
     curPlayingIndex() {
