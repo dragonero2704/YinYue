@@ -630,8 +630,9 @@ class ServerQueue {
     }
 
     stopCollector() {
-        if (!this.queueCollector) return
-        this.queueCollector.stop();
+        if (this.queueCollector) {
+            this.queueCollector.stop();
+        }
         this.queueCollector = undefined;
         if (!this.queueMsg.editable) {
             this.queueMsg.fetch()
@@ -640,13 +641,6 @@ class ServerQueue {
             this.queueMsg.delete()
         } catch (error) {
             //message is too old
-        }
-
-        try {
-            this.queueMsg.deleteReply()
-        }
-        catch (error) {
-
         }
 
         return;
