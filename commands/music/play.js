@@ -3,8 +3,9 @@ const { globalQueue } = require('../../misc/globals')
 const { ServerQueue } = require('./serverQueue');
 
 const { titleEmbed, fieldEmbed, sendReply, reactToMsg } = require('../../misc/functions')
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, basename } = require('discord.js');
 
+const lang = require(`./languages/${basename(__filename).split('.')[0]}.json`)
 
 module.exports = {
     name: "play",

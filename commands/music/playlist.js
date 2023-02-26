@@ -1,10 +1,12 @@
 const { globalQueue } = require('../../misc/globals')
 
 const { ServerQueue, check } = require('./serverQueue');
-const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, ComponentType, ButtonBuilder, ButtonStyle, InteractionCollector } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, basename, ButtonBuilder, ButtonStyle, InteractionCollector } = require('discord.js');
 const { titleEmbed, fieldEmbed, sendReply, reactToMsg } = require('../../misc/functions')
 const { SavedQueues } = require('../../database/models/savedQueues')
 const { SlotLimits } = require('../../database/models/slotLimits')
+
+const lang = require(`./languages/${basename(__filename).split('.')[0]}.json`)
 
 module.exports = {
     name: "playlist",

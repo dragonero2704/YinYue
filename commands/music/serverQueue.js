@@ -1,9 +1,11 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, basename } = require('discord.js');
 const { titleEmbed, fieldEmbed, sendReply } = require('../../misc/functions')
 const { globalQueue } = require('../../misc/globals')
 const voice = require('@discordjs/voice');
 const play_dl = require('play-dl')
 let blank_field = '\u200b'
+
+const lang = require(`./languages/${basename(__filename).split('.')[0]}.json`)
 
 function check(interaction, globalQueue) {
     let voice_channel = interaction.member.voice.channel;
@@ -29,7 +31,7 @@ function check(interaction, globalQueue) {
 }
 
 class ServerQueue {
-    constructor(songs, txtChannel, voiceChannel, autodie = true) {
+    constructor(songs, txtChannel, voiceChannel, autodie = true, locale = "en-UK") {
         this.songs = [];
         if (Array.isArray(songs)) {
             this.songs = songs;
@@ -429,8 +431,8 @@ class ServerQueue {
     }
 
     add(...songs) {
-        songs.flatMap(val=>val).forEach(song =>{
-            if(this.indexOfSong(song) === -1)
+        songs.flatMap(val => val).forEach(song => {
+            if (this.indexOfSong(song) === -1)
                 this.songs.push(song)
         })
     }
@@ -499,11 +501,19 @@ class ServerQueue {
     }
 
     pause() {
-        this.player.pause();
+        try {
+            this.player.pause();
+        }catch(error){
+            
+        }
     }
 
     resume() {
-        this.player.unpause();
+        try {
+            this.player.unpause();
+        } catch (error) {
+
+        }
     }
     shuffle() {
         for (let i = this.songs.length - 1; i > 0; i--) {
@@ -679,7 +689,6 @@ class ServerQueue {
 
 module.exports = {
     module: true,
-
     ServerQueue,
     check
 }
