@@ -1,0 +1,12 @@
+{
+    "name": {
+        "it": "Salta",
+        "en-UK":"Skip",
+        "en-US":"Skip"
+    },
+    "description":{
+        "it":"Salta alla canzone successiva",
+        "en-UK":"Skips to the next song",
+        "en-US":"Skips to the next song"
+    }
+}
