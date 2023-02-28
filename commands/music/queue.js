@@ -11,7 +11,7 @@ module.exports = {
     aliases: ["q"],
     data: new SlashCommandBuilder()
         .setName('queue')
-        .setDescription('Mostra la coda'),
+        .setDescription('Shows the queue'),
 
     async execute(interaction, bot) {
         if (!check(interaction, globalQueue)) return;

@@ -1,1 +1,8 @@
-{}
+{
+    "names":{
+        "it":"coda"
+    },
+    "descriptions":{
+        "it": "Mostra la coda"
+    }
+}

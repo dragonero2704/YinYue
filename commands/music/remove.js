@@ -10,12 +10,16 @@ module.exports = {
     name: "remove",
     data: new SlashCommandBuilder()
         .setName('remove')
-        .setDescription('rimuove un brano dalla coda')
+        .setDescription('removes {index} song from the queue')
+        .setNameLocalizations(lang.names)
+        .setDescriptionLocalizations(lang.descriptions)
         .addNumberOption(num =>
             num.setName('index')
-                .setDescription('Indice del brano che si vuole eliminare dalla coda')
-                .setMinValue(1)
-                .setRequired(true)),
+            .setDescription('{index} of the song to remove')
+            .setNameLocalizations(lang.options[0].names)
+            .setDescriptionLocalizations(lang.options[0].descriptions)
+            .setMinValue(1)
+            .setRequired(true)),
 
     async execute(interaction, bot) {
         if (!check(interaction, globalQueue)) return;

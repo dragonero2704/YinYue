@@ -1,3 +1,17 @@
 {
+    "names":{
+        "it":"rimuovi"
+    },
     
+    "options":[{
+        "names":{
+            "it":"indice"
+        },
+        "descriptions":{
+            "it": "Indice della canzone da rimuovere"
+        }
+    }],
+    "descriptions": {
+        "it":"Rimuove la canzone {indice} dalla coda"
+    }
 }
