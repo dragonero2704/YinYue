@@ -1,8 +1,8 @@
 {
-    "name":{
+    "names":{
         "it":"die"
     },
-    "description":{
+    "descriptions":{
         "it": "Spegne la musica e lascia il canale vocale"
     }
 }

@@ -12,9 +12,9 @@ module.exports = {
     aliases: ["d"],
     data: new SlashCommandBuilder()
         .setName('die')
-        .setNameLocalizations(lang.name)
+        .setNameLocalizations(lang.names)
         .setDescription('Turns off music and leaves voice channel')
-        .setDescriptionLocalizations(lang.description)
+        .setDescriptionLocalizations(lang.descriptions)
     ,
     async execute(interaction, bot) {
         if (!check(interaction, globalQueue)) return

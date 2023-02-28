@@ -1,1 +1,17 @@
-{}
+{
+    "names":{
+        "it":"jump"
+    },
+    
+    "options":[{
+        "names":{
+            "it":"indice"
+        },
+        "descriptions":{
+            "it": "Un numero da 0 al numero dei brani della coda"
+        }
+    }],
+    "descriptions": {
+        "it":"Salta al brano {indice}"
+    }
+}

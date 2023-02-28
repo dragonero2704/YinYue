@@ -12,11 +12,15 @@ module.exports = {
     aliases: ["p"],
     data: new SlashCommandBuilder()
         .setName('play')
-        .setDescription('Aggiunge le canzoni alla coda')
+        .setNameLocalizations(lang.names)
+        .setDescription('Adds songs to the queue')
+        .setDescriptionLocalizations(lang.descriptions)
         .addStringOption(input =>
-            input.setName('input')
-                .setDescription('Un link a Youtube o una stringa')
-                .setRequired(true)
+            input.setName('query')
+            .setDescription('A link to youtube or spotify or a search queue')
+            .setRequired(true)
+            .setNameLocalizations(lang.options[0].names)
+            .setDescriptionLocalizations(lang.options[0].descriptions)
         ),
 
     async execute(interaction, bot) {

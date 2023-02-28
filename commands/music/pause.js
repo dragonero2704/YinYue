@@ -11,7 +11,9 @@ module.exports = {
 
     data: new SlashCommandBuilder()
         .setName('pause')
-        .setDescription('Mette in pausa'),
+        .setDescription('Pauses the music')
+        .setNameLocalizations(lang.names)
+        .setDescriptionLocalizations(lang.descriptions),
 
     async execute(interaction, bot) {
         if (!check(interaction, globalQueue)) return;

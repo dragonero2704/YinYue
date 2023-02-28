@@ -12,11 +12,13 @@ module.exports = {
     aliases: ['j'],
     data: new SlashCommandBuilder()
         .setName('jump')
-        .setDescription('Salta al brano n')
+        .setDescription('Skips to {index} song')
         .addNumberOption(option =>
             option
                 .setName('index')
-                .setDescription('Un numero da 0 al numero dei brani della coda')
+                .setNameLocalizations(lang.options[0].names)
+                .setDescription('{index} to jump to')
+                .setDescriptionLocalizations(lang.options[0].descriptions)
                 .setMinValue(1)
                 .setRequired(true)
         ),

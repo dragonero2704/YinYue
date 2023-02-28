@@ -1,1 +1,36 @@
-{}
+{
+    "names":{
+        "it":"loop"
+    },
+    
+    "options":[{
+        "names":{
+            "it":"disabilitato"
+        },
+        "descriptions":{
+            "it": "Loop disabilitato"
+        }
+    },
+    {
+        "names":{
+            "it":"coda"
+        },
+        "descriptions":{
+            "it": "Loop abilitato sulla coda"
+        }
+    },
+    {
+        "names":{
+            "it":"singolo"
+        },
+        "descriptions":{
+            "it": "Loop singolo"
+        }
+    }
+
+
+],
+    "descriptions": {
+        "it":"Cambia lo stato del loop"
+    }
+}
