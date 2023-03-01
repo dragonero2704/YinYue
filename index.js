@@ -19,7 +19,7 @@ if(test){
     })
 }
 
-startWebServer();
+// startWebServer();
 
 console.log('Syncing database')
 
@@ -40,6 +40,21 @@ manager.on('shardCreate', shard => {
 // v.members.size()
 
 manager.spawn();
+
+// Lingue supportate da discord.js
+/*
+    'Indonesian', 'EnglishUS',    'EnglishGB',
+    'Bulgarian',  'ChineseCN',    'ChineseTW',
+    'Croatian',   'Czech',        'Danish',
+    'Dutch',      'Finnish',      'French',
+    'German',     'Greek',        'Hindi',
+    'Hungarian',  'Italian',      'Japanese',
+    'Korean',     'Lithuanian',   'Norwegian',
+    'Polish',     'PortugueseBR', 'Romanian',
+    'Russian',    'SpanishES',    'Swedish',
+    'Thai',       'Turkish',      'Ukrainian',
+    'Vietnamese'
+*/
 
 
 
