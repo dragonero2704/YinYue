@@ -1,39 +1,61 @@
 {
     "errors": {
         "queueNotFound": {
-            "it": "Coda non trovata"
+            "it": "Coda non trovata",
+            "en-UK":"",
+            "en-US":""
         },
         "voiceChannelNotFound": {
-            "it": "Devi essere in un canale vocale"
+            "it": "Devi essere in un canale vocale",
+            "en-UK":"",
+            "en-US":""
         },
         "invalidArgument": {
-            "it": "Inserire una parola chiave o un url"
+            "it": "Inserire una parola chiave o un url",
+            "en-UK":"",
+            "en-US":""
         },
         "emptyQueue": {
-            "it": "La coda è vuota"
+            "it": "La coda è vuota",
+            "en-UK":"",
+            "en-US":""
         },
         "oldQueue": {
-            "it": "Questa coda non è più valida. Vai a quella più [recente]"
+            "it": "Questa coda non è più valida. Vai a quella più [recente]",
+            "en-UK":"",
+            "en-US":""
         },
         "differentVoiceChannel": {
-            "it": "Devi essere nello stesso canale di "
+            "it": "Devi essere nello stesso canale di ",
+            "en-UK":"",
+            "en-US":""
         }
     },
     "responses": {
         "loopDisabled": {
-            "it": "Loop disabilitato"
+            "it": "Loop disabilitato",
+            "en-UK":"",
+            "en-US":""
         },
         "loopEnabled": {
-            "it": "Loop abilitato sulla coda"
+            "it": "Loop abilitato sulla coda",
+            "en-UK":"",
+            "en-US":""
         },
         "loopEnabledTrack": {
-            "it": "Loop abilitato sulla traccia"
+            "it": "Loop abilitato sulla traccia",
+            "en-UK":"",
+            "en-US":""
         },
         "newTrack": {
-            "it": "Aggiunta alla coda"
+            "it": "Aggiunta alla coda",
+            "en-UK":"",
+            "en-US":""
         },
         "endQueue": {
-            "it": "Coda terminata"
+            "it": "Coda terminata",
+            "en-UK":"",
+            "en-US":""
         }
     }
 }

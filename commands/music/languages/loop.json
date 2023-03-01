@@ -1,36 +1,52 @@
 {
     "names":{
-        "it":"loop"
+        "it":"loop",
+        "en-UK":"",
+        "en-US":""
     },
     
     "options":[{
         "names":{
-            "it":"disabilitato"
+            "it":"disabilitato",
+            "en-UK":"",
+            "en-US":""
         },
         "descriptions":{
-            "it": "Loop disabilitato"
+            "it": "Loop disabilitato",
+            "en-UK":"",
+            "en-US":""
         }
     },
     {
         "names":{
-            "it":"coda"
+            "it":"coda",
+            "en-UK":"",
+            "en-US":""
         },
         "descriptions":{
-            "it": "Loop abilitato sulla coda"
+            "it": "Loop abilitato sulla coda",
+            "en-UK":"",
+            "en-US":""
         }
     },
     {
         "names":{
-            "it":"singolo"
+            "it":"singolo",
+            "en-UK":"",
+            "en-US":""
         },
         "descriptions":{
-            "it": "Loop singolo"
+            "it": "Loop singolo",
+            "en-UK":"",
+            "en-US":""
         }
     }
 
 
 ],
     "descriptions": {
-        "it":"Cambia lo stato del loop"
+        "it":"Cambia lo stato del loop",
+        "en-UK":"",
+        "en-US":""
     }
 }

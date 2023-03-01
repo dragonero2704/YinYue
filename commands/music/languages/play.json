@@ -1,17 +1,25 @@
 {
     "names":{
-        "it":"play"
+        "it":"play",
+        "en-UK":"",
+        "en-US":""
     },
     
     "options":[{
         "names":{
-            "it":"input"
+            "it":"input",
+            "en-UK":"",
+            "en-US":""
         },
         "descriptions":{
-            "it": "Titolo di una canzone o un url di youtube o spotify"
+            "it": "Titolo di una canzone o un url di youtube o spotify",
+            "en-UK":"",
+            "en-US":""
         }
     }],
     "descriptions": {
-        "it":"Inserisce nella coda una musica"
+        "it":"Inserisce nella coda una musica",
+        "en-UK":"",
+        "en-US":""
     }
 }

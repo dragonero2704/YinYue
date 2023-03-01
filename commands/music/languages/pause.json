@@ -1,8 +1,12 @@
 {
     "names":{
-        "it":"pausa"
+        "it":"pausa",
+        "en-UK":"",
+        "en-US":""
     },
     "descriptions":{
-        "it": "Mette in pausa"
+        "it": "Mette in pausa",
+        "en-UK":"",
+        "en-US":""
     }
 }

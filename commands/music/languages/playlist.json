@@ -1,17 +1,25 @@
 {
     "names":{
-        "it": "playlist"
+        "it": "playlist",
+        "en-UK":"",
+        "en-US":""
     },
     "descriptions":{
-        "it":"Lista comandi per gestire le playlist"
+        "it":"Lista comandi per gestire le playlist",
+        "en-UK":"",
+        "en-US":""
     },
     "options":{
         "save":{
             "names":{
-                "it": "salva"
+                "it": "salva",
+                "en-UK":"",
+                "en-US":""
             },
             "descriptios":{
-                "it": "Salva una coda"
+                "it": "Salva una coda",
+                "en-UK":"",
+                "en-US":""
             }
         },
         "delete":{},

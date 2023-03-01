@@ -1,8 +1,12 @@
 {
     "names":{
-        "it":"riprendi"
+        "it":"riprendi",
+        "en-UK":"",
+        "en-US":""
     },
     "descriptions":{
-        "it": "Riprende la musica"
+        "it": "Riprende la musica",
+        "en-UK":"",
+        "en-US":""
     }
 }

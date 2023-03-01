@@ -1,17 +1,25 @@
 {
     "names":{
-        "it":"rimuovi"
+        "it":"rimuovi",
+        "en-UK":"",
+        "en-US":""
     },
     
     "options":[{
         "names":{
-            "it":"indice"
+            "it":"indice",
+            "en-UK":"",
+            "en-US":""
         },
         "descriptions":{
-            "it": "Indice della canzone da rimuovere"
+            "it": "Indice della canzone da rimuovere",
+            "en-UK":"",
+            "en-US":""
         }
     }],
     "descriptions": {
-        "it":"Rimuove la canzone {indice} dalla coda"
+        "it":"Rimuove la canzone {indice} dalla coda",
+        "en-UK":"",
+        "en-US":""
     }
 }

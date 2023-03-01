@@ -1,8 +1,12 @@
 {
     "names":{
-        "it":"coda"
+        "it":"coda",
+        "en-UK":"",
+        "en-US":""
     },
     "descriptions":{
-        "it": "Mostra la coda"
+        "it": "Mostra la coda",
+        "en-UK":"",
+        "en-US":""
     }
 }
