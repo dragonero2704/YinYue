@@ -1,1 +1,20 @@
-{}
+{
+    "names":{
+        "it": "playlist"
+    },
+    "descriptions":{
+        "it":"Lista comandi per gestire le playlist"
+    },
+    "options":{
+        "save":{
+            "names":{
+                "it": "salva"
+            },
+            "descriptios":{
+                "it": "Salva una coda"
+            }
+        },
+        "delete":{},
+        "load":{}
+    }
+}

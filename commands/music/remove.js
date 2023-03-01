@@ -21,7 +21,7 @@ module.exports = {
             .setMinValue(1)
             .setRequired(true)),
 
-    async execute(interaction, bot) {
+    async execute(interaction, bot, locale, ...params) {
         if (!check(interaction, globalQueue)) return;
         let index = interaction.options.getNumber('index');
         let server_queue = globalQueue.get(interaction.guild.id);

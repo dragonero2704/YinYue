@@ -13,7 +13,7 @@ module.exports = {
         .setNameLocalizations(lang.names)
         .setDescription('Skips to the next song')
         .setDescriptionLocalizations(lang.descriptions),
-    async execute(interaction, bot) {
+    async execute(interaction, bot, locale, ...params) {
         if (!check(interaction, globalQueue)) return;
         let server_queue = globalQueue.get(interaction.guild.id);
 

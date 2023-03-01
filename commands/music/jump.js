@@ -23,7 +23,7 @@ module.exports = {
                 .setRequired(true)
         ),
 
-    async execute(interaction, bot) {
+    async execute(interaction, bot, locale, ...params) {
         if (!check(interaction, globalQueue)) return;
         let server_queue = globalQueue.get(interaction.guild.id);
 

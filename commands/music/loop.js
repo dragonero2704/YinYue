@@ -33,7 +33,7 @@ module.exports = {
                 .setNameLsetDescriptionLocalizationsocalizations(lang.options[2].names)
                 .setNameLocalizations(lang.options[2].descriptions)
         ),
-    async execute(interaction, bot) {
+    async execute(interaction, bot, locale, ...params) {
         if (!check(interaction, globalQueue)) return;
         let server_queue = globalQueue.get(interaction.guild.id);
 

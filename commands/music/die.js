@@ -16,7 +16,7 @@ module.exports = {
         .setDescription('Turns off music and leaves voice channel')
         .setDescriptionLocalizations(lang.descriptions)
     ,
-    async execute(interaction, bot) {
+    async execute(interaction, bot, locale, ...params) {
         if (!check(interaction, globalQueue)) return
         let server_queue = globalQueue.get(interaction.guild.id);
         server_queue.die(true);

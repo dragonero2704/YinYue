@@ -23,7 +23,7 @@ module.exports = {
             .setDescriptionLocalizations(lang.options[0].descriptions)
         ),
 
-    async execute(interaction, bot) {
+    async execute(interaction, bot, locale, ...params) {
         let voice_channel = await interaction.member.voice.channel;
         if (!voice_channel) {
             // sendReply(msg.channel, titleEmbed(msg.guild, ServerQueue.errors.voiceChannelNotFound), 10000);

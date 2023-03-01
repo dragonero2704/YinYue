@@ -13,7 +13,7 @@ module.exports = {
         .setName('queue')
         .setDescription('Shows the queue'),
 
-    async execute(interaction, bot) {
+    async execute(interaction, bot, locale, ...params) {
         if (!check(interaction, globalQueue)) return;
         let server_queue = globalQueue.get(interaction.guild.id);
         let songs = server_queue.getSongs();
