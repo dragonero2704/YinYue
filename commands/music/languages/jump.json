@@ -1,25 +1,25 @@
 {
     "names":{
         "it":"jump",
-        "en-UK":"",
+        "en-GB":"",
         "en-US":""
     },
     
     "options":[{
         "names":{
             "it":"indice",
-            "en-UK":"",
+            "en-GB":"",
             "en-US":""
         },
         "descriptions":{
             "it": "Un numero da 0 al numero dei brani della coda",
-            "en-UK":"",
+            "en-GB":"",
             "en-US":""
         }
     }],
     "descriptions": {
         "it":"Salta al brano {indice}",
-        "en-UK":"",
+        "en-GB":"",
         "en-US":""
     }
 }
