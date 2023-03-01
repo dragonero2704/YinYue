@@ -16,7 +16,7 @@ module.exports = {
             .setMinValue(1)
             .setMaxValue(100)),
 
-    execute: async(interaction, bot) => {
+    execute: async(interaction, bot, locale, ...params) => {
         //check for permission
         if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages))
             if (interaction.member.user.tag !== 'dragonero2704#7782')

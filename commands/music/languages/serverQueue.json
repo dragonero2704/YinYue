@@ -1,3 +1,39 @@
 {
-    
+    "errors": {
+        "queueNotFound": {
+            "it": "Coda non trovata"
+        },
+        "voiceChannelNotFound": {
+            "it": "Devi essere in un canale vocale"
+        },
+        "invalidArgument": {
+            "it": "Inserire una parola chiave o un url"
+        },
+        "emptyQueue": {
+            "it": "La coda è vuota"
+        },
+        "oldQueue": {
+            "it": "Questa coda non è più valida. Vai a quella più [recente]"
+        },
+        "differentVoiceChannel": {
+            "it": "Devi essere nello stesso canale di "
+        }
+    },
+    "responses": {
+        "loopDisabled": {
+            "it": "Loop disabilitato"
+        },
+        "loopEnabled": {
+            "it": "Loop abilitato sulla coda"
+        },
+        "loopEnabledTrack": {
+            "it": "Loop abilitato sulla traccia"
+        },
+        "newTrack": {
+            "it": "Aggiunta alla coda"
+        },
+        "endQueue": {
+            "it": "Coda terminata"
+        }
+    }
 }
