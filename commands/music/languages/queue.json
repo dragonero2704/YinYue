@@ -1,12 +1,12 @@
 {
     "names":{
         "it":"coda",
-        "en-GB":"",
-        "en-US":""
+        "en-GB":"Queue",
+        "en-US":"Queue"
     },
     "descriptions":{
         "it": "Mostra la coda",
-        "en-GB":"",
-        "en-US":""
+        "en-GB":"Shows the queue",
+        "en-US":"Shows the queue"
     }
 }
