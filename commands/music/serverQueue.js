@@ -676,7 +676,7 @@ class ServerQueue {
             new ButtonBuilder().setCustomId('LastPage').setLabel('>>').setStyle(ButtonStyle.Primary),
         )
         await interaction.reply(blank_field);
-        interaction.deleteReply();
+        await interaction.deleteReply();
         let queueinteraction = await interaction.channel.send({ content: queue, components: [row] });
         // let queueinteraction = await interaction.reply({ content: queue, components: [row] });
         this.startCollector(queueinteraction, ['FirstPage', 'Previous', 'Next', 'LastPage'])
