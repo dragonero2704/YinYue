@@ -11,7 +11,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('ping')
         .setDescription('Calcola il ping'),
-    async execute(inter, bot) {
+    async execute(inter, bot, locale, ...params) {
         let embed = require('../../misc/embed')(inter.guild)
         embed.setTitle(`Ping: ${bot.ws.ping}ms`)
         await inter.reply({ embeds: [embed], ephemeral: true })

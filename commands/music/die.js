@@ -12,11 +12,11 @@ module.exports = {
     aliases: ["d"],
     data: new SlashCommandBuilder()
         .setName('die')
-        .setNameLocalizations(lang.name)
+        .setNameLocalizations(lang.names)
         .setDescription('Turns off music and leaves voice channel')
-        .setDescriptionLocalizations(lang.description)
+        .setDescriptionLocalizations(lang.descriptions)
     ,
-    async execute(interaction, bot) {
+    async execute(interaction, bot, locale, ...params) {
         if (!check(interaction, globalQueue)) return
         let server_queue = globalQueue.get(interaction.guild.id);
         server_queue.die(true);

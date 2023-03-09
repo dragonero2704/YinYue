@@ -11,23 +11,29 @@ module.exports = {
     aliases: ["l"],
     data: new SlashCommandBuilder()
         .setName('loop')
-        .setDescription('Cambia lo stato del loop')
+        .setDescription('Changes loop state')
         .addSubcommand(sub =>
             sub
                 .setName('disabled')
-                .setDescription('Loop disabilitato')
+                .setDescription('Loop disabled')
+                .setNameLocalizations(lang.options[0].names)
+                .setDescriptionLocalizations(lang.options[0].descriptions)
         )
         .addSubcommand(sub =>
             sub
                 .setName('queue')
-                .setDescription('Loop abilitato sulla coda')
+                .setDescription('Queue loop')
+                .setNameLocalizations(lang.options[1].names)
+                .setDescriptionLocalizations(lang.options[1].descriptions)
         )
         .addSubcommand(sub =>
             sub
                 .setName('track')
-                .setDescription('Loop sul brano')
+                .setDescription('Track loop')
+                .setNameLsetDescriptionLocalizationsocalizations(lang.options[2].names)
+                .setNameLocalizations(lang.options[2].descriptions)
         ),
-    async execute(interaction, bot) {
+    async execute(interaction, bot, locale, ...params) {
         if (!check(interaction, globalQueue)) return;
         let server_queue = globalQueue.get(interaction.guild.id);
 

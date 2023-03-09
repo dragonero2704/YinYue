@@ -11,9 +11,11 @@ module.exports = {
 
     data: new SlashCommandBuilder()
         .setName('pause')
-        .setDescription('Mette in pausa'),
+        .setDescription('Pauses the music')
+        .setNameLocalizations(lang.names)
+        .setDescriptionLocalizations(lang.descriptions),
 
-    async execute(interaction, bot) {
+    async execute(interaction, bot, locale, ...params) {
         if (!check(interaction, globalQueue)) return;
         let server_queue = globalQueue.get(interaction.guild.id);
         interaction.reply(`${ServerQueue.queueFormat.start}\nPausa\n${ServerQueue.queueFormat.end}`);

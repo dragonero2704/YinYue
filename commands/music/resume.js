@@ -10,8 +10,8 @@ module.exports = {
     aliases: ["r"],
     data: new SlashCommandBuilder()
         .setName('resume')
-        .setDescription('Riprende la musica'),
-    async execute(interaction, bot) {
+        .setDescription('Resumes the queue'),
+    async execute(interaction, bot, locale, ...params) {
         if (!check(interaction, globalQueue)) return;
         let server_queue = globalQueue.get(interaction.guild.id);
 

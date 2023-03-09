@@ -10,10 +10,10 @@ module.exports = {
     aliases: ["s"],
     data: new SlashCommandBuilder()
         .setName('skip')
-        .setNameLocalizations(lang.name)
+        .setNameLocalizations(lang.names)
         .setDescription('Skips to the next song')
-        .setDescriptionLocalizations(lang.description),
-    async execute(interaction, bot) {
+        .setDescriptionLocalizations(lang.descriptions),
+    async execute(interaction, bot, locale, ...params) {
         if (!check(interaction, globalQueue)) return;
         let server_queue = globalQueue.get(interaction.guild.id);
 

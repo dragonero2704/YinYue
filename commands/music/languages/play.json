@@ -1,1 +1,25 @@
-{}
+{
+    "names":{
+        "it":"play",
+        "en-GB":"",
+        "en-US":""
+    },
+    
+    "options":[{
+        "names":{
+            "it":"input",
+            "en-GB":"",
+            "en-US":""
+        },
+        "descriptions":{
+            "it": "Titolo di una canzone o un url di youtube o spotify",
+            "en-GB":"",
+            "en-US":""
+        }
+    }],
+    "descriptions": {
+        "it":"Inserisce nella coda una musica",
+        "en-GB":"",
+        "en-US":""
+    }
+}

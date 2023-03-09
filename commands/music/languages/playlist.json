@@ -1,1 +1,39 @@
-{}
+{
+    "names":{
+        "it": "playlist",
+        "en-GB":"playlist",
+        "en-US":"playlist"
+    },
+    "descriptions":{
+        "it":"Lista comandi per gestire le playlist",
+        "en-GB":"Playlist command list",
+        "en-US":"Playlist command list"
+    },
+    "options":{
+        "save":{
+            "names":{
+                "it": "salva",
+                "en-GB":"save",
+                "en-US":"save"
+            },
+            "descriptios":{
+                "it": "Salva una coda",
+                "en-GB":"Saves the queue",
+                "en-US":"Saves the queue"
+            }
+        },
+        "delete":{},
+        "load":{
+            "names":{
+                "it":"carica",
+                "en-GB":"load",
+                "en-US":"load"
+            },
+            "descriptions":{
+                "it": "Carica una coda salvata",
+                "en-GB":"Loads a saved queue",
+                "en-US":"Loads a saved queue"
+            }
+        }
+    }
+}

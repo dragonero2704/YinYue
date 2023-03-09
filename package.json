@@ -7,7 +7,7 @@
         "start": "node .",
         "test": "node . --test",
         "gRegister": "node ./command-deploy.js",
-        "testRegister": "node ./tst-cmd-deploy.js"
+        "testRegister": "node ./test-cmd-deploy.js"
     },
     "repository": {
         "type": "git",

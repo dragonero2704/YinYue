@@ -51,7 +51,7 @@ module.exports = {
             await Prefixes.update({prefix:prefix}, {where: {serverId:id}})
         }
     },
-    async execute(interaction, bot){
+    async execute(interaction, bot, locale, ...params){
         let id = interaction.guild.id;
         // console.log(args.join('|'))
         let prefix = interaction.options.getString('prefix');

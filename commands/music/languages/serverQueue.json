@@ -1,3 +1,61 @@
 {
-    
+    "errors": {
+        "queueNotFound": {
+            "it": "Coda non trovata",
+            "en-GB":"",
+            "en-US":""
+        },
+        "voiceChannelNotFound": {
+            "it": "Devi essere in un canale vocale",
+            "en-GB":"",
+            "en-US":""
+        },
+        "invalidArgument": {
+            "it": "Inserire una parola chiave o un url",
+            "en-GB":"",
+            "en-US":""
+        },
+        "emptyQueue": {
+            "it": "La coda è vuota",
+            "en-GB":"",
+            "en-US":""
+        },
+        "oldQueue": {
+            "it": "Questa coda non è più valida. Vai a quella più [recente]",
+            "en-GB":"",
+            "en-US":""
+        },
+        "differentVoiceChannel": {
+            "it": "Devi essere nello stesso canale di ",
+            "en-GB":"",
+            "en-US":""
+        }
+    },
+    "responses": {
+        "loopDisabled": {
+            "it": "Loop disabilitato",
+            "en-GB":"",
+            "en-US":""
+        },
+        "loopEnabled": {
+            "it": "Loop abilitato sulla coda",
+            "en-GB":"",
+            "en-US":""
+        },
+        "loopEnabledTrack": {
+            "it": "Loop abilitato sulla traccia",
+            "en-GB":"",
+            "en-US":""
+        },
+        "newTrack": {
+            "it": "Aggiunta alla coda",
+            "en-GB":"",
+            "en-US":""
+        },
+        "endQueue": {
+            "it": "Coda terminata",
+            "en-GB":"",
+            "en-US":""
+        }
+    }
 }

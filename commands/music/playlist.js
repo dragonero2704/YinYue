@@ -31,7 +31,7 @@ module.exports = {
                         .setRequired(true)
                 )),
 
-    async execute(interaction, bot) {
+    async execute(interaction, bot, locale, ...params) {
         switch (interaction.options.getSubcommand()) {
             default: {
                 if (!check(interaction, globalQueue)) return;

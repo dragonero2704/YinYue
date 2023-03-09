@@ -1,8 +1,12 @@
 {
-    "name":{
-        "it":"die"
+    "names":{
+        "it":"die",
+        "en-GB":"die",
+        "en-US":"die"
     },
-    "description":{
-        "it": "Spegne la musica e lascia il canale vocale"
+    "descriptions":{
+        "it": "Spegne la musica e lascia il canale vocale",
+        "en-GB":"Turns off music and leaves voice channel",
+        "en-US":"Turns off music and leaves voice channel"
     }
 }
