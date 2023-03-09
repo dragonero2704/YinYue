@@ -1,12 +1,12 @@
 {
     "names":{
         "it":"mischia",
-        "en-GB":"",
-        "en-US":""
+        "en-GB":"shuffle",
+        "en-US":"shuffle"
     },
     "descriptions":{
         "it": "Mescola la coda di riproduzione",
-        "en-GB":"",
-        "en-US":""
+        "en-GB":"Mixes the queue",
+        "en-US":"Mixes the queue"
     }
 }

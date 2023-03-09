@@ -1,12 +1,12 @@
 {
     "names":{
         "it":"pausa",
-        "en-GB":"",
-        "en-US":""
+        "en-GB":"pause",
+        "en-US":"pause"
     },
     "descriptions":{
         "it": "Mette in pausa",
-        "en-GB":"",
-        "en-US":""
+        "en-GB":"Pauses the queue",
+        "en-US":"Pauses the queue"
     }
 }

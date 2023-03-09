@@ -1,12 +1,12 @@
 {
     "names":{
         "it":"riprendi",
-        "en-GB":"",
-        "en-US":""
+        "en-GB":"resume",
+        "en-US":"resume"
     },
     "descriptions":{
         "it": "Riprende la musica",
-        "en-GB":"",
-        "en-US":""
+        "en-GB":"Resumes the queue",
+        "en-US":"Resumes the queue"
     }
 }
