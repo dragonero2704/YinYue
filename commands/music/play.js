@@ -30,7 +30,7 @@ module.exports = {
             return interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.voiceChannelNotFound)], ephemeral: true });
         }
 
-        let input = interaction.options.getString('input');
+        let input = interaction.options.getString('query');
 
         if (!input) {
             // sendReply(interaction.channel, titleEmbed(interaction.guild, ServerQueue.errors.invalidArgument), 10000);

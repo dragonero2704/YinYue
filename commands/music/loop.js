@@ -30,8 +30,8 @@ module.exports = {
             sub
                 .setName('track')
                 .setDescription('Track loop')
-                .setNameLsetDescriptionLocalizationsocalizations(lang.options[2].names)
-                .setNameLocalizations(lang.options[2].descriptions)
+                .setNameLocalizations(lang.options[2].names)
+                .setDescriptionLocalizations(lang.options[2].descriptions)
         ),
     async execute(interaction, bot, locale, ...params) {
         if (!check(interaction, globalQueue)) return;

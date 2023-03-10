@@ -1,8 +1,8 @@
 {
     "names": {
-        "it": "Salta",
-        "en-GB":"Skip",
-        "en-US":"Skip"
+        "it": "salta",
+        "en-GB":"skip",
+        "en-US":"skip"
     },
     "descriptions":{
         "it":"Salta alla canzone successiva",

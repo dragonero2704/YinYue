@@ -122,6 +122,19 @@ class ServerQueue {
             console.error
         })
 
+        this.connection.on('stateChange', (oldState, newState) => {
+            const oldNetworking = Reflect.get(oldState, 'networking');
+            const newNetworking = Reflect.get(newState, 'networking');
+          
+            const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
+              const newUdp = Reflect.get(newNetworkState, 'udp');
+              clearInterval(newUdp?.keepAliveInterval);
+            }
+          
+            oldNetworking?.off('stateChange', networkStateChangeHandler);
+            newNetworking?.on('stateChange', networkStateChangeHandler);
+          });
+
         this.sub = this.connection.subscribe(this.player)
         //queue 
         this.queueCollector = undefined;
@@ -647,7 +660,7 @@ class ServerQueue {
             this.queueCollector.stop();
         }
         this.queueCollector = undefined;
-        if (!this.queueMsg.editable) {
+        if (this??queueMsg??editable === false) {
             this.queueMsg.fetch()
         }
         try {
