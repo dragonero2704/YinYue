@@ -125,15 +125,15 @@ class ServerQueue {
         this.connection.on('stateChange', (oldState, newState) => {
             const oldNetworking = Reflect.get(oldState, 'networking');
             const newNetworking = Reflect.get(newState, 'networking');
-          
+
             const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
-              const newUdp = Reflect.get(newNetworkState, 'udp');
-              clearInterval(newUdp?.keepAliveInterval);
+                const newUdp = Reflect.get(newNetworkState, 'udp');
+                clearInterval(newUdp?.keepAliveInterval);
             }
-          
+
             oldNetworking?.off('stateChange', networkStateChangeHandler);
             newNetworking?.on('stateChange', networkStateChangeHandler);
-          });
+        });
 
         this.sub = this.connection.subscribe(this.player)
         //queue 
@@ -516,8 +516,8 @@ class ServerQueue {
     pause() {
         try {
             this.player.pause();
-        }catch(error){
-            
+        } catch (error) {
+
         }
     }
 
@@ -582,7 +582,6 @@ class ServerQueue {
     //this function returns an array
     queuePages() {
         let queue = [];
-        let counter = 1;
         this.songs.forEach((song, index) => {
             let line = ''
             if (song === this.curPlayingSong) {
@@ -660,14 +659,19 @@ class ServerQueue {
             this.queueCollector.stop();
         }
         this.queueCollector = undefined;
-        if (this??queueMsg??editable === false) {
-            this.queueMsg.fetch()
-        }
         try {
-            this.queueMsg.delete()
+            if (this ?? queueMsg ?? editable === false) {
+                this.queueMsg.fetch()
+            }
+            try {
+                this.queueMsg.delete()
+            } catch (error) {
+                //message is too old
+            }
         } catch (error) {
-            //message is too old
+
         }
+
 
         return;
     }
