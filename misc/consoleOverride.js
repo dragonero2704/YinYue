@@ -1,4 +1,5 @@
 const {appendFile} = require('fs')
+const { format } = require('util')
 
 function getTimeStamp() {
     let date = new Date()
@@ -16,7 +17,7 @@ module.exports = () => {
         // origLog.call(console, getTimeStamp())
         process.stdout.write(getTimeStamp() + ': ')
         //write to file
-        appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${arguments[0]}\n`, (err) => {
+        appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${format.apply(null,arguments)}\n`, (err) => {
             if (err) {
                 origLog(err)
             }
@@ -27,18 +28,19 @@ module.exports = () => {
     let warningLog = console.warn
     console.warning = function () {
         process.stdout.write(getTimeStamp() + ': ')
-        appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${arguments[0]}\n`, (err) => {
+        appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${format.apply(null,arguments)}\n`, (err) => {
             if (err) {
                 warningLog(err)
             }
         })
+        
         warningLog.apply(console, arguments)
     }
 
     let errorLog = console.error
     console.error = function(){
         process.stdout.write(getTimeStamp() + ': ')
-        appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${arguments[0]}\n`, (err) => {
+        appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${format.apply(null,arguments)}\n`, (err) => {
             if (err) {
                 warningLog(err)
             }
