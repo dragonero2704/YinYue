@@ -1,6 +1,6 @@
 function titleEmbed(guild, title, description = undefined, url = undefined) {
     let embed = require('../misc/embed')(guild)
-    embed.setTitle(title).setTimestamp()
+    embed.setTitle(title)
     if(description) embed.setDescription(description)
     if(url) embed.setURL(url)
     return embed;
@@ -8,7 +8,7 @@ function titleEmbed(guild, title, description = undefined, url = undefined) {
 
 function fieldEmbed(guild, title, content) {
     let embed = require('../misc/embed')(guild)
-    embed.addFields([{ name: title, value: content }]).setTimestamp()
+    embed.addFields([{ name: title, value: content }])
     // embed.setDescription('')
     return embed;
 }

@@ -17,10 +17,10 @@ module.exports = {
         .setDescriptionLocalizations(lang.descriptions)
         .addStringOption(input =>
             input.setName('query')
-            .setDescription('A link to youtube or spotify or a search queue')
-            .setRequired(true)
-            .setNameLocalizations(lang.options[0].names)
-            .setDescriptionLocalizations(lang.options[0].descriptions)
+                .setDescription('A link to youtube or spotify or a search queue')
+                .setRequired(true)
+                .setNameLocalizations(lang.options[0].names)
+                .setDescriptionLocalizations(lang.options[0].descriptions)
         ),
 
     async execute(interaction, bot, locale, ...params) {
@@ -46,10 +46,9 @@ module.exports = {
                 let content = ServerQueue.queueFormat.start + ServerQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !` + ServerQueue.queueFormat.end;
                 return interaction.reply({ content: content, ephemeral: true })
             }
-            // return interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
         }
-        // await interaction.reply(`${ServerQueue.queueFormat.start}\n${bot.user.username} is working, this may take some time ${ServerQueue.queueFormat.end}`)
-        await interaction.deferReply()
+
+        interaction.deferReply()
         console.time("songObject")
         let item = await ServerQueue.getSongObject(input);
         console.timeEnd("songObject")
@@ -57,9 +56,9 @@ module.exports = {
         if (!item) return interaction.editReply({ embeds: [titleEmbed(interaction.guild, 'Nessun risultato')], ephemeral: true })
 
         if (Array.isArray(item)) {
-            interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)] }).catch(error => console.log(error));
+            interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)] }).catch(console.log)
         } else {
-            interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunta alla coda', `[${item.title}](${item.url}) è in coda!`)] }).catch(error => console.log(error))
+            interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunta alla coda', `[${item.title}](${item.url}) è in coda!`)] }).catch(console.log)
         }
         console.log("Creating server queue")
         if (!server_queue) {
@@ -79,6 +78,7 @@ module.exports = {
                     server_queue.add(item);
             }
         }
+        return
     },
     async run(msg, args, bot) {
         let voice_channel = await msg.member.voice.channel;

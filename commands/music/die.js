@@ -23,6 +23,7 @@ module.exports = {
         globalQueue.delete(interaction.guild.id);
         interaction.reply(blank_field);
         interaction.deleteReply();
+        console.log('%s: queue deleted', interaction.guild.name)
     },
 
     async run(msg, args, bot) {
