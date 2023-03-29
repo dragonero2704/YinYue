@@ -42,7 +42,7 @@ module.exports = () => {
         process.stdout.write(getTimeStamp() + ': ')
         appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${format.apply(null,arguments)}\n`, (err) => {
             if (err) {
-                warningLog(err)
+                errorLog(err)
             }
         })
         errorLog.apply(console,arguments)
