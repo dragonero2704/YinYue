@@ -1,7 +1,7 @@
 const { ShardingManager, VoiceChannel } = require('discord.js');
 const { appendFile } = require('fs')
 const { config } = require("dotenv")
-const { startWebServer } = require('./server/server');
+// const { startWebServer } = require('./server/server');
 const { listContent } = require(`./database/dbContent`)
 const { syncModels } = require(`./database/dbInit`)
 

@@ -48,11 +48,11 @@ module.exports = {
             }
         }
 
-        interaction.deferReply()
+        await interaction.deferReply()
         console.time("songObject")
         let item = await ServerQueue.getSongObject(input);
         console.timeEnd("songObject")
-
+        console.log(item)
         if (!item) return interaction.editReply({ embeds: [titleEmbed(interaction.guild, 'Nessun risultato')], ephemeral: true })
 
         if (Array.isArray(item)) {

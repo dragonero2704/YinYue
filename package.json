@@ -20,25 +20,15 @@
     },
     "homepage": "https://github.com/dragonero2704/Music-discord-bot#readme",
     "dependencies": {
-        "@discordjs/opus": "github:discordjs/opus",
-        "@discordjs/rest": "^0.2.0-canary.0",
-        "@discordjs/voice": "^0.7.5",
-        "ansi-regex": "^6.0.1",
+        "@discordjs/voice": "^0.15.0",
         "ascii-table": "^0.0.9",
-        "discord-api-types": "^0.26.1",
         "discord.js": "^14.8.0",
-        "dotenv": "^10.0.0",
-        "express": "^4.17.2",
-        "ffmpeg-static": "^4.4.0",
-        "http-cache-semantics": "^4.1.1",
-        "libsodium-wrappers": "^0.7.9",
-        "node-fetch": "^2.6.7",
+        "dotenv": "^16.0.3",
+        "libsodium-wrappers": "^0.7.11",
         "npm": "^8.3.0",
         "play-dl": "^1.9.6",
-        "sequelize": "^6.28.2",
-        "sqlite3": "^5.1.4",
-        "tar": "^4.4.18",
-        "undici": "^5.20.0"
+        "sequelize": "^6.30.0",
+        "sqlite3": "^5.1.6"
     },
     "devDependencies": {
         "node": "^18.5.0"
