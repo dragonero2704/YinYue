@@ -5,7 +5,7 @@ const {redBright,cyan,yellowBright,whiteBright} = require("cli-color")
 
 function getTimeStamp() {
     let date = new Date()
-    return cyan(`[${date.getUTCDate().toLocaleString().padStart(2, '0')}/${(date.getMonth() + 1).toLocaleString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes().toLocaleString().padStart(2, '0')}:${date.getSeconds().toLocaleString().padStart(2, '0')}]`)
+    return `[${date.getUTCDate().toLocaleString().padStart(2, '0')}/${(date.getMonth() + 1).toLocaleString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes().toLocaleString().padStart(2, '0')}:${date.getSeconds().toLocaleString().padStart(2, '0')}]`
 }
 
 function getLogName() {
@@ -17,7 +17,7 @@ module.exports = () => {
     let origLog = console.log
     console.log = function () {
         // origLog.call(console, getTimeStamp())
-        process.stdout.write(getTimeStamp() + ': ')
+        process.stdout.write(cyan(getTimeStamp()) + ': ')
         //write to file
         appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${format(...arguments)}\n`, (err) => {
             if (err) {
@@ -29,7 +29,7 @@ module.exports = () => {
 
     let warningLog = console.warn
     console.warning = function () {
-        process.stdout.write(getTimeStamp() + ': ')
+        process.stdout.write(cyan(getTimeStamp()) + ': ')
         appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${format(...arguments)}\n`, (err) => {
             if (err) {
                 warningLog.apply(console, [yellowBright(format(...arguments))])
@@ -41,7 +41,7 @@ module.exports = () => {
 
     let errorLog = console.error
     console.error = function(){
-        process.stdout.write(getTimeStamp() + ': ')
+        process.stdout.write(cyan(getTimeStamp()) + ': ')
         appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${format(...arguments)}\n`, (err) => {
             if (err) {
                 errorLog.apply(console,[redBright(format(...arguments))])
