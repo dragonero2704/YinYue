@@ -1,4 +1,4 @@
-const { ShardingManager, VoiceChannel } = require('discord.js');
+const { ShardingManager } = require('discord.js');
 const { appendFile } = require('fs')
 const { config } = require("dotenv")
 // const { startWebServer } = require('./server/server');
@@ -28,18 +28,16 @@ const force = process.argv.includes('-f')||process.argv.includes('--force')
 //sincronizzazione modelli
 syncModels(force)
 //contenuto tabelle database
-listContent()
+console.log("listing content...")
+// listContent()
 
-const manager = new ShardingManager('./bot.js', { token: process.env["TOKEN"] });
-
+const manager = new ShardingManager('./bot.js', { token: process.env.TOKEN });
+// console.log("hi")
 manager.on('shardCreate', shard => {
     console.log(`Launched shard ${shard.id}`)
 });
 
-// const v = new VoiceChannel()
-// v.members.size()
-
-manager.spawn();
+manager.spawn().catch(console.error);
 
 // Lingue supportate da discord.js
 /*
