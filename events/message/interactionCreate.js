@@ -13,8 +13,8 @@ module.exports = {
             const locale = interaction.locale
             await bot.commands.get(cmd_name).execute(interaction, bot, locale);
         } catch (error) {
-            console.log('Comando sconosciuto')
-            console.log(error)
+            // console.log('Comando sconosciuto')
+            console.warning(error)
         }
     },
 }
