@@ -18,8 +18,8 @@ module.exports = {
         try {
             bot.commands.get(cmd_name).run(msg, args, bot);
         } catch (error) {
-            console.log('Comando sconosciuto')
-            console.log(error)
+            // console.log('Comando sconosciuto')
+            console.warning(error)
         }
     },
 }
