@@ -46,14 +46,15 @@ class ServerQueue {
 
         this.txtChannel = txtChannel;
         this.voiceChannel = voiceChannel;
-        const interval = 60_000
+        this.autodieInterval = undefined
+        this.#interval = 60_000
         if (autodie) {
-            setInterval(() => {
-                if (voiceChannel.members.size <= 1) {
+            this.autodieInterval = setInterval(() => {
+                if (this.voiceChannel.members.size <= 1) {
                     //il bot è da solo
                     this.die(true)
                 }
-            }, interval)
+            }, this.#interval)
         }
         try {
             this.connection = voice.joinVoiceChannel({
@@ -167,6 +168,20 @@ class ServerQueue {
     static queueFormat = {
         start: '```Python',
         end: '```'
+    }
+
+    toggleAlwaysActive() {
+        if (this.autodieInterval) {
+            clearInterval(this.autodieInterval)
+            this.autodieInterval = undefined
+        } else {
+            this.autodieInterval = setInterval(() => {
+                if (this.voiceChannel.members.size <= 1) {
+                    //il bot è da solo
+                    this.die(true)
+                }
+            }, this.#interval)
+        }
     }
 
     static async getSongObject(args) {
@@ -553,26 +568,32 @@ class ServerQueue {
     }
 
     static convertToRawDuration(seconds) {
-        let hours = Math.floor(seconds / 3600);
-        seconds = Math.floor(seconds % 3600);
-        let minutes = Math.floor(seconds / 60);
-        seconds = Math.round(seconds % 60);
-        if (hours < 10) {
-            hours = '0' + hours.toString();
-        } else {
-            hours = hours.toString();
+        // let hours = Math.floor(seconds / 3600);
+        // seconds = Math.floor(seconds % 3600);
+        // let minutes = Math.floor(seconds / 60);
+        // seconds = Math.round(seconds % 60);
+        // if (hours < 10) {
+        //     hours = '0' + hours.toString();
+        // } else {
+        //     hours = hours.toString();
+        // }
+        // if (minutes < 10) {
+        //     minutes = '0' + minutes.toString();
+        // } else {
+        //     minutes = minutes.toString();
+        // }
+        // if (seconds < 10) {
+        //     seconds = '0' + seconds.toString();
+        // } else {
+        //     seconds = seconds.toString();
+        // }
+        // return hours + ':' + minutes + ':' + seconds;
+        let res = []
+        while (seconds > 0){
+            res.push(String(Math.floor(seconds%60)).padStart(2,'0'))
+            seconds/=60
         }
-        if (minutes < 10) {
-            minutes = '0' + minutes.toString();
-        } else {
-            minutes = minutes.toString();
-        }
-        if (seconds < 10) {
-            seconds = '0' + seconds.toString();
-        } else {
-            seconds = seconds.toString();
-        }
-        return hours + ':' + minutes + ':' + seconds;
+        return res.join(':')
     }
 
     getPlaybackDuration() {
