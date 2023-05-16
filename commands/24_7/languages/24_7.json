@@ -1,12 +1,12 @@
 {
     "names":{
-        "it":"24/7",
-        "en-GB":"24/7",
-        "en-US":"24/7"
+        "it":"24-7",
+        "en-GB":"24-7",
+        "en-US":"24-7"
     },
     "descriptions":{
-        "it": "Rimane attivo 24/7",
-        "en-GB":"Stays in the channel 24/7",
-        "en-US":"Stays in the channel 24/7"
+        "it": "Rimane attivo 24-7",
+        "en-GB":"Stays in the channel 24-7",
+        "en-US":"Stays in the channel 24-7"
     }
 }
