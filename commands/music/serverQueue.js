@@ -54,7 +54,7 @@ class ServerQueue {
                     //il bot è da solo
                     this.die(true)
                 }
-            }, this.#interval)
+            }, this.interval)
         }
         try {
             this.connection = voice.joinVoiceChannel({
@@ -180,7 +180,7 @@ class ServerQueue {
                     //il bot è da solo
                     this.die(true)
                 }
-            }, this.#interval)
+            }, this.interval)
         }
     }
 
