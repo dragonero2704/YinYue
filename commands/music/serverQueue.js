@@ -47,7 +47,7 @@ class ServerQueue {
         this.txtChannel = txtChannel;
         this.voiceChannel = voiceChannel;
         this.autodieInterval = undefined
-        this.#interval = 60_000
+        this.interval = 60_000
         if (autodie) {
             this.autodieInterval = setInterval(() => {
                 if (this.voiceChannel.members.size <= 1) {
