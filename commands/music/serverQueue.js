@@ -215,9 +215,7 @@ class ServerQueue {
                         {
                             let songs = []
                             console.log(query)
-                            let videos = await play_dl.playlist_info(query).all_videos()
-                            // let videos = await playlist.all_videos()
-                            // console.log(playlist)
+                            let videos = await (await play_dl.playlist_info(query)).all_videos()
                             for (const video of videos) {
                                 let song = {
                                     url: video.url,
