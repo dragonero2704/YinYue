@@ -24,14 +24,14 @@ module.exports = {
         ),
 
     async execute(interaction, bot, locale, ...params) {
-        let voice_channel = await interaction.member.voice.channel;
+        let voice_channel = interaction.member.voice.channel;
         if (!voice_channel) {
             // sendReply(msg.channel, titleEmbed(msg.guild, ServerQueue.errors.voiceChannelNotFound), 10000);
             return interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.voiceChannelNotFound)], ephemeral: true });
         }
 
         let input = interaction.options.getString('query');
-
+        console.log(input)
         if (!input) {
             // sendReply(interaction.channel, titleEmbed(interaction.guild, ServerQueue.errors.invalidArgument), 10000);
             return interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.invalidArgument)], ephemeral: true });

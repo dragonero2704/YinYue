@@ -37,10 +37,12 @@ readdirSync("./commands/").forEach(dir => {
 // console.log(commands)
 
 const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
-
+const guilds = ["1055036547608629248", "689115254713745423"];
 (async() => {
-
-    await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, "689115254713745423"), { body: commands })
+    guilds.forEach(async id=>{
+        await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, id), { body: commands })
         .then(() => console.log('Successfully registered application commands.'))
         .catch(console.error());
+    })
+    
 })();
