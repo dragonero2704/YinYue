@@ -590,6 +590,7 @@ class ServerQueue {
         while (seconds > 0){
             res.push(String(Math.floor(seconds%60)).padStart(2,'0'))
             seconds/=60
+            seconds = Math.floor(seconds)
         }
         return res.join(':')
     }
