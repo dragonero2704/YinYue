@@ -2,7 +2,14 @@ const { Client, GatewayIntentBits, Collection } = require('discord.js')
 const { readdirSync } = require('fs')
 
 const bot = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMembers, GatewayIntentBits.MessageContent],
+    intents: [
+        GatewayIntentBits.Guilds, 
+        GatewayIntentBits.GuildMessages, 
+        GatewayIntentBits.GuildMessageReactions, 
+        GatewayIntentBits.GuildVoiceStates, 
+        GatewayIntentBits.GuildMembers, 
+        GatewayIntentBits.MessageContent,
+    ],
 })
 
 bot.commands = new Collection()

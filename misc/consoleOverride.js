@@ -1,7 +1,7 @@
-const {appendFile} = require('fs')
+const {appendFile, existsSync, mkdirSync} = require('fs')
 const { format } = require('util')
 const {redBright,cyan,yellowBright,whiteBright} = require("cli-color")
-
+const LOGDIRECTORY = "./logs"
 
 function getTimeStamp() {
     let date = new Date()
@@ -14,6 +14,9 @@ function getLogName() {
 }
 
 module.exports = () => {
+    // find logs folder
+    if(!existsSync(LOGDIRECTORY)) mkdirSync(LOGDIRECTORY)
+    
     let origLog = console.log
     console.log = function () {
         // origLog.call(console, getTimeStamp())
