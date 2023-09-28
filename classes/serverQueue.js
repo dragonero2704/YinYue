@@ -4,6 +4,7 @@ const { globalQueue } = require('../misc/globals');
 
 const voice = require('@discordjs/voice');
 const play_dl = require('play-dl');
+const ytdl = require('ytdl-core')
 
 let blank_field = '\u200b'
 
@@ -365,15 +366,15 @@ class ServerQueue {
     // Builds the resource for discord.js player to play
     getResource(song) {
         // ytdl method
-        const ytdlPromise = new Promise((resolve, reject) => {
+        let ytdlPromise = new Promise((resolve, reject) => {
             let stream, resource;
             try {
-                stream = ytdl(song.url, { filter: 'audioonly', quality: 93 })
+                stream = ytdl(song.url, { filter: 'audioonly', quality: 'highestaudio' })
             } catch (error) {
-                reject(error)
+                reject(Error("Resource" + error));
             }
             try {
-                resource = createAudioResource(stream, {
+                resource = voice.createAudioResource(stream, {
                     metadata: song,
                     // Do not uncomment, errors with discord opus may come up
                     // inlineVolume: true,
@@ -382,16 +383,17 @@ class ServerQueue {
             } catch (error) {
                 reject(Error("Resource" + error));
             }
+            console.log("Resolved ytdl")
             resolve(resource)
         })
 
         // play_dl method
-        const playDlPromise = new Promise((resolve, reject) => {
-            play_dl.stream(song.url, { quality: 1, discordPlayerCompatibility: true })
+        let playDlPromise = new Promise((resolve, reject) => {
+            play_dl.stream(song.url, { discordPlayerCompatibility: true })
                 .then(stream => {
                     let resource;
                     try {
-                        resource = createAudioResource(stream.stream, {
+                        resource = voice.createAudioResource(stream.stream, {
                             metadata: song,
                             // Do not uncomment, errors with discord opus may come up
                             // inlineVolume: true,
@@ -461,7 +463,8 @@ class ServerQueue {
         if (!song) {
             song = this.curPlayingSong;
         }
-        this.getResource(song).catch(error => console.error).then((resource) => {
+        this.getResource(song)
+        .then((resource) => {
             try {
                 this.player.play(resource);
                 this.curPlayingSong = song;
@@ -469,6 +472,7 @@ class ServerQueue {
                 console.error(error)
             }
         })
+        .catch(error => console.error)
     }
 
     async jump(index) {
