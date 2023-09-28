@@ -1,11 +1,13 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, basename } = require('discord.js');
-const { titleEmbed, fieldEmbed, sendReply } = require('../../misc/functions')
-const { globalQueue } = require('../../misc/globals')
+const { titleEmbed, fieldEmbed, sendReply } = require('../misc/functions');
+const { globalQueue } = require('../misc/globals');
+
 const voice = require('@discordjs/voice');
-const play_dl = require('play-dl')
+const play_dl = require('play-dl');
+
 let blank_field = '\u200b'
 
-const lang = require(`./languages/${basename(__filename).split('.')[0]}.json`)
+const lang = require(`../commands/music/languages/${basename(__filename).split('.')[0]}.json`)
 
 function check(interaction, globalQueue) {
     let voice_channel = interaction.member.voice.channel;
@@ -43,7 +45,6 @@ class ServerQueue {
         // console.log(this.songs)
         this.curPlayingSong = this.songs[0];
         this.loopState = ServerQueue.loopStates.disabled;
-
         this.txtChannel = txtChannel;
         this.voiceChannel = voiceChannel;
         this.autodieInterval = undefined
@@ -56,6 +57,7 @@ class ServerQueue {
                 }
             }, this.interval)
         }
+        // create voice connection
         try {
             this.connection = voice.joinVoiceChannel({
                 channelId: voiceChannel.id,
@@ -361,35 +363,53 @@ class ServerQueue {
         return undefined
     }
     // Builds the resource for discord.js player to play
-    async getResource(song) {
-        // Stream first from play-dl.stream('url')
-        console.time("stream")
-        let resource, stream;
-        try {
-            stream = await play_dl.stream(song.url);
+    getResource(song) {
+        // ytdl method
+        const ytdlPromise = new Promise((resolve, reject) => {
+            let stream, resource;
+            try {
+                stream = ytdl(song.url, { filter: 'audioonly', quality: 93 })
+            } catch (error) {
+                reject(error)
+            }
+            try {
+                resource = createAudioResource(stream, {
+                    metadata: song,
+                    // Do not uncomment, errors with discord opus may come up
+                    // inlineVolume: true,
+                    inputType: stream.type,
+                });
+            } catch (error) {
+                reject(Error("Resource" + error));
+            }
+            resolve(resource)
+        })
 
-        } catch (error) {
+        // play_dl method
+        const playDlPromise = new Promise((resolve, reject) => {
+            play_dl.stream(song.url, { quality: 1, discordPlayerCompatibility: true })
+                .then(stream => {
+                    let resource;
+                    try {
+                        resource = createAudioResource(stream.stream, {
+                            metadata: song,
+                            // Do not uncomment, errors with discord opus may come up
+                            // inlineVolume: true,
+                            inputType: stream.type,
+                        });
+                    } catch (error) {
+                        reject(Error("Resource" + error));
+                    }
+                    resolve(resource)
+                })
+                .catch(error => {
+                    reject(Error("Stream " + error))
+                })
+        })
 
-            console.log("Stream" + error);
-            return undefined;
-        }
-        console.timeEnd("stream")
-
-        console.time("resource")
-        try {
-            resource = voice.createAudioResource(stream.stream, {
-                metadata: song,
-                // Do not uncomment, errors with discord opus may come up
-                // inlineVolume: true,
-                inputType: stream.type,
-            });
-        } catch (error) {
-            console.log("Resource" + error);
-            return undefined;
-        }
-        console.timeEnd("resource")
-        return resource;
+        return Promise.any([playDlPromise, ytdlPromise])
     }
+
 
     nextTrack(forceskip = false) {
         let curIndex = this.curPlayingIndex();
@@ -441,15 +461,14 @@ class ServerQueue {
         if (!song) {
             song = this.curPlayingSong;
         }
-
-        let resource = await this.getResource(song);
-
-        try {
-            this.player.play(resource);
-            this.curPlayingSong = song;
-        } catch (error) {
-            console.log(error)
-        }
+        this.getResource(song).catch(error => console.error).then((resource) => {
+            try {
+                this.player.play(resource);
+                this.curPlayingSong = song;
+            } catch (error) {
+                console.error(error)
+            }
+        })
     }
 
     async jump(index) {
@@ -587,9 +606,9 @@ class ServerQueue {
         // }
         // return hours + ':' + minutes + ':' + seconds;
         let res = []
-        while (seconds > 0){
-            res.push(String(Math.floor(seconds%60)).padStart(2,'0'))
-            seconds/=60
+        while (seconds > 0) {
+            res.push(String(Math.floor(seconds % 60)).padStart(2, '0'))
+            seconds /= 60
             seconds = Math.floor(seconds)
         }
         return res.join(':')

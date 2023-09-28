@@ -1,6 +1,5 @@
 const { globalQueue } = require('../../misc/globals')
-
-const { ServerQueue, check } = require('./serverQueue');
+const { ServerQueue, check } = require('../../classes/serverQueue');
 const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, basename, ButtonBuilder, ButtonStyle, InteractionCollector } = require('discord.js');
 const { titleEmbed, fieldEmbed, sendReply, reactToMsg } = require('../../misc/functions')
 const { SavedQueues } = require('../../database/models/savedQueues')

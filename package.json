@@ -27,9 +27,10 @@
         "dotenv": "^16.0.3",
         "libsodium-wrappers": "^0.7.11",
         "npm": "^8.3.0",
-        "play-dl": "^1.9.6",
+        "play-dl": "^1.9.7",
         "sequelize": "^6.30.0",
-        "sqlite3": "^5.1.6"
+        "sqlite3": "^5.1.6",
+        "ytdl-core": "^4.11.5"
     },
     "devDependencies": {
         "node": "^18.5.0"

@@ -1,6 +1,6 @@
 const { connection } = require('../connection/connection')
 const Sequelize = require('sequelize')
-const { Cache } = require('../../misc/cache')
+const { Cache } = require('../../classes/cache')
 const SavedQueues = connection.define('savedQueues', {
     guildId: {
         type: Sequelize.STRING
