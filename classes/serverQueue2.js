@@ -142,6 +142,132 @@ class ServerQueue {
 
         return Promise.any([playDlPromise, ytdlPromise])
     }
+    async jump(index) {
+        await this.play(this.songs[index]);
+    }
+
+    add(...songs) {
+        songs.flatMap(val => val).forEach(song => {
+            if (this.indexOfSong(song) === -1)
+                this.songs.push(song)
+        })
+    }
+
+    curPlayingIndex() {
+        return this.songs.indexOf(this.curPlayingSong);
+    }
+
+    indexOfSong(song) {
+        return this.songs.indexOf(song);
+    }
+
+    remove(index) {
+        this.songs = this.songs.filter((val, i) => {
+            return i !== index
+        })
+    }
+
+    changeLoopState(arg = undefined) {
+        if (!arg) {
+            this.loopState += 1
+            if (this.loopState > ServerQueue.loopStates.track) {
+                this.loopState = ServerQueue.loopStates.disabled;
+            }
+            return this.loopState;
+        } else {
+            switch (arg.toLowerCase()) {
+                case 'off':
+                case 'disabled':
+                    this.loopState = ServerQueue.loopStates.disabled;
+
+                    break;
+                case 'q':
+                case 'queue':
+                    this.loopState = ServerQueue.loopStates.queue;
+
+                    break;
+
+                case 't':
+                case 'track':
+                    this.loopState = ServerQueue.loopStates.track;
+                    break;
+
+                default:
+                    this.loopState += 1
+                    if (this.loopState > ServerQueue.loopStates.track) {
+                        this.loopState = ServerQueue.loopStates.disabled;
+                    }
+
+                    break;
+            }
+            return this.loopState;
+        }
+    }
+
+    getLoopState() {
+        return this.loopState;
+    }
+
+    getSongs() {
+        return this.songs;
+    }
+
+    getSongsLength() {
+        return this.songs.length
+    }
+
+    pause() {
+        try {
+            this.player.pause();
+        } catch (error) {
+
+        }
+    }
+
+    resume() {
+        try {
+            this.player.unpause();
+        } catch (error) {
+
+        }
+    }
+    shuffle() {
+        for (let i = this.songs.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [this.songs[i], this.songs[j]] = [this.songs[j], this.songs[i]];
+        }
+    }
+
+    die(force = false) {
+        try {
+            this.player.stop()
+        } catch (error) {
+
+        }
+        this.sub.unsubscribe();
+        this.player = undefined;
+        try {
+            this.connection.destroy();
+        } catch (error) { }
+
+        globalQueue.delete(this.voiceChannel.guild.id);
+
+        if (!force) sendReply(this.txtChannel, titleEmbed(this.txtChannel.guild, ServerQueue.responses.endQueue))
+    }
+
+    static convertToRawDuration(seconds) {
+        let res = []
+        while (seconds > 0) {
+            res.push(String(Math.floor(seconds % 60)).padStart(2, '0'))
+            seconds /= 60
+            seconds = Math.floor(seconds)
+        }
+        return res.join(':')
+    }
+
+    getPlaybackDuration() {
+        return this.player.state.playbackDuration ?? 0;
+    }
 }
 
 module.exports = {
