@@ -410,7 +410,7 @@ class ServerQueue {
         })
 
         return Promise.any([playDlPromise
-            //,ytdlPromise
+            ,ytdlPromise
         ])
     }
 
