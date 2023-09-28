@@ -4,7 +4,7 @@ const { globalQueue } = require('../misc/globals');
 
 const voice = require('@discordjs/voice');
 const play_dl = require('play-dl');
-const ytdl = require('ytdl-core')
+const ytdl = require('ytdl-core-discord')
 
 let blank_field = '\u200b'
 
@@ -378,7 +378,7 @@ class ServerQueue {
                     metadata: song,
                     // Do not uncomment, errors with discord opus may come up
                     // inlineVolume: true,
-                    inputType: stream.type,
+                    inputType: voice.StreamType.Opus
                 });
             } catch (error) {
                 reject(Error("Resource" + error));
@@ -389,7 +389,7 @@ class ServerQueue {
 
         // play_dl method
         let playDlPromise = new Promise((resolve, reject) => {
-            play_dl.stream(song.url, { discordPlayerCompatibility: true })
+            play_dl.stream(song.url, {discordPlayerCompatibility:true})
                 .then(stream => {
                     let resource;
                     try {
@@ -409,7 +409,9 @@ class ServerQueue {
                 })
         })
 
-        return Promise.any([playDlPromise, ytdlPromise])
+        return Promise.any([playDlPromise
+            //,ytdlPromise
+        ])
     }
 
 
