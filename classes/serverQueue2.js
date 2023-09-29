@@ -1,9 +1,13 @@
 //includes
-const { joinVoiceChannel, createAudioResource, AudioResource } = require('@discordjs/voice')
+const { joinVoiceChannel, createAudioResource, AudioResource, StreamType } = require('@discordjs/voice')
 const { TextChannel, VoiceChannel } = require('discord.js')
 const play_dl = require('play-dl')
 const ytdl = require('ytdl-core')
+const { readFileSync } = require('fs')
 
+const loopStatesJson = "./serverQueue/messages/loopstates.json"
+const errorsJson = "./serverQueue/messages/errors.json"
+const responsesJson = "./serverQueue/messages/responses.json"
 //class definition
 class ServerQueue {
     // private fields
@@ -12,6 +16,15 @@ class ServerQueue {
     #voiceChannel
     #connection
     #guildId
+
+    //autodie vars
+    #autodie
+    #interval
+    #intervalId
+
+    static loopStates = JSON.parse(readFileSync(loopStatesJson));
+    static errors = JSON.parse(readFileSync(errorsJson))
+    static responses = JSON.parse(readFileSync(responsesJson))
 
     /**
      * 
@@ -49,9 +62,13 @@ class ServerQueue {
         } catch (e) {
             this.log(`voice connection error: ${e}`)
         }
+
+        //set up autodie
+        this.#autodie = autodie
+        this.#interval = autodieInterval
+        this.#intervalId = undefined
+        this.toggleAlwaysActive()
     }
-
-
 
     /**
      * 
@@ -79,16 +96,16 @@ class ServerQueue {
      * Toggles the autodieInterval always active
      */
     toggleAlwaysActive() {
-        if (this.autodieInterval) {
-            clearInterval(this.autodieInterval)
-            this.autodieInterval = undefined
+        if (this.#intervalId) {
+            clearInterval(this.#intervalId)
+            this.#intervalId = undefined
         } else {
-            this.autodieInterval = setInterval(() => {
+            this.#intervalId = setInterval(() => {
                 if (this.voiceChannel.members.size <= 1) {
                     //il bot è da solo
                     this.die(true)
                 }
-            }, this.interval)
+            }, this.#interval)
         }
     }
     /**
@@ -110,7 +127,7 @@ class ServerQueue {
                     metadata: song,
                     // Do not uncomment, errors with discord opus may come up
                     // inlineVolume: true,
-                    inputType: stream.type,
+                    inputType: StreamType.Raw,
                 });
             } catch (error) {
                 reject(Error("Resource" + error));
@@ -142,10 +159,17 @@ class ServerQueue {
 
         return Promise.any([playDlPromise, ytdlPromise])
     }
+    /**
+     * 
+     * @param {number} index The index to jump to, ranging between 0 and songs.size-1 
+     */
     async jump(index) {
         await this.play(this.songs[index]);
     }
-
+    /**
+     * 
+     * @param  {...any} songs 
+     */
     add(...songs) {
         songs.flatMap(val => val).forEach(song => {
             if (this.indexOfSong(song) === -1)
@@ -160,22 +184,32 @@ class ServerQueue {
     indexOfSong(song) {
         return this.songs.indexOf(song);
     }
-
+    /**
+     * 
+     * @param {number} index 
+     */
     remove(index) {
         this.songs = this.songs.filter((val, i) => {
             return i !== index
         })
     }
-
-    changeLoopState(arg = undefined) {
-        if (!arg) {
+    /**
+     * Changes loopState of the queue
+     * @param {string} loopState if 
+     * ´´´ts
+     * undefined
+     * ´´´
+     * @returns 
+     */
+    changeLoopState(loopState = undefined) {
+        if (!loopState) {
             this.loopState += 1
             if (this.loopState > ServerQueue.loopStates.track) {
                 this.loopState = ServerQueue.loopStates.disabled;
             }
             return this.loopState;
         } else {
-            switch (arg.toLowerCase()) {
+            switch (loopState.toLowerCase()) {
                 case 'off':
                 case 'disabled':
                     this.loopState = ServerQueue.loopStates.disabled;
