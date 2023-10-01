@@ -1,13 +1,21 @@
 //includes
-const { joinVoiceChannel, createAudioResource, AudioResource, StreamType } = require('@discordjs/voice')
+const { joinVoiceChannel, createAudioResource, AudioResource, StreamType, 
+    createAudioPlayer, NoSubscriberBehavior } = require('@discordjs/voice')
 const { TextChannel, VoiceChannel } = require('discord.js')
+const { readFileSync } = require('fs')
+// stream libraries
 const play_dl = require('play-dl')
 const ytdl = require('ytdl-core')
-const { readFileSync } = require('fs')
 
+// listeners
+const conListeners = require('./serverQueue/connection')
+const playerListeners = require('./serverQueue/player')
+
+// json paths
 const loopStatesJson = "./serverQueue/messages/loopstates.json"
 const errorsJson = "./serverQueue/messages/errors.json"
 const responsesJson = "./serverQueue/messages/responses.json"
+
 //class definition
 class ServerQueue {
     // private fields
@@ -16,6 +24,9 @@ class ServerQueue {
     #voiceChannel
     #connection
     #guildId
+    #loopstate
+    #curIndex
+    #player
 
     //autodie vars
     #autodie
@@ -62,12 +73,27 @@ class ServerQueue {
         } catch (e) {
             this.log(`voice connection error: ${e}`)
         }
+        //connection listeners
+        conListeners.forEach((key, fun)=>{
+            this.#connection.on(key, fun)
+        })
 
         //set up autodie
         this.#autodie = autodie
         this.#interval = autodieInterval
         this.#intervalId = undefined
         this.toggleAlwaysActive()
+
+        //set up queue variables
+        this.#curIndex = 0
+        this.#loopstate = ServerQueue.loopStates.disabled
+
+        this.#player = createAudioPlayer({
+            debug:false,
+            behaviors:{
+                noSubscriber: NoSubscriberBehavior.Play
+            }
+        })
     }
 
     /**
@@ -76,7 +102,7 @@ class ServerQueue {
      * @param {} aim "warning"||"error"||"log"
      * @returns 
      */
-    log(msg, aim) {
+    log(msg, aim = 'log') {
         const pref = `{Guild ${this.#guildId}} `
         switch (aim) {
             case 'log':
@@ -115,31 +141,32 @@ class ServerQueue {
      */
     getResource(song) {
         // ytdl method
-        const ytdlPromise = new Promise((resolve, reject) => {
-            let stream, resource;
-            try {
-                stream = ytdl(song.url, { filter: 'audioonly', quality: 93 })
-            } catch (error) {
-                reject(error)
-            }
-            try {
-                resource = createAudioResource(stream, {
-                    metadata: song,
-                    // Do not uncomment, errors with discord opus may come up
-                    // inlineVolume: true,
-                    inputType: StreamType.Raw,
-                });
-            } catch (error) {
-                reject(Error("Resource" + error));
-            }
-            resolve(resource)
+        let ytdlPromise = new Promise((resolve, reject) => {
+            ytdl(song.url, { filter: 'audioonly', quality: 'highestaudio' })
+                .then(stream => {
+                    let resource;
+                    try {
+                        resource = createAudioResource(stream, {
+                            metadata: song,
+                            // Do not uncomment, errors with discord opus may come up
+                            // inlineVolume: true,
+                            inputType: StreamType.Opus
+                        });
+                    } catch (error) {
+                        reject(Error("YTDL Resource " + error));
+                    }
+                    resolve(resource)
+                })
+                .catch((error) => reject(error))
         })
 
         // play_dl method
-        const playDlPromise = new Promise((resolve, reject) => {
-            play_dl.stream(song.url, { quality: 1, discordPlayerCompatibility: true })
-                .then(stream => {
+        let playDlPromise = new Promise((resolve, reject) => {
+            console.log("Creating stream")
+            play_dl.stream(song.url, { quality: 1 })
+                .then((stream) => {
                     let resource;
+                    console.log("Creating Resource")
                     try {
                         resource = createAudioResource(stream.stream, {
                             metadata: song,
@@ -148,16 +175,85 @@ class ServerQueue {
                             inputType: stream.type,
                         });
                     } catch (error) {
-                        reject(Error("Resource" + error));
+                        reject(error);
                     }
                     resolve(resource)
                 })
-                .catch(error => {
-                    reject(Error("Stream " + error))
+                .catch((error) => {
+                    reject("PlayDl Stream " + error)
                 })
         })
 
         return Promise.any([playDlPromise, ytdlPromise])
+    }
+    /**
+     * 
+     * @param {{}} song 
+     */
+    async play(song = undefined) {
+        if (!song) {
+            song = this.curPlayingSong;
+        }
+        this.getResource(song)
+            .then((resource) => {
+                try {
+                    this.player.play(resource);
+                    this.curPlayingSong = song;
+                } catch (error) {
+                    console.error(error)
+                }
+            })
+            .catch((error) => this.log(error, 'error'))
+    }
+    /**
+     * 
+     * @param {boolean} forceskip 
+     * @returns {{}} nextSong
+     */
+    nextTrack(forceskip = false) {
+        let curIndex = this.curPlayingIndex();
+        let nextIndex = curIndex + 1;
+        let songsLenght = this.songs.length;
+        let nextSong = undefined;
+        if (!forceskip) {
+            switch (this.loopState) {
+                case ServerQueue.loopStates.disabled:
+                    if (nextIndex < songsLenght) {
+                        nextSong = this.songs[nextIndex];
+                    }
+                    break;
+                case ServerQueue.loopStates.queue:
+                    if (nextIndex >= songsLenght) {
+                        nextIndex = 0;
+                    }
+                    nextSong = this.songs[nextIndex];
+                    break;
+                case ServerQueue.loopStates.track:
+                    nextIndex = curIndex;
+                    nextSong = this.songs[nextIndex];
+                    break;
+            }
+        } else {
+            switch (this.loopState) {
+                case ServerQueue.loopStates.disabled:
+                    if (nextIndex < songsLenght) {
+                        nextSong = this.songs[nextIndex];
+                    }
+                    break;
+                case ServerQueue.loopStates.queue:
+                case ServerQueue.loopStates.track:
+                    if (nextIndex >= songsLenght) {
+                        nextIndex = 0;
+                    }
+                    nextSong = this.songs[nextIndex];
+                    break;
+            }
+        }
+        if (nextSong !== undefined) {
+            this.curPlayingSong = nextSong;
+        }
+
+        return nextSong;
     }
     /**
      * 
@@ -289,7 +385,7 @@ class ServerQueue {
         if (!force) sendReply(this.txtChannel, titleEmbed(this.txtChannel.guild, ServerQueue.responses.endQueue))
     }
 
-    static convertToRawDuration(seconds) {
+    static toRawDuration(seconds) {
         let res = []
         while (seconds > 0) {
             res.push(String(Math.floor(seconds % 60)).padStart(2, '0'))
@@ -301,6 +397,10 @@ class ServerQueue {
 
     getPlaybackDuration() {
         return this.player.state.playbackDuration ?? 0;
+    }
+
+    getSongsJson() {
+        return JSON.stringify(this.getSongs())
     }
 }
 

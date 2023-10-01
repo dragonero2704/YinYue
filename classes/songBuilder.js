@@ -141,20 +141,20 @@ class songBuilder {
                                                                             youtube: "video"
                                                                         }
                                                                     })
-                                                                    .then(ytVideo => {
-                                                                        ytVideo = ytVideo[0]
-                                                                        if (ytVideo) {
-                                                                            resolve({
-                                                                                url: ytVideo.url,
-                                                                                title: ytVideo.title,
-                                                                                thumbnailUrl: ytVideo.thumbnails[0].url,
-                                                                                duration: ytVideo.durationInSec,
-                                                                                durationRaw: ytVideo.durationRaw,
-                                                                            })
-                                                                        } else
-                                                                            reject()
-                                                                    })
-                                                                    .catch(error=>console.error)
+                                                                        .then(ytVideo => {
+                                                                            ytVideo = ytVideo[0]
+                                                                            if (ytVideo) {
+                                                                                resolve({
+                                                                                    url: ytVideo.url,
+                                                                                    title: ytVideo.title,
+                                                                                    thumbnailUrl: ytVideo.thumbnails[0].url,
+                                                                                    duration: ytVideo.durationInSec,
+                                                                                    durationRaw: ytVideo.durationRaw,
+                                                                                })
+                                                                            } else
+                                                                                reject()
+                                                                        })
+                                                                        .catch(error => console.error)
                                                                 }))
                                                             })
                                                             return Promise.allSettled(promises)
@@ -163,22 +163,30 @@ class songBuilder {
                                                         })
                                                         .catch(error => reject(error))
                                                 })
-                                                .catch(error=>reject(error))
+                                                .catch(error => reject(error))
                                         }
                                         break;
                                     case 'track':
                                         {
-                                            let track = await playDL.spotify(query);
-                                            let yt_video = (await playDL.search(track.name, { limit: 1 }))[0]
+                                            playDL.spotify(query)
+                                                .then(track => {
+                                                    playDL.search(track.name, { limit: 1 })
+                                                        .then(res => {
+                                                            const ytVideo = res[0];
+                                                            const song = {
+                                                                url: yt_video.url,
+                                                                title: yt_video.title,
+                                                                thumbnailUrl: yt_video.thumbnails[0].url,
+                                                                duration: yt_video.durationInSec,
+                                                                durationRaw: yt_video.durationRaw,
+                                                            }
+                                                            resolve(song)
+                                                        })
+                                                        .catch(error => reject(error));
 
-                                            let song = {
-                                                url: yt_video.url,
-                                                title: yt_video.title,
-                                                thumbnailUrl: yt_video.thumbnails[0].url,
-                                                duration: yt_video.durationInSec,
-                                                durationRaw: yt_video.durationRaw,
-                                            }
-                                            return song;
+                                                })
+
+                                                .catch(error => reject(error));
                                         }
                                         break;
                                 }
@@ -230,4 +238,6 @@ class songBuilder {
                 .catch(error => console.error)
         })
     }
+
+    
 }

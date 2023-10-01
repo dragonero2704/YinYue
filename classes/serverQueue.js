@@ -367,31 +367,31 @@ class ServerQueue {
     getResource(song) {
         // ytdl method
         let ytdlPromise = new Promise((resolve, reject) => {
-            let stream, resource;
-            try {
-                stream = ytdl(song.url, { filter: 'audioonly', quality: 'highestaudio' })
-            } catch (error) {
-                reject(Error("Resource" + error));
-            }
-            try {
-                resource = voice.createAudioResource(stream, {
-                    metadata: song,
-                    // Do not uncomment, errors with discord opus may come up
-                    // inlineVolume: true,
-                    inputType: voice.StreamType.Opus
-                });
-            } catch (error) {
-                reject(Error("Resource" + error));
-            }
-            console.log("Resolved ytdl")
-            resolve(resource)
+            ytdl(song.url, { filter: 'audioonly', quality: 'highestaudio' })
+                .then(stream => {
+                    let resource;
+                    try {
+                        resource = voice.createAudioResource(stream, {
+                            metadata: song,
+                            // Do not uncomment, errors with discord opus may come up
+                            // inlineVolume: true,
+                            inputType: voice.StreamType.Opus
+                        });
+                    } catch (error) {
+                        reject(error);
+                    }
+                    resolve(resource)
+                })
+                .catch((error) => reject(error))
         })
 
         // play_dl method
         let playDlPromise = new Promise((resolve, reject) => {
-            play_dl.stream(song.url, {discordPlayerCompatibility:true})
-                .then(stream => {
+            console.log("Creating stream")
+            play_dl.stream(song.url, { quality:1 })
+                .then((stream) => {
                     let resource;
+                    console.log("Creating Resource")
                     try {
                         resource = voice.createAudioResource(stream.stream, {
                             metadata: song,
@@ -400,21 +400,23 @@ class ServerQueue {
                             inputType: stream.type,
                         });
                     } catch (error) {
-                        reject(Error("Resource" + error));
+                        reject(error);
                     }
                     resolve(resource)
                 })
-                .catch(error => {
-                    reject(Error("Stream " + error))
+                .catch((error)=>{
+                    reject("PlayDl Stream " + error)
                 })
         })
 
-        return Promise.any([playDlPromise
-            ,ytdlPromise
-        ])
+        return Promise.any([playDlPromise , ytdlPromise])
     }
 
-
+    /**
+     * 
+     * @param {boolean} forceskip 
+     * @returns {{}} nextSong
+     */
     nextTrack(forceskip = false) {
         let curIndex = this.curPlayingIndex();
         let nextIndex = curIndex + 1;
@@ -466,15 +468,15 @@ class ServerQueue {
             song = this.curPlayingSong;
         }
         this.getResource(song)
-        .then((resource) => {
-            try {
-                this.player.play(resource);
-                this.curPlayingSong = song;
-            } catch (error) {
-                console.error(error)
-            }
-        })
-        .catch(error => console.error)
+            .then((resource) => {
+                try {
+                    this.player.play(resource);
+                    this.curPlayingSong = song;
+                } catch (error) {
+                    console.error(error)
+                }
+            })
+            .catch((error) => console.error(error))
     }
 
     async jump(index) {
@@ -591,26 +593,6 @@ class ServerQueue {
     }
 
     static convertToRawDuration(seconds) {
-        // let hours = Math.floor(seconds / 3600);
-        // seconds = Math.floor(seconds % 3600);
-        // let minutes = Math.floor(seconds / 60);
-        // seconds = Math.round(seconds % 60);
-        // if (hours < 10) {
-        //     hours = '0' + hours.toString();
-        // } else {
-        //     hours = hours.toString();
-        // }
-        // if (minutes < 10) {
-        //     minutes = '0' + minutes.toString();
-        // } else {
-        //     minutes = minutes.toString();
-        // }
-        // if (seconds < 10) {
-        //     seconds = '0' + seconds.toString();
-        // } else {
-        //     seconds = seconds.toString();
-        // }
-        // return hours + ':' + minutes + ':' + seconds;
         let res = []
         while (seconds > 0) {
             res.push(String(Math.floor(seconds % 60)).padStart(2, '0'))
@@ -716,8 +698,6 @@ class ServerQueue {
         } catch (error) {
 
         }
-
-
         return;
     }
 
