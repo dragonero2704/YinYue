@@ -24,7 +24,7 @@ class ServerQueue {
     #voiceChannel
     #connection
     #guildId
-    #loopstate
+    #loopState
     #curIndex
     #player
 
@@ -74,8 +74,8 @@ class ServerQueue {
             this.log(`voice connection error: ${e}`)
         }
         //connection listeners
-        conListeners.forEach((key, fun)=>{
-            this.#connection.on(key, fun)
+        conListeners.listeners.forEach((event, fun)=>{
+            this.#connection.on(event, fun.bind(this))
         })
 
         //set up autodie
@@ -86,7 +86,7 @@ class ServerQueue {
 
         //set up queue variables
         this.#curIndex = 0
-        this.#loopstate = ServerQueue.loopStates.disabled
+        this.#loopState = ServerQueue.loopStates.disabled
 
         this.#player = createAudioPlayer({
             debug:false,
@@ -94,6 +94,11 @@ class ServerQueue {
                 noSubscriber: NoSubscriberBehavior.Play
             }
         })
+        //player listeners
+        playerListeners.listeners.forEach((event, fun)=>{
+            this.#player.on(event, fun.bind(this))
+        })
+        
     }
 
     /**
@@ -405,5 +410,6 @@ class ServerQueue {
 }
 
 module.exports = {
+    module:true,
     ServerQueue
 }

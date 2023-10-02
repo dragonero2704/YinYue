@@ -1,5 +1,5 @@
 // this file contains the definitions of listeners functions for connections
-
+const { entersState, VoiceConnectionStatus } = require('@discordjs/voice')
 let listeners = new Map()
 
 // stateChange
@@ -18,26 +18,25 @@ const stateChange = (oldState, newState) => {
 listeners.set('stateChange', stateChange)
 
 // error
-const error = (error)=>console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
+const error = (error) => console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
 listeners.set('error', error)
 
 //disconnected - 
-const {entersState, VoiceConnectionStatus} = require('@discordjs/voice')
-const disconencted = async (oldState, newState) => {
+const disconnected = async (oldState, newState) => {
     try {
         await Promise.race([
             entersState(connection, voice.VoiceConnectionStatus.Signalling, 5000),
             entersState(connection, voice.VoiceConnectionStatus.Connecting, 5000),
         ]);
         // Seems to be reconnecting to a new channel - ignore disconnect
-        this.voiceChannel = await this.txtChannel.guild.channels.cache.get(this.connection.joinConfig.channelId)
+        this.#voiceChannel = await this.#txtChannel.guild.channels.cache.get(this.#connection.joinConfig.channelId)
     } catch (error) {
         // Seems to be a real disconnect which SHOULDN'T be recovered from
         console.log("Disconnected")
-        this.connection.destroy();
+        this.#connection.destroy();
         this.die(true);
     }
 }
-listeners.set(VoiceConnectionStatus.Disconnected, disconencted)
+listeners.set(VoiceConnectionStatus.Disconnected, disconnected)
 
-module.exports = listeners
+module.exports = { module: true, listeners }

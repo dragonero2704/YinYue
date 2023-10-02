@@ -174,11 +174,11 @@ class songBuilder {
                                                         .then(res => {
                                                             const ytVideo = res[0];
                                                             const song = {
-                                                                url: yt_video.url,
-                                                                title: yt_video.title,
-                                                                thumbnailUrl: yt_video.thumbnails[0].url,
-                                                                duration: yt_video.durationInSec,
-                                                                durationRaw: yt_video.durationRaw,
+                                                                url: ytVideo.url,
+                                                                title: ytVideo.title,
+                                                                thumbnailUrl: ytVideo.thumbnails[0].url,
+                                                                duration: ytVideo.durationInSec,
+                                                                durationRaw: ytVideo.durationRaw,
                                                             }
                                                             resolve(song)
                                                         })
@@ -239,5 +239,5 @@ class songBuilder {
         })
     }
 
-    
+
 }
