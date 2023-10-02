@@ -12,3 +12,5 @@ package.json
 logs
 *.jpg
 *.png
+
+test
