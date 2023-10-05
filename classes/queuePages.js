@@ -12,21 +12,27 @@ function toRawDuration(seconds) {
 }
 
 class queuePages{
-    #songs
+    #serverQueue
     #pageIndex
     #queueMsg
-    constructor(songs){
-        this.#songs = songs
-        this.#pageIndex = 0;
-        this.#queueMsg = msg;
+    #queueCollector
+    constructor(serverQueue, msg){
+        this.#serverQueue = serverQueue
+        this.#pageIndex = 0
+        this.#queueMsg = msg
+        this.#queueCollector = undefined
     }
-
-    //this function returns an array
+    
+    /**
+     * 
+     * @returns the array of songs divided in chunks of 20 songs per chunk
+     */
     queuePages() {
         let queue = [];
-        this.songs.forEach((song, index) => {
+        const songs = this.#serverQueue.getSongs()
+        songs.forEach((song, index) => {
             let line = ''
-            if (song === this.curPlayingSong) {
+            if (index === this.currentIndex) {
                 line = `    ⬐In riproduzione\n${index + 1}. ${song.title}\t${toRawDuration(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))} rimasti\n    ⬑In riproduzione`
             } else {
                 line = `${index + 1}. ${song.title}\t${song.durationRaw}`
@@ -50,15 +56,15 @@ class queuePages{
     }
 
     startCollector(msg, buttonIds) {
-        this.pageIndex = 0;
-        this.queueMsg = msg;
+        this.#pageIndex = 0;
+        this.#queueMsg = msg;
         const filter = (inter) => {
             return buttonIds.includes(inter.customId)
         }
 
         let pages = this.queuePages();
 
-        this.queueCollector = this.queueMsg.createMessageComponentCollector({
+        this.queueCollector = this.#queueMsg.createMessageComponentCollector({
             filter
         })
 
@@ -103,10 +109,10 @@ class queuePages{
         this.queueCollector = undefined;
         try {
             if (this ?? queueMsg ?? editable === false) {
-                this.queueMsg.fetch()
+                this.#queueMsg.fetch()
             }
             try {
-                this.queueMsg.delete()
+                this.#queueMsg.delete()
             } catch (error) {
                 //message is too old
             }

@@ -22,6 +22,7 @@ const error = (error) => console.error(`Error: ${error.message} with resource ${
 listeners.set('error', error)
 
 //disconnected - 
+/*
 const disconnected = async (oldState, newState) => {
     try {
         await Promise.race([
@@ -29,7 +30,7 @@ const disconnected = async (oldState, newState) => {
             entersState(connection, voice.VoiceConnectionStatus.Connecting, 5000),
         ]);
         // Seems to be reconnecting to a new channel - ignore disconnect
-        this.#voiceChannel = await this.#txtChannel.guild.channels.cache.get(this.#connection.joinConfig.channelId)
+        this.#voiceChannel = await this.#textChannel.guild.channels.cache.get(this.#connection.joinConfig.channelId)
     } catch (error) {
         // Seems to be a real disconnect which SHOULDN'T be recovered from
         console.log("Disconnected")
@@ -38,5 +39,5 @@ const disconnected = async (oldState, newState) => {
     }
 }
 listeners.set(VoiceConnectionStatus.Disconnected, disconnected)
-
+*/
 module.exports = { module: true, listeners }

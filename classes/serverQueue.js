@@ -1,14 +1,23 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, basename } = require('discord.js');
+//includes
+const { joinVoiceChannel, createAudioResource, AudioResource, StreamType,
+    createAudioPlayer, NoSubscriberBehavior, VoiceConnectionStatus, AudioPlayerStatus } = require('@discordjs/voice')
+const { TextChannel, VoiceChannel } = require('discord.js')
+const { readFileSync } = require('fs')
 const { titleEmbed, fieldEmbed, sendReply } = require('../misc/functions');
 const { globalQueue } = require('../misc/globals');
-
-const voice = require('@discordjs/voice');
-const play_dl = require('play-dl');
+// stream libraries
+const play_dl = require('play-dl')
 const ytdl = require('ytdl-core-discord')
 
-let blank_field = '\u200b'
 
-const lang = require(`../commands/music/languages/${basename(__filename).split('.')[0]}.json`)
+// listeners
+const conListeners = require('./serverQueue/connection')
+const playerListeners = require('./serverQueue/player')
+
+// json paths
+const loopStatesJson = "./serverQueue/messages/loopstates.json"
+const errorsJson = "./serverQueue/messages/errors.json"
+const responsesJson = "./serverQueue/messages/responses.json"
 
 function check(interaction, globalQueue) {
     let voice_channel = interaction.member.voice.channel;
@@ -33,337 +42,184 @@ function check(interaction, globalQueue) {
     return true;
 }
 
+//class definition
 class ServerQueue {
-    constructor(songs, txtChannel, voiceChannel, autodie = true, locale = "en-UK") {
-        this.songs = [];
+    // private fields
+    #songs
+    #textChannel
+    #voiceChannel
+    #connection
+    #guildId
+    #loopState
+    #currentIndex
+    #player
+    #sub
+    #locale
+
+    //autodie vars
+    #interval
+    #intervalId
+
+    //queue vars
+    #pageIndex = 0;
+    #queueMsg = undefined
+    #queueCollector = undefined
+
+    static loopStates = require(loopStatesJson)
+    static errors = require(errorsJson)
+    static responses = require(responsesJson)
+
+    /**
+     * 
+     * @param {[]} songs 
+     * @param {TextChannel} textChannel 
+     * @param {VoiceChannel} voiceChannel 
+     * @param {true} autodie 
+     * @param {60_000} autodieInterval 
+     * @param {"en-UK"} locale 
+     */
+    constructor(
+        songs,                      // can be an array or not
+        textChannel,                // default text channel to send error, events ecc...
+        voiceChannel,               // voiceChannel to connect to
+        autodie = true,             // autodie set by default to true
+        autodieInterval = 60_000,   // autodie interval set by default to 1 minute
+        locale = "en-UK"            // language messages. Defaults to english (anche se so italiano)
+    ) {
         if (Array.isArray(songs)) {
-            this.songs = songs;
-            // console.log('Constructed an array of songs: '+this.songs)
+            this.#songs = songs;
         } else {
-            // console.log('Added a song')
-            this.songs = [songs];
+            this.#songs = [songs];
         }
-        // console.log(this.songs)
-        this.curPlayingSong = this.songs[0];
-        this.loopState = ServerQueue.loopStates.disabled;
-        this.txtChannel = txtChannel;
-        this.voiceChannel = voiceChannel;
-        this.autodieInterval = undefined
-        this.interval = 60_000
-        if (autodie) {
-            this.autodieInterval = setInterval(() => {
-                if (this.voiceChannel.members.size <= 1) {
-                    //il bot è da solo
-                    this.die(true)
-                }
-            }, this.interval)
-        }
-        // create voice connection
+
+        // assign default textChannel
+        this.#textChannel = textChannel;
+        this.#guildId = textChannel.guild.id;
+        this.#voiceChannel = voiceChannel
+        this.#locale = locale
+        // try to connect to voice channel
         try {
-            this.connection = voice.joinVoiceChannel({
-                channelId: voiceChannel.id,
-                guildId: txtChannel.guild.id,
-                adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+            this.#connection = joinVoiceChannel({
+                channelId: this.#voiceChannel.id,
+                guildId: this.#guildId,
+                adapterCreator: this.#voiceChannel.guild.voiceAdapterCreator
             });
-        } catch (error) {
-            console.log(error)
-            return
+        } catch (e) {
+            this.log(`voice connection error: ${e}`, 'error')
         }
-        // player
-        this.player = voice.createAudioPlayer({
+
+        //set up autodie
+        if (autodie) {
+            this.#interval = autodieInterval
+            this.#intervalId = undefined
+            this.toggleAlwaysActive()
+        }
+
+
+        //set up queue variables
+        this.#currentIndex = 0
+        this.#loopState = ServerQueue.loopStates.disabled
+
+        this.#player = createAudioPlayer({
+            debug: false,
             behaviors: {
-                noSubscriber: voice.NoSubscriberBehavior.Play
+                noSubscriber: NoSubscriberBehavior.Play
             }
         })
 
-        this.connection.on(voice.VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
+        this.#sub = this.#connection.subscribe(this.#player)
+        this.initListeners()
+    }
+
+    initListeners() {
+        //connection listeners
+        conListeners.listeners.forEach((fun, event) => {
+            this.#connection.on(event, fun.bind(this))
+        })
+
+        this.#connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
             try {
                 await Promise.race([
-                    voice.entersState(connection, voice.VoiceConnectionStatus.Signalling, 5000),
-                    voice.entersState(connection, voice.VoiceConnectionStatus.Connecting, 5000),
+                    entersState(connection, VoiceConnectionStatus.Signalling, 5000),
+                    entersState(connection, VoiceConnectionStatus.Connecting, 5000),
                 ]);
                 // Seems to be reconnecting to a new channel - ignore disconnect
-                this.voiceChannel = await this.txtChannel.guild.channels.cache.get(this.connection.joinConfig.channelId)
+                this.#voiceChannel = this.#textChannel.guild.channels.cache.get(this.#connection.joinConfig.channelId)
             } catch (error) {
                 // Seems to be a real disconnect which SHOULDN'T be recovered from
                 console.log("Disconnected")
-                this.connection.destroy();
+                this.#connection.destroy();
                 this.die(true);
             }
         })
 
-        this.player.on('stateChange', (oldState, newState) => {
-            console.log(`Player state: ${oldState.status} => ${newState.status}`);
+        //player listeners
+        playerListeners.listeners.forEach((fun, event) => {
+            this.#player.on(event, fun.bind(this))
         })
 
-        this.player.on(voice.AudioPlayerStatus.Playing, async (oldState, newState) => {
+        this.#player.on(AudioPlayerStatus.Playing, async (oldState, newState) => {
             let song = newState.resource.metadata;
             console.log(`Now playing: ${song.title}`);
-            let embed = titleEmbed(this.txtChannel.guild, `**${song.title}**`, 'In riproduzione', song.url)
+            let embed = titleEmbed(this.#textChannel.guild, `**${song.title}**`, 'In riproduzione', song.url)
             embed.setImage(song.thumbnailUrl)
-            await sendReply(this.txtChannel, embed, 10000);
+            await sendReply(this.#textChannel, embed, 10000);
         })
 
-        this.player.on(voice.AudioPlayerStatus.Buffering, (oldState, newState) => {
-            console.log(`Buffering ${newState.resource.metadata.title}`);
-        })
-
-        this.player.on(voice.AudioPlayerStatus.Idle, async (oldState, newState) => {
-            if (!globalQueue.get(this.voiceChannel.guild.id)) return;
-            let song = await this.nextTrack();
+        this.#player.on(AudioPlayerStatus.Idle, async (oldState, newState) => {
+            if (!globalQueue.get(this.#guildId)) return;
+            let song = this.nextTrack();
             if (song) {
-                await this.play(song)
+                await this.play()
             } else {
                 this.die();
             }
         })
-
-        this.player.on('error', error => {
-            console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
-        });
-
-        this.connection.on('error', e => {
-            console.error
-        })
-
-        this.connection.on('stateChange', (oldState, newState) => {
-            const oldNetworking = Reflect.get(oldState, 'networking');
-            const newNetworking = Reflect.get(newState, 'networking');
-
-            const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
-                const newUdp = Reflect.get(newNetworkState, 'udp');
-                clearInterval(newUdp?.keepAliveInterval);
-            }
-
-            oldNetworking?.off('stateChange', networkStateChangeHandler);
-            newNetworking?.on('stateChange', networkStateChangeHandler);
-        });
-
-        this.sub = this.connection.subscribe(this.player)
-        //queue 
-        this.queueCollector = undefined;
-        this.pageIndex = undefined;
     }
 
-    static loopStates = {
-        disabled: 0,
-        queue: 1,
-        track: 2,
+    /**
+     * 
+     * @param {string} msg the message to be displayed
+     * @param {} aim "warning"||"error"||"log"
+     * @returns 
+     */
+    log(msg, aim = 'log') {
+        const pref = `{Guild ${this.#guildId}} `
+        switch (aim) {
+            case 'log':
+            default:
+                console.log(pref + msg);
+                break;
+            case 'error':
+                console.error(pref + msg);
+                break;
+            case 'warning':
+                console.warning(pref + msg);
+                break;
+        }
+        return
     }
-
-    static errors = {
-        queueNotFound: 'Coda non trovata',
-        voiceChannelNotFound: 'Devi essere in un canale vocale',
-        invalidArgument: 'Inserire una parola chiave o un url',
-        emptyQueue: 'La coda è vuota',
-        oldQueue: 'Questa coda non è più valida. Vai a quella più [recente]',
-        differentVoiceChannel: `Devi essere nello stesso canale di `
-    }
-
-    static responses = {
-        loopDisabled: 'Loop disabilitato',
-        loopEnabled: 'Loop abilitato sulla coda',
-        loopEnabledTrack: 'Loop abilitato sulla traccia',
-        newTrack: 'Aggiunta alla coda',
-        endQueue: 'Coda terminata',
-    }
-
-    static queueFormat = {
-        start: '```Python',
-        end: '```'
-    }
-
+    /**
+     * Toggles the autodieInterval always active
+     */
     toggleAlwaysActive() {
-        if (this.autodieInterval) {
-            clearInterval(this.autodieInterval)
-            this.autodieInterval = undefined
+        if (this.#intervalId) {
+            clearInterval(this.#intervalId)
+            this.#intervalId = undefined
         } else {
-            this.autodieInterval = setInterval(() => {
-                if (this.voiceChannel.members.size <= 1) {
+            this.#intervalId = setInterval(() => {
+                if (this.#voiceChannel.members.size <= 1) {
                     //il bot è da solo
                     this.die(true)
                 }
-            }, this.interval)
+            }, this.#interval)
         }
     }
-
-    static async getSongObject(args) {
-        // isurl
-        let query = args.join(' ');
-        // console.log(query)
-        let type_url = await play_dl.validate(query)
-        try {
-            type_url = type_url.split('_')
-        } catch (error) { }
-        switch (type_url[0]) {
-            //youtube
-            case 'yt':
-                switch (type_url[1]) {
-                    case 'video':
-                        {
-                            let media = (await play_dl.video_basic_info(query)).video_details
-                            // console.log(media)
-                            let song = {
-                                url: media.url,
-                                title: media.title,
-                                thumbnailUrl: media.thumbnails[0].url,
-                                duration: media.durationInSec,
-                                durationRaw: media.durationRaw,
-                            }
-                            return song;
-                        }
-
-                        break;
-                    case 'playlist':
-                        {
-                            let songs = []
-                            console.log(query)
-                            let videos = await (await play_dl.playlist_info(query)).all_videos()
-                            for (const video of videos) {
-                                let song = {
-                                    url: video.url,
-                                    title: video.title,
-                                    thumbnailUrl: video.thumbnails[0].url,
-                                    duration: video.durationInSec,
-                                    durationRaw: video.durationRaw,
-                                }
-                                songs.push(song)
-                            }
-                            return songs;
-                        }
-                        break;
-                    case 'album':
-                        break;
-                }
-                break;
-            //spotify
-            case 'sp':
-                if (play_dl.is_expired()) { await play_dl.refreshToken() }
-                let playlist = await play_dl.spotify(query)
-
-                switch (type_url[1]) {
-                    case 'album':
-                        {
-                            let tracks = await playlist.all_tracks()
-                            console.log(`fetching ${playlist.tracksCount} tracks from Youtube...`);
-                            let promises = [];
-                            tracks.forEach(track => {
-                                promises.push(new Promise((resolve, reject) => {
-                                    play_dl.search(track.name, {
-                                        type: 'video', limit: 1, source: {
-                                            youtube: "video"
-                                        }
-                                    }).then(ytVideo => {
-                                        ytVideo = ytVideo[0]
-                                        if (ytVideo) {
-                                            resolve({
-                                                url: ytVideo.url,
-                                                title: ytVideo.title,
-                                                thumbnailUrl: ytVideo.thumbnails[0].url,
-                                                duration: ytVideo.durationInSec,
-                                                durationRaw: ytVideo.durationRaw,
-                                            })
-                                        } else
-                                            reject()
-                                    })
-
-                                }))
-                            })
-                            return Promise.allSettled(promises)
-                                .then(results => results.filter(val => val.status === 'fulfilled').map(val => val.value))
-                                .catch(e => console.log)
-
-                        }
-                        break;
-                    case 'playlist':
-                        {
-                            let playlist = await play_dl.spotify(query)
-                            let tracks = await playlist.all_tracks()
-                            console.log(`fetching ${playlist.tracksCount} tracks from Youtube...`);
-                            let promises = [];
-                            tracks.forEach(track => {
-                                promises.push(new Promise((resolve, reject) => {
-                                    play_dl.search(track.name, {
-                                        type: 'video', limit: 1, source: {
-                                            youtube: "video"
-                                        }
-                                    }).then(ytVideo => {
-                                        ytVideo = ytVideo[0]
-                                        if (ytVideo) {
-                                            resolve({
-                                                url: ytVideo.url,
-                                                title: ytVideo.title,
-                                                thumbnailUrl: ytVideo.thumbnails[0].url,
-                                                duration: ytVideo.durationInSec,
-                                                durationRaw: ytVideo.durationRaw,
-                                            })
-                                        } else
-                                            reject()
-                                    })
-
-                                }))
-                            })
-                            return Promise.allSettled(promises)
-                                .then(results => results.filter(val => val.status === 'fulfilled').map(val => val.value))
-                                .catch(e => console.log)
-                        }
-                        break;
-                    case 'track':
-                        {
-                            let track = await play_dl.spotify(query);
-                            let yt_video = (await play_dl.search(track.name, { limit: 1 }))[0]
-
-                            let song = {
-                                url: yt_video.url,
-                                title: yt_video.title,
-                                thumbnailUrl: yt_video.thumbnails[0].url,
-                                duration: yt_video.durationInSec,
-                                durationRaw: yt_video.durationRaw,
-                            }
-                            return song;
-                        }
-                        break;
-                }
-            //soundcloud
-            case 'so':
-                //not implemented 
-                play_dl.getFreeClientID().then((clientID) => play_dl.setToken({
-                    soundcloud: {
-                        client_id: clientID
-                    }
-                }))
-                break;
-
-            default:
-                {
-                    console.log(`Searching for '${query}' on YT`);
-                    let media = undefined;
-                    try {
-                        media = (await play_dl.search(query, {
-                            type: 'video', limit: 1, source: {
-                                youtube: "video"
-                            }
-                        }))[0];
-                    } catch (error) {
-                        console.log(error)
-                    }
-
-                    if (!media) return undefined;
-                    let song = {
-                        url: media.url,
-                        title: media.title,
-                        thumbnailUrl: media.thumbnails[0].url,
-                        duration: media.durationInSec,
-                        durationRaw: media.durationRaw,
-                    }
-                    console.log(`Match found: ${song.title}`)
-                    return song;
-                }
-                break;
-        }
-        return undefined
-    }
-    // Builds the resource for discord.js player to play
+    /**
+     * 
+     * @param {{}} song the song object
+     * @returns {Promise} a Promise to an AudioResource playable by the discord player
+     */
     getResource(song) {
         // ytdl method
         let ytdlPromise = new Promise((resolve, reject) => {
@@ -371,14 +227,14 @@ class ServerQueue {
                 .then(stream => {
                     let resource;
                     try {
-                        resource = voice.createAudioResource(stream, {
+                        resource = createAudioResource(stream, {
                             metadata: song,
                             // Do not uncomment, errors with discord opus may come up
                             // inlineVolume: true,
-                            inputType: voice.StreamType.Opus
+                            inputType: StreamType.Arbitrary
                         });
                     } catch (error) {
-                        reject(error);
+                        reject(Error("YTDL Resource " + error));
                     }
                     resolve(resource)
                 })
@@ -387,13 +243,13 @@ class ServerQueue {
 
         // play_dl method
         let playDlPromise = new Promise((resolve, reject) => {
-            console.log("Creating stream")
-            play_dl.stream(song.url, { quality:1 })
+            // console.log("Creating stream")
+            play_dl.stream(song.url, { quality: 1 })
                 .then((stream) => {
                     let resource;
-                    console.log("Creating Resource")
+                    // console.log("Creating Resource")
                     try {
-                        resource = voice.createAudioResource(stream.stream, {
+                        resource = createAudioResource(stream.stream, {
                             metadata: song,
                             // Do not uncomment, errors with discord opus may come up
                             // inlineVolume: true,
@@ -404,47 +260,65 @@ class ServerQueue {
                     }
                     resolve(resource)
                 })
-                .catch((error)=>{
+                .catch((error) => {
                     reject("PlayDl Stream " + error)
                 })
         })
 
-        return Promise.any([playDlPromise , ytdlPromise])
+        return Promise.any([playDlPromise, ytdlPromise])
     }
-
+    /**
+     * 
+     * @param {{}} song 
+     */
+    async play(song = undefined) {
+        if (!song) {
+            song = this.#songs[this.#currentIndex];
+        }
+        this.getResource(song)
+            .then((resource) => {
+                try {
+                    this.#player.play(resource);
+                    this.#currentIndex = this.#songs.indexOf(song);
+                } catch (error) {
+                    console.error(error)
+                }
+            })
+            .catch((error) => this.log('line 261 ' + error, 'error'))
+    }
     /**
      * 
      * @param {boolean} forceskip 
      * @returns {{}} nextSong
      */
     nextTrack(forceskip = false) {
-        let curIndex = this.curPlayingIndex();
+        let curIndex = this.#currentIndex;
         let nextIndex = curIndex + 1;
-        let songsLenght = this.songs.length;
+        let songsLenght = this.#songs.length;
         let nextSong = undefined;
         if (!forceskip) {
-            switch (this.loopState) {
+            switch (this.#loopState) {
                 case ServerQueue.loopStates.disabled:
                     if (nextIndex < songsLenght) {
-                        nextSong = this.songs[nextIndex];
+                        nextSong = this.#songs[nextIndex];
                     }
                     break;
                 case ServerQueue.loopStates.queue:
                     if (nextIndex >= songsLenght) {
                         nextIndex = 0;
                     }
-                    nextSong = this.songs[nextIndex];
+                    nextSong = this.#songs[nextIndex];
                     break;
                 case ServerQueue.loopStates.track:
                     nextIndex = curIndex;
-                    nextSong = this.songs[nextIndex];
+                    nextSong = this.#songs[nextIndex];
                     break;
             }
         } else {
-            switch (this.loopState) {
+            switch (this.#loopState) {
                 case ServerQueue.loopStates.disabled:
                     if (nextIndex < songsLenght) {
-                        nextSong = this.songs[nextIndex];
+                        nextSong = this.#songs[nextIndex];
                     }
                     break;
                 case ServerQueue.loopStates.queue:
@@ -452,147 +326,132 @@ class ServerQueue {
                     if (nextIndex >= songsLenght) {
                         nextIndex = 0;
                     }
-                    nextSong = this.songs[nextIndex];
+                    nextSong = this.#songs[nextIndex];
                     break;
             }
         }
-        if (nextSong !== undefined) {
-            this.curPlayingSong = nextSong;
-        }
+
 
         return nextSong;
     }
-
-    async play(song = undefined) {
-        if (!song) {
-            song = this.curPlayingSong;
-        }
-        this.getResource(song)
-            .then((resource) => {
-                try {
-                    this.player.play(resource);
-                    this.curPlayingSong = song;
-                } catch (error) {
-                    console.error(error)
-                }
-            })
-            .catch((error) => console.error(error))
-    }
-
+    /**
+     * 
+     * @param {number} index The index to jump to, ranging between 0 and songs.size-1 
+     */
     async jump(index) {
-        await this.play(this.songs[index]);
+        await this.play(this.#songs[index]);
     }
-
+    /**
+     * 
+     * @param  {...any} songs 
+     */
     add(...songs) {
         songs.flatMap(val => val).forEach(song => {
-            if (this.indexOfSong(song) === -1)
-                this.songs.push(song)
+            if (this.#songs.indexOf(song) === -1)
+                this.#songs.push(song)
         })
     }
 
-    curPlayingIndex() {
-        return this.songs.indexOf(this.curPlayingSong);
-    }
-
-    indexOfSong(song) {
-        return this.songs.indexOf(song);
-    }
-
+    /**
+     * 
+     * @param {number} index 
+     */
     remove(index) {
-        this.songs = this.songs.filter((val, i) => {
+        this.#songs = this.#songs.filter((val, i) => {
             return i !== index
         })
     }
-
-    changeLoopState(arg = undefined) {
-        if (!arg) {
-            this.loopState += 1
-            if (this.loopState > ServerQueue.loopStates.track) {
-                this.loopState = ServerQueue.loopStates.disabled;
+    /**
+     * Changes loopState of the queue
+     * @param {string} loopState if 
+     * ´´´ts
+     * undefined
+     * ´´´
+     * @returns 
+     */
+    changeLoopState(loopState = undefined) {
+        if (!loopState) {
+            this.#loopState += 1
+            if (this.#loopState > ServerQueue.loopStates.track) {
+                this.#loopState = ServerQueue.loopStates.disabled;
             }
-            return this.loopState;
+            return this.#loopState;
         } else {
-            switch (arg.toLowerCase()) {
+            switch (loopState.toLowerCase()) {
                 case 'off':
                 case 'disabled':
-                    this.loopState = ServerQueue.loopStates.disabled;
+                    this.#loopState = ServerQueue.loopStates.disabled;
 
                     break;
                 case 'q':
                 case 'queue':
-                    this.loopState = ServerQueue.loopStates.queue;
+                    this.#loopState = ServerQueue.loopStates.queue;
 
                     break;
 
                 case 't':
                 case 'track':
-                    this.loopState = ServerQueue.loopStates.track;
+                    this.#loopState = ServerQueue.loopStates.track;
                     break;
 
                 default:
-                    this.loopState += 1
-                    if (this.loopState > ServerQueue.loopStates.track) {
-                        this.loopState = ServerQueue.loopStates.disabled;
+                    this.#loopState += 1
+                    if (this.#loopState > ServerQueue.loopStates.track) {
+                        this.#loopState = ServerQueue.loopStates.disabled;
                     }
 
                     break;
             }
-            return this.loopState;
+            return this.#loopState;
         }
     }
 
-    getLoopState() {
-        return this.loopState;
-    }
 
-    getSongs() {
-        return this.songs;
-    }
 
     getSongsLength() {
-        return this.songs.length
+        return this.#songs.length
     }
 
     pause() {
         try {
-            this.player.pause();
+            this.#player.pause();
         } catch (error) {
-
+            this.log(error, "warning")
         }
     }
 
     resume() {
         try {
-            this.player.unpause();
+            this.#player.unpause();
         } catch (error) {
-
+            this.log(error, "warning")
         }
     }
     shuffle() {
-        for (let i = this.songs.length - 1; i > 0; i--) {
+        for (let i = this.#songs.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [this.songs[i], this.songs[j]] = [this.songs[j], this.songs[i]];
+            [this.#songs[i], this.#songs[j]] = [this.#songs[j], this.#songs[i]];
         }
     }
 
     die(force = false) {
         try {
-            this.player.stop()
+            this.#player.stop()
         } catch (error) {
 
         }
-        this.sub.unsubscribe();
-        this.player = undefined;
+        this.#sub.unsubscribe();
+        this.#player = undefined;
         try {
-            this.connection.destroy();
+            this.#connection.destroy();
         } catch (error) { }
 
         globalQueue.delete(this.voiceChannel.guild.id);
 
-        if (!force) sendReply(this.txtChannel, titleEmbed(this.txtChannel.guild, ServerQueue.responses.endQueue))
+        if (!force) sendReply(this.#textChannel, titleEmbed(this.#textChannel.guild, ServerQueue.responses.endQueue[this.#locale]))
     }
 
-    static convertToRawDuration(seconds) {
+    static toRawDuration(seconds) {
         let res = []
         while (seconds > 0) {
             res.push(String(Math.floor(seconds % 60)).padStart(2, '0'))
@@ -603,7 +462,39 @@ class ServerQueue {
     }
 
     getPlaybackDuration() {
-        return this.player.state.playbackDuration ?? 0;
+        return this.#player.state.playbackDuration ?? 0;
+    }
+
+    getSongsJson() {
+        return JSON.stringify(this.getSongs())
+    }
+
+    getSongs() {
+        return this.#songs
+    }
+
+    getCurrentIndex() {
+        return this.#currentIndex
+    }
+
+    getLoopState() {
+        return this.#loopState;
+    }
+
+    getSongs() {
+        return this.#songs;
+    }
+
+    getVoiceChannel() {
+        return this.#voiceChannel
+    }
+
+    getTextChannel() {
+        return this.#textChannel
+    }
+
+    getGuildId() {
+        return this.#guildId
     }
 
     //this function returns an array
@@ -635,38 +526,38 @@ class ServerQueue {
     }
 
     startCollector(msg, buttonIds) {
-        this.pageIndex = 0;
-        this.queueMsg = msg;
+        this.#pageIndex = 0;
+        this.#queueMsg = msg;
         const filter = (inter) => {
             return buttonIds.includes(inter.customId)
         }
 
         let pages = this.queuePages();
 
-        this.queueCollector = this.queueMsg.createMessageComponentCollector({
+        this.#queueCollector = this.#queueMsg.createMessageComponentCollector({
             filter
         })
 
-        this.queueCollector.on('collect', (inter) => {
+        this.#queueCollector.on('collect', (inter) => {
             if (!inter.message.editable) inter.message.fetch()
             inter.deferUpdate({
                 fetchReply: false,
             })
             switch (inter.component.customId) {
                 case buttonIds[0]:
-                    this.pageIndex = 0;
+                    this.#pageIndex = 0;
                     break;
                 case buttonIds[1]:
-                    this.pageIndex -= 1;
-                    if (this.pageIndex < 0) this.pageIndex = 0;
+                    this.#pageIndex -= 1;
+                    if (this.#pageIndex < 0) this.#pageIndex = 0;
                     break;
 
                 case buttonIds[2]:
-                    this.pageIndex += 1;
-                    if (this.pageIndex >= pages.length) this.pageIndex = pages.length - 1;
+                    this.#pageIndex += 1;
+                    if (this.#pageIndex >= pages.length) this.#pageIndex = pages.length - 1;
                     break;
                 case buttonIds[3]:
-                    this.pageIndex = pages.length - 1;
+                    this.#pageIndex = pages.length - 1;
                     break;
 
                 default:
@@ -675,28 +566,28 @@ class ServerQueue {
             }
 
             let content = [ServerQueue.queueFormat.start];
-            content = content.concat(pages[this.pageIndex]);
+            content = content.concat(pages[this.#pageIndex]);
             content.push(ServerQueue.queueFormat.end);
             inter.message.edit(content.join('\n'));
         })
     }
 
     stopCollector() {
-        if (this.queueCollector) {
-            this.queueCollector.stop();
+        if (this.#queueCollector) {
+            this.#queueCollector.stop();
         }
-        this.queueCollector = undefined;
+        this.#queueCollector = undefined;
         try {
             if (this ?? queueMsg ?? editable === false) {
-                this.queueMsg.fetch()
+                this.#queueMsg.fetch()
             }
             try {
-                this.queueMsg.delete()
+                this.#queueMsg.delete()
             } catch (error) {
                 //message is too old
             }
         } catch (error) {
-
+            this.log(error, "warning")
         }
         return;
     }
@@ -722,10 +613,6 @@ class ServerQueue {
         let queueinteraction = await interaction.channel.send({ content: queue, components: [row] });
         // let queueinteraction = await interaction.reply({ content: queue, components: [row] });
         this.startCollector(queueinteraction, ['FirstPage', 'Previous', 'Next', 'LastPage'])
-    }
-
-    getSongsJson() {
-        return JSON.stringify(this.getSongs())
     }
 }
 
