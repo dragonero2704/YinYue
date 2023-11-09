@@ -2,18 +2,19 @@ const {InteractionType} = require('discord.js')
 
 module.exports = {
     name: 'interactionCreate',
-    run(interaction, bot) {
+    async run(interaction, bot) {
         if (interaction.type !== InteractionType.ApplicationCommand) return;
 
         const { commandName } = interaction;
 
         try {
             let cmd_name = bot.aliases.get(commandName.toLowerCase()) || commandName.toLowerCase();
-            console.log(`Comando in esecuzione: ${cmd_name}.js`)
-            bot.commands.get(cmd_name).execute(interaction, bot);
+            console.log(`${interaction.member.user.tag} executed /${commandName.toLowerCase()} in guild ${interaction.guild.name}`)
+            const locale = interaction.locale
+            await bot.commands.get(cmd_name).execute(interaction, bot, locale);
         } catch (error) {
-            console.log('Comando sconosciuto')
-            console.log(error)
+            // console.log('Comando sconosciuto')
+            console.warn(error)
         }
     },
 }

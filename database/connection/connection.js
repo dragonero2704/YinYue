@@ -1,7 +1,6 @@
 const Sequelize = require('sequelize')
 
-
-const connection = new Sequelize('database', 'root', '', {
+const connection = new Sequelize('database', 'YinYue', process.env.DB_PASS, {
 	host: 'localhost',
 	dialect: 'sqlite',
 	logging: false,
@@ -9,6 +8,5 @@ const connection = new Sequelize('database', 'root', '', {
 	storage: './database/db.sqlite',
 });
 
-
-module.exports = connection;
+module.exports = {connection};
 

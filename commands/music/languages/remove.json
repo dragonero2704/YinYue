@@ -1,0 +1,25 @@
+{
+    "names":{
+        "it":"rimuovi",
+        "en-GB":"remove",
+        "en-US":"remove"
+    },
+    
+    "options":[{
+        "names":{
+            "it":"indice",
+            "en-GB":"index",
+            "en-US":"index"
+        },
+        "descriptions":{
+            "it": "Indice della canzone da rimuovere",
+            "en-GB":"Index of the queue to remove",
+            "en-US":"Index of the queue to remove"
+        }
+    }],
+    "descriptions": {
+        "it":"Rimuove la canzone {indice} dalla coda",
+        "en-GB":"Removes the song at {index} from the queue",
+        "en-US":"Removes the song at {index} from the queue"
+    }
+}

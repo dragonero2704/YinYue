@@ -1,62 +1,58 @@
-const { Client, GatewayIntentBits, Collection } = require('discord.js')
-
+const { ShardingManager } = require('discord.js');
+const { appendFile } = require('fs')
 const { config } = require("dotenv")
+// const { startWebServer } = require('./server/server');
+const { listContent } = require(`./database/dbContent`)
+const { syncModels } = require(`./database/dbInit`)
 
-const { readdirSync } = require('fs')
-const fs = require('fs')
-// const keepAlive = require('./server/server')
+require("./misc/consoleOverride")();
 
+const test = process.argv.includes('--test')
 
-
-
-const bot = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMembers, GatewayIntentBits.MessageContent],
-})
-
-bot.commands = new Collection()
-bot.aliases = new Collection()
-// bot.prefix = new Map()
-// bot.prefix.set('default', '-')
-
-let origLog = console.log
-
-function getTimeStamp() {
-    let date = new Date()
-    return `[${date.getDay()}/${date.getMonth()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}]`
-}
-
-function getLogName(){
-    let date = new Date()
-    return `${date.getDay()}_${date.getMonth()}_${date.getFullYear()}.log`
-}
-
-
-let handler_path = __dirname + '/handlers'
-readdirSync(handler_path).forEach((handler) => {
-    require(`${handler_path}/${handler}`)(bot)
-})
-
-config({
-    path: __dirname + '/.env'
-})
-
-// keepAlive()
-console.log = function () {
-    // origLog.call(console, getTimeStamp())
-    process.stdout.write(getTimeStamp() + ': ')
-    
-    //write to file
-    fs.appendFile(`./logs/${getLogName()}`, `${getTimeStamp()}: ${arguments[0]}\n`, (err)=>{
-        if(err){
-            origLog(err)
-        }else{
-            // origLog('file wrote successfully')
-        }
+if(test){
+    config({
+        path: __dirname + '/test.env'
     })
-    origLog.apply(console, arguments)
+}else{
+    config({
+        path: __dirname + '/.env'
+    })
 }
 
-bot.login(process.env.TOKEN)
+// startWebServer();
+
+console.log('Syncing database')
+
+const force = process.argv.includes('-f')||process.argv.includes('--force')
+
+//sincronizzazione modelli
+syncModels(force)
+//contenuto tabelle database
+console.log("listing content...")
+// listContent()
+
+const manager = new ShardingManager('./bot.js', { token: process.env.TOKEN });
+// console.log("hi")
+manager.on('shardCreate', shard => {
+    console.log(`Launched shard ${shard.id}`)
+});
+
+manager.spawn().catch(console.error);
+
+// Lingue supportate da discord.js
+/*
+    'Indonesian', 'EnglishUS',    'EnglishGB',
+    'Bulgarian',  'ChineseCN',    'ChineseTW',
+    'Croatian',   'Czech',        'Danish',
+    'Dutch',      'Finnish',      'French',
+    'German',     'Greek',        'Hindi',
+    'Hungarian',  'Italian',      'Japanese',
+    'Korean',     'Lithuanian',   'Norwegian',
+    'Polish',     'PortugueseBR', 'Romanian',
+    'Russian',    'SpanishES',    'Swedish',
+    'Thai',       'Turkish',      'Ukrainian',
+    'Vietnamese'
+*/
 
 
 

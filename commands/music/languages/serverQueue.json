@@ -1,0 +1,61 @@
+{
+    "errors": {
+        "queueNotFound": {
+            "it": "Coda non trovata",
+            "en-GB":"Queue not found",
+            "en-US":"Queue not found"
+        },
+        "voiceChannelNotFound": {
+            "it": "Devi essere in un canale vocale",
+            "en-GB":"You must be in a voice channell",
+            "en-US":"You must be in a voice channell"
+        },
+        "invalidArgument": {
+            "it": "Inserire una parola chiave o un url",
+            "en-GB":"Please insert a search query or a url",
+            "en-US":"Please insert a search query or a url"
+        },
+        "emptyQueue": {
+            "it": "La coda è vuota",
+            "en-GB":"The queue is empty",
+            "en-US":"The queue is empty"
+        },
+        "oldQueue": {
+            "it": "Questa coda non è più valida. Vai a quella più [recente]",
+            "en-GB":"This queue is not valid",
+            "en-US":"This queue is not valid"
+        },
+        "differentVoiceChannel": {
+            "it": "Devi essere nello stesso canale di ",
+            "en-GB":"You must be in the same voice channell of ",
+            "en-US":"You must be in the same voice channell of "
+        }
+    },
+    "responses": {
+        "loopDisabled": {
+            "it": "Loop disabilitato",
+            "en-GB":"Loop disabled",
+            "en-US":"Loop disabled"
+        },
+        "loopEnabled": {
+            "it": "Loop abilitato sulla coda",
+            "en-GB":"Loop enabled on the queue",
+            "en-US":"Loop enabled on the queue"
+        },
+        "loopEnabledTrack": {
+            "it": "Loop abilitato sulla traccia",
+            "en-GB":"Loop enabled on the track",
+            "en-US":"Loop enabled on the track"
+        },
+        "newTrack": {
+            "it": "Aggiunta alla coda",
+            "en-GB":"Song added",
+            "en-US":"Song added"
+        },
+        "endQueue": {
+            "it": "Coda terminata",
+            "en-GB":"Queue ended",
+            "en-US":"Queue ended"
+        }
+    }
+}

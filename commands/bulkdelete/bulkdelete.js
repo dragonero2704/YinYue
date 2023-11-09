@@ -1,9 +1,10 @@
-const { Permissions, SlashCommandBuilder } = require('discord.js')
+const { PermissionsBitField , SlashCommandBuilder } = require('discord.js')
 
 module.exports = {
     name: 'bulkdelete',
     aliases: ['clean', 'clear'],
     args: ['[number of messages]'],
+    disabled:true,
     data: new SlashCommandBuilder()
         .setName('bulkdelete')
         .setDescription('Cancella un certo numero di messaggi')
@@ -13,30 +14,32 @@ module.exports = {
             .setDescription('Numero di messaggi da cancellare')
             .setRequired(true)
             .setMinValue(1)
-            .setMaxValue(500)),
+            .setMaxValue(100)),
 
-    execute: async(interaction, bot) => {
+    execute: async(interaction, bot, locale, ...params) => {
         //check for permission
-        if (!interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, true))
+        if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages))
             if (interaction.member.user.tag !== 'dragonero2704#7782')
                 return interaction.reply({ content: 'Non hai i permessi necessari', ephemeral: true });
 
         let number = interaction.options.getInteger('numero');
         //add 1 so it will delete also the command message
-        number = number + 1;
-        await interaction.reply('Sto cancellando...');
+        // number = number;
+        
+        // interaction.reply({content:'Sto cancellando...', ephemeral:true}).then(i=>i.delete());
+
         try {
             interaction.channel.bulkDelete(number)
         } catch (error) {
             console.log(error)
-            let embed = require('../../embed')(msg.guild)
+            let embed = require('../../misc/embed')(msg.guild)
             embed.addField('Errore: messaggi troppo vecchi')
             interaction.followUp({ embeds: [embed], ephemeral: true })
         }
     },
     run: async(msg, args, bot) => {
         //check permissions
-        if (!msg.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES, true))
+        if (!msg.member.permissions.has(PermissionsBitField.Flags.ManageMessages))
             if (msg.member.user.tag !== 'dragonero2704#7782')
                 return msg.reply({ content: 'Non hai i permessi necessari', ephemeral: true });
 

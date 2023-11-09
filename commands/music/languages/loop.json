@@ -1,0 +1,52 @@
+{
+    "names":{
+        "it":"loop",
+        "en-GB":"loop",
+        "en-US":"loop"
+    },
+    
+    "options":[{
+        "names":{
+            "it":"disabilitato",
+            "en-GB":"disabled",
+            "en-US":"disabled"
+        },
+        "descriptions":{
+            "it": "Loop disabilitato",
+            "en-GB":"Loop disabled",
+            "en-US":"Loop disabled"
+        }
+    },
+    {
+        "names":{
+            "it":"coda",
+            "en-GB":"queue",
+            "en-US":"queue"
+        },
+        "descriptions":{
+            "it": "Loop abilitato sulla coda",
+            "en-GB":"Queue loop",
+            "en-US":"Queue loop"
+        }
+    },
+    {
+        "names":{
+            "it":"singolo",
+            "en-GB":"track",
+            "en-US":"track"
+        },
+        "descriptions":{
+            "it": "Loop singolo",
+            "en-GB":"Track loop",
+            "en-US":"Track loop"
+        }
+    }
+
+
+],
+    "descriptions": {
+        "it":"Cambia lo stato del loop",
+        "en-GB":"Changes loop state",
+        "en-US":"Changes loop state"
+    }
+}

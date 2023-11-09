@@ -3,7 +3,6 @@ const ascii_table = require('ascii-table')
 module.exports = (bot) => {
     let table = new ascii_table('Events')
     table.setHeading('Event', 'Status')
-
     readdirSync("./events/").forEach(dir => {
         const events = readdirSync(`./events/${dir}/`).filter(file => file.endsWith('.js'))
 
@@ -15,11 +14,11 @@ module.exports = (bot) => {
 
             table.addRow(file, 'Online')
             if (event.once) {
-                bot.once(event_name, (...args) => event.run(...args, bot))
+                bot.once(event_name, (...args) => event.run(...args))
             } else {
-                bot.on(event_name, (...args) => event.run(...args, bot))
+                bot.on(event_name, (...args) => event.run(...args))
             }
         }
     })
-    console.log(table.toString())
+    console.log("\n"+table.toString())
 }

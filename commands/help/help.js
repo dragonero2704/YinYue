@@ -1,7 +1,7 @@
 module.exports = {
     name: 'help',
-    run(msg, args, bot) {
-        let embed = require('../../embed')(msg.guild)
+    async run(msg, args, bot) {
+        let embed = require('../../misc/embed')(msg.guild)
         let commands = Array.from(bot.commands.values())
         for (let cmd of commands) {
             if (cmd.name === 'help' || cmd.disabled)
