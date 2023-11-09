@@ -2,12 +2,15 @@ const { setToken, getFreeClientID } = require('play-dl')
 const ascii_table = require('ascii-table')
 const { listContent } = require(`../../database/dbContent`)
 const { syncModels } = require(`../../database/dbInit`)
+const { botUserId } = require('../../misc/globals')
 
 
 module.exports = {
     name: 'ready',
     once: true,
     async run(bot) {
+        botUserId = bot.user.id;
+
         console.log(`${bot.user.tag} online!`)
         bot.user.setActivity({
             type: 'WATCHING',

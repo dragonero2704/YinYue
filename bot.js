@@ -1,6 +1,5 @@
 const { Client, GatewayIntentBits, Collection } = require('discord.js')
 const { readdirSync } = require('fs')
-const {botUserId} = require('./misc/globals')
 const bot = new Client({
     intents: [
         GatewayIntentBits.Guilds, 
@@ -24,5 +23,5 @@ readdirSync(handler_path).forEach((handler) => {
 })
 
 bot.login(process.env.TOKEN)
-botUserId = bot.user.id
+
 
