@@ -9,7 +9,7 @@ module.exports = {
     name: 'ready',
     once: true,
     async run(bot) {
-        botUserId = bot.user.id;
+        // botUserId = bot.user.id;
 
         console.log(`${bot.user.tag} online!`)
         bot.user.setActivity({

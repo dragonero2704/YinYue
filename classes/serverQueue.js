@@ -102,6 +102,7 @@ class ServerQueue {
         this.#voiceChannel = voiceChannel
         this.#locale = locale
         // try to connect to voice channel
+        this.log(`Connecting to voice channell #${this.#voiceChannel.id}`)
         try {
             this.#connection = joinVoiceChannel({
                 channelId: this.#voiceChannel.id,
@@ -226,7 +227,7 @@ class ServerQueue {
      */
     getResource(song) {
         // ytdl method
-        let ytdlPromise = new Promise((resolve, reject) => {
+        const ytdlPromise = new Promise((resolve, reject) => {
             const options = {
                 filter: 'audioonly',
                 fmt: 'mp3',
@@ -257,7 +258,7 @@ class ServerQueue {
         })
 
         // play_dl method
-        let playDlPromise = new Promise((resolve, reject) => {
+        const playDlPromise = new Promise((resolve, reject) => {
             // console.log("Creating stream")
             play_dl.stream(song.url, { quality: 1 })
                 .then((stream) => {
