@@ -1,7 +1,7 @@
 const { globalQueue } = require('../../misc/globals')
 
 const { ServerQueue, check } = require('../../classes/serverQueue');
-const {SongBuilder} = require('../../classes/songBuilder')
+const { SongBuilder } = require('../../classes/songBuilder')
 const { titleEmbed, fieldEmbed, sendReply, reactToMsg } = require('../../misc/functions')
 const { SlashCommandBuilder, basename } = require('discord.js');
 
@@ -24,7 +24,7 @@ module.exports = {
         ),
 
     async execute(interaction, bot, locale, ...params) {
-        
+
         let voice_channel = interaction.member.voice.channel;
         if (!voice_channel) {
             // sendReply(msg.channel, titleEmbed(msg.guild, ServerQueue.errors.voiceChannelNotFound), 10000);
@@ -41,27 +41,23 @@ module.exports = {
         let server_queue = globalQueue.get(interaction.guild.id);
 
         if (server_queue !== undefined) {
-            if (server_queue.voiceChannel !== voice_channel) {
+            if (server_queue.getVoiceChannel() !== voice_channel) {
                 let content = ServerQueue.queueFormat.start + ServerQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !` + ServerQueue.queueFormat.end;
                 return interaction.reply({ content: content, ephemeral: true })
             }
         }
-        await interaction.deferReply().catch((error)=>console.error(error))
-        
+        await interaction.deferReply().catch((error) => console.error(error))
+
         console.time("songObject")
-       
+
         const songBuilder = new SongBuilder(input)
 
-        let item = await songBuilder.build().catch((error)=>console.error(error))
+        let item = await songBuilder.build().catch((error) => console.error(error))
         console.timeEnd("songObject")
         console.log(item)
         if (!item) return interaction.editReply({ embeds: [titleEmbed(interaction.guild, 'Nessun risultato')], ephemeral: true })
 
-        if (Array.isArray(item)) {
-            interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)] }).catch((error)=>console.error(error))
-        } else {
-            interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunta alla coda', `[${item.title}](${item.url}) è in coda!`)] }).catch((error)=>console.error(error))
-        }
+
         console.log("Creating server queue")
         if (!server_queue) {
             server_queue = new ServerQueue(item, interaction.channel, voice_channel);
@@ -70,8 +66,13 @@ module.exports = {
         } else {
             server_queue.add(item)
         }
+        if (Array.isArray(item)) {
+            interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)] }).catch((error) => console.error(error))
+        } else {
+            interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunta alla coda', `[${item.title}](${item.url}) è in coda!`)] }).catch((error) => console.error(error))
+        }
         await server_queue.play().catch(console.error)
-        return
+        
     },
     async run(msg, args, bot) {
         let voice_channel = await msg.member.voice.channel;

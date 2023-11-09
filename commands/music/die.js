@@ -17,7 +17,7 @@ module.exports = {
         .setDescriptionLocalizations(lang.descriptions)
     ,
     async execute(interaction, bot, locale, ...params) {
-        if (!check(interaction, globalQueue)) return
+        if (!check(interaction, globalQueue, locale)) return
         let server_queue = globalQueue.get(interaction.guild.id);
         server_queue.die(true);
         globalQueue.delete(interaction.guild.id);

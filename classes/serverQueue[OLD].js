@@ -6,7 +6,7 @@ const voice = require('@discordjs/voice');
 const play_dl = require('play-dl');
 const ytdl = require('ytdl-core-discord')
 
-let blank_field = '\u200b'
+const blank_field = '\u200b'
 
 const lang = require(`../commands/music/languages/${basename(__filename).split('.')[0]}.json`)
 

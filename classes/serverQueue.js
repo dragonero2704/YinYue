@@ -1,14 +1,15 @@
 //includes
 const { joinVoiceChannel, createAudioResource, AudioResource, StreamType,
-    createAudioPlayer, NoSubscriberBehavior, VoiceConnectionStatus, AudioPlayerStatus } = require('@discordjs/voice')
-const { TextChannel, VoiceChannel } = require('discord.js')
+    createAudioPlayer, NoSubscriberBehavior, VoiceConnectionStatus, AudioPlayerStatus, demuxProbe } = require('@discordjs/voice')
+const { TextChannel, VoiceChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js')
 const { readFileSync } = require('fs')
 const { titleEmbed, fieldEmbed, sendReply } = require('../misc/functions');
-const { globalQueue } = require('../misc/globals');
+const { globalQueue, botUserId } = require('../misc/globals');
 // stream libraries
 const play_dl = require('play-dl')
 const ytdl = require('ytdl-core-discord')
-
+// const ytdlexec = require('youtube-dl-exec')
+const blank_field = '\u200b'
 
 // listeners
 const conListeners = require('./serverQueue/connection')
@@ -19,24 +20,24 @@ const loopStatesJson = "./serverQueue/messages/loopstates.json"
 const errorsJson = "./serverQueue/messages/errors.json"
 const responsesJson = "./serverQueue/messages/responses.json"
 
-function check(interaction, globalQueue) {
+function check(interaction, globalQueue, locale = "en-GB") {
     let voice_channel = interaction.member.voice.channel;
     if (!voice_channel) {
-        interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.voiceChannelNotFound)], ephemeral: true });
+        interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.voiceChannelNotFound[locale])], ephemeral: true });
         return false;
     }
     let server_queue = globalQueue.get(interaction.guild.id);
     if (!server_queue) {
-        interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.queueNotFound)], ephemeral: true });
+        interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.queueNotFound[locale])], ephemeral: true });
         return false;
     }
-    if (server_queue.voiceChannel !== voice_channel && server_queue !== undefined) {
-        interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !`)], ephemeral: true });
+    if (server_queue.getVoiceChannel() !== voice_channel && server_queue !== undefined) {
+        interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.differentVoiceChannel[locale] + `<@${botUserId}> !`)], ephemeral: true });
         return false;
     }
     let songs = server_queue.getSongs();
     if (songs.length === 0) {
-        interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.emptyQueue)], ephemeral: true });
+        interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.emptyQueue[locale])], ephemeral: true });
         return false;
     }
     return true;
@@ -68,7 +69,10 @@ class ServerQueue {
     static loopStates = require(loopStatesJson)
     static errors = require(errorsJson)
     static responses = require(responsesJson)
-
+    static queueFormat = {
+        start: '```Python',
+        end: '```'
+    }
     /**
      * 
      * @param {[]} songs 
@@ -76,7 +80,7 @@ class ServerQueue {
      * @param {VoiceChannel} voiceChannel 
      * @param {true} autodie 
      * @param {60_000} autodieInterval 
-     * @param {"en-UK"} locale 
+     * @param {"en-GB"} locale 
      */
     constructor(
         songs,                      // can be an array or not
@@ -84,7 +88,7 @@ class ServerQueue {
         voiceChannel,               // voiceChannel to connect to
         autodie = true,             // autodie set by default to true
         autodieInterval = 60_000,   // autodie interval set by default to 1 minute
-        locale = "en-UK"            // language messages. Defaults to english (anche se so italiano)
+        locale = "en-GB"            // language messages. Defaults to english (anche se so italiano)
     ) {
         if (Array.isArray(songs)) {
             this.#songs = songs;
@@ -223,15 +227,26 @@ class ServerQueue {
     getResource(song) {
         // ytdl method
         let ytdlPromise = new Promise((resolve, reject) => {
-            ytdl(song.url, { filter: 'audioonly', quality: 'highestaudio' })
-                .then(stream => {
+            const options = {
+                filter: 'audioonly',
+                fmt: 'mp3',
+                highWaterMark: 1 << 30,
+                liveBuffer: 20000,
+                dlChunkSize: 4096,
+                bitrate: 128,
+                quality: 'lowestaudio'
+            }
+            ytdl(song.url, options)
+                .then(async stream => {
                     let resource;
+
                     try {
                         resource = createAudioResource(stream, {
                             metadata: song,
                             // Do not uncomment, errors with discord opus may come up
                             // inlineVolume: true,
-                            inputType: StreamType.Arbitrary
+                            // inputType: StreamType.
+                            inputType: StreamType.Opus
                         });
                     } catch (error) {
                         reject(Error("YTDL Resource " + error));
@@ -284,7 +299,7 @@ class ServerQueue {
                     console.error(error)
                 }
             })
-            .catch((error) => this.log('line 261 ' + error, 'error'))
+            .catch((error) => this.log(error + '\n' + error.errors, 'error'))
     }
     /**
      * 
@@ -446,7 +461,7 @@ class ServerQueue {
             this.#connection.destroy();
         } catch (error) { }
 
-        globalQueue.delete(this.voiceChannel.guild.id);
+        globalQueue.delete(this.#guildId);
 
         if (!force) sendReply(this.#textChannel, titleEmbed(this.#textChannel.guild, ServerQueue.responses.endQueue[this.#locale]))
     }
@@ -500,7 +515,7 @@ class ServerQueue {
     //this function returns an array
     queuePages() {
         let queue = [];
-        this.songs.forEach((song, index) => {
+        this.#songs.forEach((song, index) => {
             let line = ''
             if (song === this.curPlayingSong) {
                 line = `    ⬐In riproduzione\n${index + 1}. ${song.title}\t${ServerQueue.convertToRawDuration(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))} rimasti\n    ⬑In riproduzione`
@@ -509,7 +524,7 @@ class ServerQueue {
             }
             queue.push(line);
         })
-        console.log(queue)
+        // console.log(queue)
         const songsxpage = 20;
         const pages = queue.reduce((resultArray, item, index) => {
             const chunkIndex = Math.floor(index / songsxpage)

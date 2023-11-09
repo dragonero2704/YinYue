@@ -14,9 +14,9 @@ module.exports = (bot) => {
 
             table.addRow(file, 'Online')
             if (event.once) {
-                bot.once(event_name, (...args) => event.run(...args, bot))
+                bot.once(event_name, (...args) => event.run(...args))
             } else {
-                bot.on(event_name, (...args) => event.run(...args, bot))
+                bot.on(event_name, (...args) => event.run(...args))
             }
         }
     })

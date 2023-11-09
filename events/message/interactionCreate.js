@@ -14,7 +14,7 @@ module.exports = {
             await bot.commands.get(cmd_name).execute(interaction, bot, locale);
         } catch (error) {
             // console.log('Comando sconosciuto')
-            console.warning(error)
+            console.warn(error)
         }
     },
 }

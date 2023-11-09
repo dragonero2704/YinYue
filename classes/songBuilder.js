@@ -23,7 +23,7 @@ class SongBuilder {
      * @param {string} searchQuery The query to search for, can be an URL or a keyword
      */
     constructor(searchQuery) {
-        console.log("Searchquery: "+searchQuery)
+        console.log("Searchquery: " + searchQuery)
         this.#query = searchQuery
         this.#methods = [
             this.#playDlSearch
@@ -52,16 +52,16 @@ class SongBuilder {
     #playDlSearch() {
         return new Promise(async (resolve, reject) => {
             const query = this.#query
-            console.log('Query: '+query)
+            // console.log('Query: '+query)
             let typeUrl = undefined
             if (isValidUrl(query)) {
                 typeUrl = await playDL.validate(query).catch(error)
                 typeUrl = typeUrl.split('_')
             }
-            else{
-                typeUrl = ['_','_']
+            else {
+                typeUrl = ['_', '_']
             }
-           
+
             switch (typeUrl[0]) {
                 //youtube
                 case 'yt':
@@ -87,7 +87,7 @@ class SongBuilder {
                         case 'playlist':
                             {
                                 let songs = []
-                                console.log(query)
+                                // console.log(query)
                                 playDL.playlist_info(query)
                                     .then(res => res.all_videos())
                                     .then(videos => {
@@ -138,15 +138,14 @@ class SongBuilder {
                                                                 duration: ytVideo.durationInSec,
                                                                 durationRaw: ytVideo.durationRaw,
                                                             })
-                                                        } else
-                                                            reject()
+                                                        } else { reject() }
                                                     })
 
                                                 }))
                                             })
                                             resolve(Promise.allSettled(promises)
                                                 .then(results => results.filter(val => val.status === 'fulfilled').map(val => val.value))
-                                                .catch(e => console.error))
+                                                .catch(error => reject(error)))
                                         })
                                         .catch(error => reject(error))
                                 }
@@ -179,12 +178,12 @@ class SongBuilder {
                                                                     } else
                                                                         reject()
                                                                 })
-                                                                .catch(error => console.error)
+                                                                .catch(error => reject(error))
                                                         }))
                                                     })
                                                     return Promise.allSettled(promises)
                                                         .then(results => results.filter(val => val.status === 'fulfilled').map(val => val.value))
-                                                        .catch(e => console.log)
+                                                        .catch(e => console.error)
                                                 })
                                                 .catch(error => reject(error))
                                         })
@@ -231,7 +230,7 @@ class SongBuilder {
 
                 default:
                     {
-                        console.log(`Searching for '${query}' on YT`);
+                        // console.log(`Searching for '${query}' on YT`);
                         let media = undefined;
 
                         playDL.search(query, {
