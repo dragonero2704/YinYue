@@ -24,18 +24,19 @@ module.exports = {
         ),
 
     async execute(interaction, bot, locale, ...params) {
+        await interaction.deferReply().catch((error) => console.error(error))
 
         let voice_channel = interaction.member.voice.channel;
         if (!voice_channel) {
             // sendReply(msg.channel, titleEmbed(msg.guild, ServerQueue.errors.voiceChannelNotFound), 10000);
-            return interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.voiceChannelNotFound)], ephemeral: true });
+            return interaction.editReply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.voiceChannelNotFound)], ephemeral: true });
         }
 
         let input = interaction.options.getString('query');
         console.log(input)
         if (!input) {
             // sendReply(interaction.channel, titleEmbed(interaction.guild, ServerQueue.errors.invalidArgument), 10000);
-            return interaction.reply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.invalidArgument)], ephemeral: true });
+            return interaction.editReply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.invalidArgument)], ephemeral: true });
         }
 
         let server_queue = globalQueue.get(interaction.guild.id);
@@ -43,10 +44,9 @@ module.exports = {
         if (server_queue !== undefined) {
             if (server_queue.getVoiceChannel() !== voice_channel) {
                 let content = ServerQueue.queueFormat.start + ServerQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !` + ServerQueue.queueFormat.end;
-                return interaction.reply({ content: content, ephemeral: true })
+                return interaction.editReply({ content: content, ephemeral: true })
             }
         }
-        await interaction.deferReply().catch((error) => console.error(error))
 
         console.time("songObject")
 
@@ -72,7 +72,7 @@ module.exports = {
             interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunta alla coda', `[${item.title}](${item.url}) è in coda!`)] }).catch((error) => console.error(error))
         }
         await server_queue.play().catch(console.error)
-        
+
     },
     async run(msg, args, bot) {
         let voice_channel = await msg.member.voice.channel;
