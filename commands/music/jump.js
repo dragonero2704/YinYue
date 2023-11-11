@@ -28,7 +28,7 @@ module.exports = {
         let server_queue = globalQueue.get(interaction.guild.id);
 
         let index = interaction.options.getNumber('index');
-        if (!index || index < 1 || index > server_queue.songs.length) {
+        if (!index || index < 1 || index > server_queue.getSongs().length) {
             interaction.reply({ embeds: [titleEmbed(interaction.guild, `Inserire un numero tra 1 e ${server_queue.getSongs().length}`)], ephemeral: true });
             return;
         }
@@ -42,7 +42,7 @@ module.exports = {
         let server_queue = globalQueue.get(msg.guild.id);
 
         let index = parseInt(args[0])
-        if (!index || index < 1 || index > server_queue.songs.length) {
+        if (!index || index < 1 || index > server_queue.getSongs().length) {
             msg.reply({ embeds: [titleEmbed(msg.guild, `Inserire un numero tra 1 e ${server_queue.songs.length}`)], ephemeral: true });
             return;
         }

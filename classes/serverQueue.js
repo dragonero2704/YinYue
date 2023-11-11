@@ -175,7 +175,7 @@ class ServerQueue {
             if (!globalQueue.get(this.#guildId)) return;
             let song = this.nextTrack();
             if (song) {
-                await this.play()
+                await this.play(song)
             } else {
                 this.die();
             }
