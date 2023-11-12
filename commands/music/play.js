@@ -33,7 +33,7 @@ module.exports = {
         }
 
         let input = interaction.options.getString('query');
-        console.log(input)
+        // console.log(input)
         if (!input) {
             // sendReply(interaction.channel, titleEmbed(interaction.guild, ServerQueue.errors.invalidArgument), 10000);
             return interaction.editReply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.invalidArgument)], ephemeral: true });
@@ -54,7 +54,7 @@ module.exports = {
 
         let item = await songBuilder.build().catch((error) => console.error(error))
         console.timeEnd("songObject")
-        console.log(item)
+        // console.log(item)
         if (!item) return interaction.editReply({ embeds: [titleEmbed(interaction.guild, 'Nessun risultato')], ephemeral: true })
 
 
