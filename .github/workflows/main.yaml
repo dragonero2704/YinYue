@@ -63,6 +63,6 @@ jobs:
           remote-port: ${{secrets.PORT}}
           remote-user: ${{secrets.USERNAME}}
           remote-password: ${{ secrets.PASSWORD }} 
-          remote-path: "./"
-          local-path: './'
+          remote-path: "/"
+          local-path: '/'
           sync: delta
