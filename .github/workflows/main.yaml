@@ -64,5 +64,5 @@ jobs:
           remote-user: ${{secrets.USERNAME}}
           remote-password: ${{ secrets.PASSWORD }} 
           remote-path: "./"
-          local-path: './deploy'
+          local-path: './'
           sync: delta
