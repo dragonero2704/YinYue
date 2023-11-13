@@ -235,11 +235,7 @@ class ServerQueue {
      */
     getResource(song, ...methods) {
         methods = methods.flat()
-        const promises = [ytdlPromise, playDlPromise];
-
-        const defintivePromises = promises.filter((val, index) => {
-            return methods.includes(index)
-        });
+        
         // ytdl method
         const ytdlPromise = new Promise((resolve, reject) => {
             const options = {
@@ -295,6 +291,11 @@ class ServerQueue {
                 })
         })
 
+        /*============================= End Promises definition ================================*/
+        const promises = [ytdlPromise, playDlPromise];
+        const defintivePromises = promises.filter((val, index) => {
+            return methods.includes(index)
+        });
         return Promise.any(defintivePromises)
     }
     /**
