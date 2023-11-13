@@ -14,3 +14,4 @@ logs
 *.png
 
 test
+authorize.js
