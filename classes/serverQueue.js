@@ -13,7 +13,8 @@ const blank_field = '\u200b'
 
 // listeners
 const conListeners = require('./serverQueue/connection')
-const playerListeners = require('./serverQueue/player')
+const playerListeners = require('./serverQueue/player');
+const { promises } = require('dns');
 
 // json paths
 const loopStatesJson = "./serverQueue/messages/loopstates.json"
@@ -152,7 +153,7 @@ class ServerQueue {
                 this.#voiceChannel = this.#textChannel.guild.channels.cache.get(this.#connection.joinConfig.channelId)
             } catch (error) {
                 // Seems to be a real disconnect which SHOULDN'T be recovered from
-                console.log("Disconnected")
+                this.log("Disconnected", "warning")
                 this.#connection.destroy();
                 this.die(true);
             }
@@ -165,7 +166,7 @@ class ServerQueue {
 
         this.#player.on(AudioPlayerStatus.Playing, async (oldState, newState) => {
             let song = newState.resource.metadata;
-            console.log(`Now playing: ${song.title}`);
+            this.log(`Now playing: ${song.title}`, "log");
             let embed = titleEmbed(this.#textChannel.guild, `**${song.title}**`, 'In riproduzione', song.url)
             embed.setImage(song.thumbnailUrl)
             await sendReply(this.#textChannel, embed, 10000);
@@ -220,12 +221,25 @@ class ServerQueue {
             }, this.#interval)
         }
     }
+
+    static METHODS = {
+        "ytdl": 0,
+        "play_dl": 1
+        // ...
+    }
     /**
      * 
      * @param {{}} song the song object
+     * @param {Array} methods see static METHODS
      * @returns {Promise} a Promise to an AudioResource playable by the discord player
      */
-    getResource(song) {
+    getResource(song, ...methods) {
+        methods = methods.flat()
+        const promises = [ytdlPromise, playDlPromise];
+
+        const defintivePromises = promises.filter((val, index) => {
+            return methods.includes(index)
+        });
         // ytdl method
         const ytdlPromise = new Promise((resolve, reject) => {
             const options = {
@@ -260,7 +274,7 @@ class ServerQueue {
         // play_dl method
         const playDlPromise = new Promise((resolve, reject) => {
             // console.log("Creating stream")
-            play_dl.stream(song.url, { quality: 1 })
+            play_dl.stream(song.url, { quality: 1, discordPlayerCompatibility: true })
                 .then((stream) => {
                     let resource;
                     // console.log("Creating Resource")
@@ -281,7 +295,7 @@ class ServerQueue {
                 })
         })
 
-        return Promise.any([playDlPromise, ytdlPromise])
+        return Promise.any(defintivePromises)
     }
     /**
      * 
@@ -291,16 +305,27 @@ class ServerQueue {
         if (!song) {
             song = this.#songs[this.#currentIndex];
         }
-        this.getResource(song)
+        this.getResource(song, ServerQueue.METHODS.play_dl)
             .then((resource) => {
                 try {
                     this.#player.play(resource);
                     this.#currentIndex = this.#songs.indexOf(song);
                 } catch (error) {
-                    console.error(error)
+                    this.log(error,'error')
                 }
             })
-            .catch((error) => this.log(error + '\n' + error.errors, 'error'))
+            .catch((error) => {
+                this.getResource(song, ServerQueue.METHODS.play_dl, ServerQueue.METHODS.ytdl)
+                    .then(resource => {
+                        try {
+                            this.#player.play(resource);
+                            this.#currentIndex = this.#songs.indexOf(song);
+                        } catch (error) {
+                            this.log(error,'error')
+                        }
+                    })
+                    .catch(error => this.log(error + '\n' + error.errors, 'error'))
+            })
     }
     /**
      * 
