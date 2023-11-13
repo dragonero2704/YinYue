@@ -55,7 +55,7 @@ class SongBuilder {
             // console.log('Query: '+query)
             let typeUrl = undefined
             if (isValidUrl(query)) {
-                typeUrl = await playDL.validate(query).catch(error)
+                typeUrl = await playDL.validate(query).catch(console.error)
                 typeUrl = typeUrl.split('_')
             }
             else {
@@ -68,7 +68,7 @@ class SongBuilder {
                     switch (typeUrl[1]) {
                         case 'video':
                             {
-                                playDL.video_info(query)
+                                playDL.video_basic_info(query)
                                     .then(res => {
                                         const media = res.video_details
                                         const song = {
