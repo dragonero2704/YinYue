@@ -517,9 +517,7 @@ class ServerQueue {
         this.#queueMsg  = null
         this.#queueCollector = null
 
-        const keys = Object.keys(this);
-        keys.forEach(key=>this[key] = null)
-        keys = null
+        Object.keys(this).forEach(key=>this[key] = null)
     }
 
     static toRawDuration(seconds) {
