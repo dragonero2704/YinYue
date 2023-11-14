@@ -19,25 +19,7 @@ listeners.set('stateChange', stateChange)
 
 // error
 const error = (error) => console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
-listeners.set('error', error)
+listeners.set('error', (...args)=>error.bind(this,...args))
 
-//disconnected - 
-/*
-const disconnected = async (oldState, newState) => {
-    try {
-        await Promise.race([
-            entersState(connection, voice.VoiceConnectionStatus.Signalling, 5000),
-            entersState(connection, voice.VoiceConnectionStatus.Connecting, 5000),
-        ]);
-        // Seems to be reconnecting to a new channel - ignore disconnect
-        this.#voiceChannel = await this.#textChannel.guild.channels.cache.get(this.#connection.joinConfig.channelId)
-    } catch (error) {
-        // Seems to be a real disconnect which SHOULDN'T be recovered from
-        console.log("Disconnected")
-        this.#connection.destroy();
-        this.die(true);
-    }
-}
-listeners.set(VoiceConnectionStatus.Disconnected, disconnected)
-*/
+
 module.exports = { module: true, listeners }

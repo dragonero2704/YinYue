@@ -140,7 +140,7 @@ class ServerQueue {
     initListeners() {
         //connection listeners
         conListeners.listeners.forEach((fun, event) => {
-            this.#connection.on(event, fun.bind(this))
+            this.#connection.on(event, (...args) => fun.bind(this, ...args))
         })
 
         this.#connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
@@ -161,7 +161,7 @@ class ServerQueue {
 
         //player listeners
         playerListeners.listeners.forEach((fun, event) => {
-            this.#player.on(event, fun.bind(this))
+            this.#player.on(event, (...args) => fun.bind(this, ...args))
         })
 
         this.#player.on(AudioPlayerStatus.Playing, async (oldState, newState) => {
@@ -235,7 +235,7 @@ class ServerQueue {
      */
     getResource(song, ...methods) {
         methods = methods.flat()
-        
+
         // ytdl method
         const ytdlPromise = new Promise((resolve, reject) => {
             const options = {
@@ -312,7 +312,7 @@ class ServerQueue {
                     this.#player.play(resource);
                     this.#currentIndex = this.#songs.indexOf(song);
                 } catch (error) {
-                    this.log(error,'error')
+                    this.log(error, 'error')
                 }
             })
             .catch((error) => {
@@ -322,7 +322,7 @@ class ServerQueue {
                             this.#player.play(resource);
                             this.#currentIndex = this.#songs.indexOf(song);
                         } catch (error) {
-                            this.log(error,'error')
+                            this.log(error, 'error')
                         }
                     })
                     .catch(error => this.log(error + '\n' + error.errors, 'error'))
