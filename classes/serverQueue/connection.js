@@ -19,7 +19,7 @@ listeners.set('stateChange', stateChange)
 
 // error
 const error = (error) => console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
-listeners.set('error', (...args)=>error.bind(this,...args))
+listeners.set('error', (error)=>error.bind(this,error))
 
 
 module.exports = { module: true, listeners }

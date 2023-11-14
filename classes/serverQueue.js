@@ -154,7 +154,7 @@ class ServerQueue {
             } catch (error) {
                 // Seems to be a real disconnect which SHOULDN'T be recovered from
                 this.log("Disconnected", "warning")
-                this.#connection.destroy();
+            
                 this.die(true);
             }
         })
@@ -164,23 +164,23 @@ class ServerQueue {
             this.#player.on(event, (...args) => fun.bind(this, ...args))
         })
 
-        this.#player.on(AudioPlayerStatus.Playing, async (oldState, newState) => {
-            let song = newState.resource.metadata;
-            this.log(`Now playing: ${song.title}`, "log");
-            let embed = titleEmbed(this.#textChannel.guild, `**${song.title}**`, 'In riproduzione', song.url)
-            embed.setImage(song.thumbnailUrl)
-            await sendReply(this.#textChannel, embed, 10000);
-        })
+        // this.#player.on(AudioPlayerStatus.Playing, async (oldState, newState) => {
+        //     let song = newState.resource.metadata;
+        //     this.log(`Now playing: ${song.title}`, "log");
+        //     let embed = titleEmbed(this.#textChannel.guild, `**${song.title}**`, 'In riproduzione', song.url)
+        //     embed.setImage(song.thumbnailUrl)
+        //     await sendReply(this.#textChannel, embed, 10000);
+        // })
 
-        this.#player.on(AudioPlayerStatus.Idle, async (oldState, newState) => {
-            if (!globalQueue.get(this.#guildId)) return;
-            let song = this.nextTrack();
-            if (song) {
-                await this.play(song)
-            } else {
-                this.die();
-            }
-        })
+        // this.#player.on(AudioPlayerStatus.Idle, async (oldState, newState) => {
+        //     if (!globalQueue.get(this.#guildId)) return;
+        //     let song = this.nextTrack();
+        //     if (song) {
+        //         await this.play(song)
+        //     } else {
+        //         this.die();
+        //     }
+        // })
     }
 
     /**
@@ -491,6 +491,35 @@ class ServerQueue {
         globalQueue.delete(this.#guildId);
 
         if (!force) sendReply(this.#textChannel, titleEmbed(this.#textChannel.guild, ServerQueue.responses.endQueue[this.#locale]))
+
+        this.#cleanUp()
+    }
+
+    #cleanUp() {
+        // private fields
+        this.#songs = null
+        this.#textChannel = null
+        this.#voiceChannel = null
+        this.#connection = null
+        this.#guildId = null
+        this.#loopState = null
+        this.#currentIndex = null
+        this.#player = null
+        this.#sub = null
+        this.#locale = null
+
+        //autodie vars
+        this.#interval = null
+        this.#intervalId = null
+
+        //queue vars
+        this.#pageIndex = null
+        this.#queueMsg  = null
+        this.#queueCollector = null
+
+        const keys = Object.keys(this);
+        keys.forEach(key=>this[key] = null)
+        keys = null
     }
 
     static toRawDuration(seconds) {
