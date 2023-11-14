@@ -11,10 +11,6 @@ const ytdl = require('ytdl-core-discord')
 // const ytdlexec = require('youtube-dl-exec')
 const blank_field = '\u200b'
 
-// listeners
-const conListeners = require('./serverQueue/connection')
-const playerListeners = require('./serverQueue/player');
-const { promises } = require('dns');
 
 // json paths
 const loopStatesJson = "./serverQueue/messages/loopstates.json"
@@ -138,11 +134,6 @@ class ServerQueue {
     }
 
     initListeners() {
-        //connection listeners
-        conListeners.listeners.forEach((fun, event) => {
-            this.#connection.on(event, (...args) => fun.bind(this, ...args))
-        })
-
         this.#connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
             try {
                 await Promise.race([
@@ -154,33 +145,60 @@ class ServerQueue {
             } catch (error) {
                 // Seems to be a real disconnect which SHOULDN'T be recovered from
                 this.log("Disconnected", "warning")
-            
+
                 this.die(true);
             }
         })
+        this.#connection.on('stateChange', (oldState, newState) => {
+            const oldNetworking = Reflect.get(oldState, 'networking');
+            const newNetworking = Reflect.get(newState, 'networking');
 
-        //player listeners
-        playerListeners.listeners.forEach((fun, event) => {
-            this.#player.on(event, (...args) => fun.bind(this, ...args))
+            const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
+                const newUdp = Reflect.get(newNetworkState, 'udp');
+                clearInterval(newUdp?.keepAliveInterval);
+            }
+
+            oldNetworking?.off('stateChange', networkStateChangeHandler);
+            newNetworking?.on('stateChange', networkStateChangeHandler);
         })
 
-        // this.#player.on(AudioPlayerStatus.Playing, async (oldState, newState) => {
-        //     let song = newState.resource.metadata;
-        //     this.log(`Now playing: ${song.title}`, "log");
-        //     let embed = titleEmbed(this.#textChannel.guild, `**${song.title}**`, 'In riproduzione', song.url)
-        //     embed.setImage(song.thumbnailUrl)
-        //     await sendReply(this.#textChannel, embed, 10000);
-        // })
+        this.#connection.on('error', (error) => {
+            this.log(error, "error")
+        })
 
-        // this.#player.on(AudioPlayerStatus.Idle, async (oldState, newState) => {
-        //     if (!globalQueue.get(this.#guildId)) return;
-        //     let song = this.nextTrack();
-        //     if (song) {
-        //         await this.play(song)
-        //     } else {
-        //         this.die();
-        //     }
-        // })
+        this.#player.on('stateChange', (oldState, newState) => {
+            this.log(`Player state: ${oldState.status} => ${newState.status}`);
+        })
+
+        //voice.AudioPlayerStatus.Buffering
+        this.#player.on(AudioPlayerStatus.Buffering, (oldState, newState) => {
+            this.log(`Buffering ${newState.resource.metadata.title}`);
+        })
+
+        //error
+        this.#player.on('error', (error) => {
+            this.log(`Error: ${error.message} with resource ${error.resource.metadata.title}`, "error");
+        })
+
+        this.#player.on(AudioPlayerStatus.Playing, async (oldState, newState) => {
+            let song = newState.resource.metadata;
+            this.log(`Now playing: ${song.title}`, "log");
+            let embed = titleEmbed(this.getTextChannel().guild, `**${song.title}**`, 'In riproduzione', song.url)
+            embed.setImage(song.thumbnailUrl)
+            await sendReply(this.getTextChannel(), embed, 10000);
+        })
+
+        this.#player.on(AudioPlayerStatus.Idle, async (oldState, newState) => {
+            if (!globalQueue.get(this.getGuildId())) return;
+            let song = this.nextTrack();
+            if (song) {
+                await this.play(song)
+            } else {
+                this.die();
+            }
+        })
+
+        this.log("Listeners succesfully binded")
     }
 
     /**
@@ -214,7 +232,7 @@ class ServerQueue {
             this.#intervalId = undefined
         } else {
             this.#intervalId = setInterval(() => {
-                if (this.#voiceChannel.members.size <= 1) {
+                if (this.#voiceChannel?.members?.size <= 1) {
                     //il bot è da solo
                     this.die(true)
                 }
@@ -514,10 +532,10 @@ class ServerQueue {
 
         //queue vars
         this.#pageIndex = null
-        this.#queueMsg  = null
+        this.#queueMsg = null
         this.#queueCollector = null
 
-        Object.keys(this).forEach(key=>this[key] = null)
+        Object.keys(this).forEach(key => this[key] = null)
     }
 
     static toRawDuration(seconds) {
