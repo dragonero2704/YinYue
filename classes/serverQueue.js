@@ -304,9 +304,7 @@ class ServerQueue {
                     }
                     resolve(resource)
                 })
-                .catch((error) => {
-                    reject("PlayDl Stream " + error)
-                })
+                .catch((error) => reject(error))
         })
 
         /*============================= End Promises definition ================================*/
@@ -314,6 +312,7 @@ class ServerQueue {
         const defintivePromises = promises.filter((val, index) => {
             return methods.includes(index)
         });
+        console.log(defintivePromises)
         return Promise.any(defintivePromises)
     }
     /**
