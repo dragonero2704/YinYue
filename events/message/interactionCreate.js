@@ -4,7 +4,7 @@ module.exports = {
     name: 'interactionCreate',
     async run(interaction, bot) {
         if (interaction.type !== InteractionType.ApplicationCommand) return;
-
+        
         const { commandName } = interaction;
 
         try {

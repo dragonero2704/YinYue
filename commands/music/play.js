@@ -19,31 +19,31 @@ module.exports = {
             input.setName('query')
                 .setDescription('A link to youtube or spotify or a search queue')
                 .setRequired(true)
-                .setNameLocalizations(lang.options[0].names)
-                .setDescriptionLocalizations(lang.options[0].descriptions)
+                .setNameLocalizations(lang.options.query.names)
+                .setDescriptionLocalizations(lang.options.query.descriptions)
         ),
 
     async execute(interaction, bot, locale, ...params) {
         await interaction.deferReply().catch((error) => console.error(error))
-
+        const { locale } = interaction
         let voice_channel = interaction.member.voice.channel;
         if (!voice_channel) {
             // sendReply(msg.channel, titleEmbed(msg.guild, ServerQueue.errors.voiceChannelNotFound), 10000);
-            return interaction.editReply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.voiceChannelNotFound)], ephemeral: true });
+            return interaction.editReply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.voiceChannelNotFound[locale])], ephemeral: true });
         }
 
         let input = interaction.options.getString('query');
         // console.log(input)
         if (!input) {
             // sendReply(interaction.channel, titleEmbed(interaction.guild, ServerQueue.errors.invalidArgument), 10000);
-            return interaction.editReply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.invalidArgument)], ephemeral: true });
+            return interaction.editReply({ embeds: [titleEmbed(interaction.guild, ServerQueue.errors.invalidArgument[locale])], ephemeral: true });
         }
 
         let server_queue = globalQueue.get(interaction.guild.id);
 
         if (server_queue !== undefined) {
             if (server_queue.getVoiceChannel() !== voice_channel) {
-                let content = ServerQueue.queueFormat.start + ServerQueue.errors.differentVoiceChannel + `<@${bot.user.id}> !` + ServerQueue.queueFormat.end;
+                let content = ServerQueue.queueFormat.start + ServerQueue.errors.differentVoiceChannel[locale] + `<@${bot.user.id}> !` + ServerQueue.queueFormat.end;
                 return interaction.editReply({ content: content, ephemeral: true })
             }
         }
@@ -55,7 +55,7 @@ module.exports = {
         let item = await songBuilder.build().catch((error) => console.error(error))
         console.timeEnd("songObject")
         // console.log(item)
-        if (!item) return interaction.editReply({ embeds: [titleEmbed(interaction.guild, 'Nessun risultato')], ephemeral: true })
+        if (!item) return interaction.editReply({ embeds: [titleEmbed(interaction.guild, lang.responses.noResults[locale])], ephemeral: true })
 
 
 
@@ -69,9 +69,9 @@ module.exports = {
             server_queue.add(item)
         }
         if (Array.isArray(item)) {
-            interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunte alla coda', `**${item.length}** brani aggiunti alla coda!`)] }).catch((error) => console.error(error))
+            interaction.editReply({ embeds: [fieldEmbed(interaction.guild, lang.responses.queueAdd[locale], `**${item.length}** ${lang.responses.multiAdd[locale]}`)] }).catch((error) => console.error(error))
         } else {
-            interaction.editReply({ embeds: [fieldEmbed(interaction.guild, 'Aggiunta alla coda', `[${item.title}](${item.url}) è in coda!`)] }).catch((error) => console.error(error))
+            interaction.editReply({ embeds: [fieldEmbed(interaction.guild, lang.responses.queueAdd[locale], `[${item.title}](${item.url})`)] }).catch((error) => console.error(error))
         }
 
     },

@@ -183,7 +183,7 @@ class ServerQueue {
         this.#player.on(AudioPlayerStatus.Playing, async (oldState, newState) => {
             let song = newState.resource.metadata;
             this.log(`Now playing: ${song.title}`, "log");
-            let embed = titleEmbed(this.getTextChannel().guild, `**${song.title}**`, 'In riproduzione', song.url)
+            let embed = titleEmbed(this.getTextChannel().guild, `**${song.title}**`, ServerQueue.responses.playing[this.#locale], song.url)
             embed.setImage(song.thumbnailUrl)
             await sendReply(this.getTextChannel(), embed, 10000);
         })
@@ -207,11 +207,11 @@ class ServerQueue {
      * @param {} aim "warning"||"error"||"log"
      * @returns 
      */
-    log(msg, aim = 'log') {
+    log(msg, aim = "debug") {
         const pref = `Guild ${this.#guildId} => `
         switch (aim) {
             case 'log':
-            default:
+
                 console.log(pref + msg);
                 break;
             case 'error':
@@ -219,6 +219,10 @@ class ServerQueue {
                 break;
             case 'warning':
                 console.warning(pref + msg);
+                break;
+            case 'debug':
+            default:
+                console.debug(pref + msg)
                 break;
         }
         return
@@ -309,7 +313,7 @@ class ServerQueue {
 
         /*============================= End Promises definition ================================*/
         const promises = [ytdlPromise, playDlPromise];
-        const defintivePromises = promises.filter((val, index) => {
+        const defintivePromises = promises.filter((_, index) => {
             return methods.includes(index)
         });
         // console.log(defintivePromises)
@@ -589,7 +593,7 @@ class ServerQueue {
         this.#songs.forEach((song, index) => {
             let line = ''
             if (song === this.curPlayingSong) {
-                line = `    ⬐In riproduzione\n${index + 1}. ${song.title}\t${ServerQueue.convertToRawDuration(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))} rimasti\n    ⬑In riproduzione`
+                line = `    ⬐${ServerQueue.responses.playing[this.#locale]}\n${index + 1}. ${song.title}\t${ServerQueue.convertToRawDuration(song.duration - (Math.round((this.getPlaybackDuration()) / 1000)))} rimasti\n    ⬑${ServerQueue.responses.playing[this.#locale]}`
             } else {
                 line = `${index + 1}. ${song.title}\t${song.durationRaw}`
             }

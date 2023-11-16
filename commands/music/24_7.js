@@ -9,7 +9,8 @@ module.exports={
     aliases:"",
     data: new SlashCommandBuilder()
     .setName("24-7")
-    .setDescription("Stays in the channel 24/7"),
+    .setDescription("Stays in the channel 24/7")
+    .setDescriptionLocalizations(lang.descriptions),
     disabled:true,
     async execute(interaction, bot){
         let serverQueue = globalQueue.get(interaction.guild.id)

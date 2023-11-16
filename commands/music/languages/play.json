@@ -4,8 +4,8 @@
         "en-GB": "play",
         "en-US": "play"
     },
-    "options": [
-        {
+    "options": {
+        "query": {
             "names": {
                 "it": "input",
                 "en-GB": "input",
@@ -15,8 +15,27 @@
                 "it": "Titolo di una canzone o un url di youtube o spotify"
             }
         }
-    ],
+    },
     "descriptions": {
-        "it": "Inserisce nella coda una musica"
+        "it": "Inserisce nella coda una musica",
+        "en-GB": "Adds a new song to the queue",
+        "en-US": "Adds a new song to the queue"
+    },
+    "responses": {
+        "queueAdd": {
+            "it": "Aggiunta alla coda",
+            "en-GB": "Queue updated",
+            "en-US": "Queue updated"
+        },
+        "noResults": {
+            "it": "Nessun risultato",
+            "en-GB": "No results",
+            "en-US": "No results"
+        },
+        "multiAdd": {
+            "it": "brani aggiunti alla coda",
+            "en-GB": "songs added to the queue",
+            "en-US": "songs added to the queue"
+        }
     }
 }
