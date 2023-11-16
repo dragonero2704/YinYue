@@ -510,7 +510,7 @@ class ServerQueue {
         } catch (error) { }
 
         globalQueue.delete(this.#guildId);
-
+        this.log("ServerQueue deleted", "log");
         if (!force) sendReply(this.#textChannel, titleEmbed(this.#textChannel.guild, ServerQueue.responses.endQueue[this.#locale]))
 
         this.#cleanUp()

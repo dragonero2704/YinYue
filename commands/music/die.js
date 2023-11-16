@@ -20,17 +20,14 @@ module.exports = {
         if (!check(interaction, globalQueue, locale)) return
         let server_queue = globalQueue.get(interaction.guild.id);
         server_queue.die(true);
-        globalQueue.delete(interaction.guild.id);
         interaction.reply(blank_field);
         interaction.deleteReply();
-        console.log('%s: queue deleted', interaction.guild.name)
     },
 
     async run(msg, args, bot) {
         if (!check(msg, globalQueue)) return
         let server_queue = globalQueue.get(msg.guild.id);
         server_queue.die(true);
-        globalQueue.delete(msg.guild.id);
         reactToMsg(msg, '👋');
     }
 }
