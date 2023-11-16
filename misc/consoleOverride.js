@@ -58,7 +58,7 @@ module.exports = () => {
     console.debug = function () {
         if (!process.argv.includes("--test")) return
         process.stdout.write(cyan(getTimeStamp()) + ': ')
-        debugLog.apply(console, [whiteBright(format(...arguments))])
+        debugLog.apply(console, [format(...arguments)])
         const logName = `${LOGDIRECTORY}/${getLogName()}`
         try {
             appendFileSync(logName, `${getTimeStamp()}: ${format(...arguments)}\n`)

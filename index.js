@@ -9,6 +9,8 @@ require("./misc/consoleOverride")();
 
 const test = process.argv.includes('--test')
 
+console.debug("Sono debug!")
+
 if(test){
     config({
         path: __dirname + '/test.env'

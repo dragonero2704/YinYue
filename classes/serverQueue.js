@@ -204,14 +204,13 @@ class ServerQueue {
     /**
      * 
      * @param {string} msg the message to be displayed
-     * @param {} aim "warning"||"error"||"log"
+     * @param {} aim "warning"||"error"||"log"||"debug"
      * @returns 
      */
     log(msg, aim = "debug") {
         const pref = `Guild ${this.#guildId} => `
         switch (aim) {
             case 'log':
-
                 console.log(pref + msg);
                 break;
             case 'error':
@@ -221,8 +220,10 @@ class ServerQueue {
                 console.warning(pref + msg);
                 break;
             case 'debug':
-            default:
                 console.debug(pref + msg)
+                break;
+            default:
+                console.log(pref + msg)
                 break;
         }
         return
