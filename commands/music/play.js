@@ -25,7 +25,6 @@ module.exports = {
 
     async execute(interaction, bot, locale, ...params) {
         await interaction.deferReply().catch((error) => console.error(error))
-        const { locale } = interaction
         let voice_channel = interaction.member.voice.channel;
         if (!voice_channel) {
             // sendReply(msg.channel, titleEmbed(msg.guild, ServerQueue.errors.voiceChannelNotFound), 10000);
