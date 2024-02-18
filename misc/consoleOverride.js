@@ -56,7 +56,7 @@ module.exports = () => {
     }
 
     console.debug = function () {
-        if (!process.argv.includes("--test")) return
+        if (!process.argv.includes("--test") && !process.argv.includes("--debug")) return
         process.stdout.write(cyan(getTimeStamp()) + ': ')
         debugLog.apply(console, [format(...arguments)])
         const logName = `${LOGDIRECTORY}/${getLogName()}`

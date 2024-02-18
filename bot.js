@@ -1,5 +1,10 @@
 const { Client, GatewayIntentBits, Collection } = require('discord.js')
 const { readdirSync } = require('fs')
+
+
+
+require("./misc/consoleOverride")();
+console.debug("Debug mode active")
 const bot = new Client({
     intents: [
         GatewayIntentBits.Guilds, 
@@ -13,9 +18,6 @@ const bot = new Client({
 
 bot.commands = new Collection()
 bot.aliases = new Collection()
-
-//console overide
-require('./misc/consoleOverride')()
 
 let handler_path = __dirname + '/handlers'
 readdirSync(handler_path).forEach((handler) => {

@@ -1,31 +1,38 @@
-const { globalQueue } = require('../../misc/globals')
+const { globalQueue } = require("../../misc/globals");
 
-const { ServerQueue, check } = require('../../classes/serverQueue');
-const { SlashCommandBuilder, basename } = require('discord.js');
-const { titleEmbed, fieldEmbed, sendReply, reactToMsg } = require('../../misc/functions')
+const { ServerQueue, check } = require("../../classes/serverQueue");
+const { SlashCommandBuilder, basename } = require("discord.js");
+const {
+  titleEmbed,
+  fieldEmbed,
+  sendReply,
+  reactToMsg,
+} = require("../../misc/functions");
 
-const lang = require(`./languages/${basename(__filename).split('.')[0]}.json`)
+const lang = require(`./languages/${basename(__filename).split(".")[0]}.json`);
 
 module.exports = {
-    name: "pause",
+  name: "pause",
 
-    data: new SlashCommandBuilder()
-        .setName('pause')
-        .setDescription('Pauses the music')
-        .setNameLocalizations(lang.names)
-        .setDescriptionLocalizations(lang.descriptions),
+  data: new SlashCommandBuilder()
+    .setName("pause")
+    .setDescription("Pauses the music")
+    .setNameLocalizations(lang.names)
+    .setDescriptionLocalizations(lang.descriptions),
 
-    async execute(interaction, bot, locale, ...params) {
-        if (!check(interaction, globalQueue)) return;
-        let server_queue = globalQueue.get(interaction.guild.id);
-        interaction.reply(`${ServerQueue.queueFormat.start}\nPausa\n${ServerQueue.queueFormat.end}`);
-        server_queue.pause();
-    },
+  async execute(interaction, bot, locale, ...params) {
+    if (!check(interaction, globalQueue)) return;
+    let server_queue = globalQueue.get(interaction.guild.id);
+    interaction.reply(
+      `${ServerQueue.queueFormat.start}\nPausa\n${ServerQueue.queueFormat.end}`
+    );
+    server_queue.pause();
+  },
 
-    async run(msg, args, bot) {
-        if (!check(msg, globalQueue)) return;
-        let server_queue = globalQueue.get(msg.guild.id);
-        server_queue.pause();
-        reactToMsg(msg, '⏸️');
-    }
-}
+  async run(msg, args, bot) {
+    if (!check(msg, globalQueue)) return;
+    let server_queue = globalQueue.get(msg.guild.id);
+    server_queue.pause();
+    reactToMsg(msg, "⏸️");
+  },
+};

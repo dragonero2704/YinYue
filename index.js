@@ -9,8 +9,6 @@ require("./misc/consoleOverride")();
 
 const test = process.argv.includes('--test')
 
-console.debug("Sono debug!")
-
 if(test){
     config({
         path: __dirname + '/test.env'
@@ -33,10 +31,11 @@ syncModels(force)
 console.log("listing content...")
 // listContent()
 
-const manager = new ShardingManager('./bot.js', { token: process.env.TOKEN });
+const manager = new ShardingManager('./bot.js', {token: process.env.TOKEN, shardArgs: process.argv});
 // console.log("hi")
 manager.on('shardCreate', shard => {
     console.log(`Launched shard ${shard.id}`)
+    shard.on("error",e=>console.error(e));
 });
 
 manager.spawn().catch(console.error);
