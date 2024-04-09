@@ -315,7 +315,7 @@ class SongBuilder {
               .then((r) => r[0])
               .catch((error) => reject(error));
             console.debug(media);
-            if (!media) reject("No results");
+            if (media === undefined) reject("No results");
             const song = {
               url: media.url,
               title: media.title,

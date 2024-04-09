@@ -313,16 +313,18 @@ class ServerQueue {
    * @returns {Promise} a Promise to an AudioResource playable by the discord player
    */
   async getResource(song, ...methods) {
-      methods = methods.flat();
-      const { ytdlPromise, playDlPromise } = require("./resourcefuns");
-      /*============================= End Promises definition ================================*/
-      const promises = [ytdlPromise, playDlPromise];
-      const defintivePromises = promises.filter((_, index) => {
-          return methods.includes(index);
-        })
-        .map((v) => v.call(this, [song]));
-      console.debug("Resource Promises: "+defintivePromises);
-      return await Promise.any(defintivePromises);
+    console.debug("GetResource args:" + song);
+    methods = methods.flat();
+    const { ytdlPromise, playDlPromise } = require("./resourcefuns");
+    /*============================= End Promises definition ================================*/
+    const promises = [ytdlPromise, playDlPromise];
+    const defintivePromises = promises
+      .filter((_, index) => {
+        return methods.includes(index);
+      })
+      .map((v) => v.call(this, song));
+    console.debug("Resource Promises: " + defintivePromises);
+    return Promise.any(defintivePromises);
   }
   /**
    *

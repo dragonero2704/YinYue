@@ -3,7 +3,7 @@ const play_dl = require("play-dl");
 const { createAudioResource } = require("@discordjs/voice");
 const ytdlPromise = (song) => {
   console.debug(song)
-  new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const options = {
       filter: "audioonly",
       fmt: "mp3",
@@ -39,7 +39,7 @@ const ytdlPromise = (song) => {
 
 const playDlPromise = (song) => {
   console.debug(song)
-  new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     // console.log("Creating stream")
     play_dl
       .stream(song.url, { quality: 1, discordPlayerCompatibility: true })

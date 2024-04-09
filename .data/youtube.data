@@ -14,14 +14,21 @@
         "__Secure-1PAPISID": "wP68b2PWnhE1mqsW/A5bdqRPhn6sJ4hNLy",
         "__Secure-3PAPISID": "wP68b2PWnhE1mqsW/A5bdqRPhn6sJ4hNLy",
         "LOGIN_INFO": "AFmmF2swRQIhAI4NSLBTB29sTpRadxpXOcf_16l03LiRrUjJjfnJ1qEqAiBVRwnE1u8WjES6dJ-Utj9cqoT7v0fhOeWUZvxhr4V8OA:QUQ3MjNmeFFsVFluUmk1WXF3NUNxckNfZTVQakQ5d2d2WUlPSzY5RnVYMFJjdzlzaDg2bkN1U2FoM2h0bHVVUkNzdUlEc2xDa2liQ2wxa0lKMWpRN196Z0ZQUWZ0Y2FtWmpxRVpaYS1WMU1ydjh2c0NWZERKb0pDdFN5cUFDaGZlbmhiZEVWdzdYa2hmY3p2U3hQMm94WTY0SVhNcHpzaGl3",
-        "SID": "fgjrJSRbVcQOIc8Bpsdm7oROyCWE0xkgeNbqUYBfpgnZJx9Mx985YGm1Yc_751LBmFKASA.",
-        "__Secure-1PSID": "fgjrJSRbVcQOIc8Bpsdm7oROyCWE0xkgeNbqUYBfpgnZJx9Mr2T0ctHq9oIRi1IZTqPvsg.",
-        "__Secure-3PSID": "fgjrJSRbVcQOIc8Bpsdm7oROyCWE0xkgeNbqUYBfpgnZJx9MwNnV3JTjRNzvtVrkRVhfVw.",
-        "__Secure-1PSIDTS": "sidts-CjEBYfD7Z4m2orP8A8xPArzu5Skz9Drs_KKzmtNSi4iDOJ5h3YOIt4wa8OxO54Gy8U_oEAA",
-        "__Secure-3PSIDTS": "sidts-CjEBYfD7Z4m2orP8A8xPArzu5Skz9Drs_KKzmtNSi4iDOJ5h3YOIt4wa8OxO54Gy8U_oEAA",
-        "CONSISTENCY": "AKreu9tdKcp0Xy9kcq81QWqXbP5L9-ihLKw2cbx-l71fhNGAinX6qpepvsGStiZjMDpnzBsV7K8SIzzBOadwndWZPQRAJmcnypd5WZ4naY6FW-osSPvTZjrkcpxk5E6mxpRGX0iCXozYzlYIDJFkdDce",
-        "SIDCC": "ABTWhQHy6XW2nB1jbutbo8nLwQoGD6lrt5imt4bzlkU74wChUl5Nk7usjnlCKrQ45JG2UMZ9x2s",
-        "__Secure-1PSIDCC": "ABTWhQEV9nDr8PB9OzwZMTIpwhLvM3cdhKsudM8oXcJ3yxgA4nyUjetso-VS_DmGJImphIGfZVk",
-        "__Secure-3PSIDCC": "ABTWhQEgd65_s6_moGlsepdeenUD3HfsSmVy4IwDaJF0IYqQDFukH2RbLBWGXtAFlz10CgulSA"
-    }
+        "SID": "g.a000hQjrJRw8kVnnMshw5X181ehx5Ts-3zXv7W4qfLyV7dIQRRLE2ow6KIIMv0-jT1hRNp3L4gACgYKAcYSAQASFQHGX2MiKWf2sCvz5VJz31RLVMRtYhoVAUF8yKq61GuRF36x03ZlnTNb9pL00076",
+        "__Secure-1PSID": "g.a000hQjrJRw8kVnnMshw5X181ehx5Ts-3zXv7W4qfLyV7dIQRRLELNYXj3-HyTUTl0hlGdYt6AACgYKASESAQASFQHGX2MiVdNUuC3w_qKNYjErAYNiShoVAUF8yKqC_zwVHwYTKq5ilRGiwv5I0076",
+        "__Secure-3PSID": "g.a000hQjrJRw8kVnnMshw5X181ehx5Ts-3zXv7W4qfLyV7dIQRRLEkvaFnnEI7X8Z2gskVKkHuQACgYKASESAQASFQHGX2Mi75qfbd5aRxsw6O3F_VawzhoVAUF8yKrnMua11SIErOkd_lk3nhFW0076",
+        "NID": "513=ReRNg7TpeKL1qNO3nWJdl6iJHYFfkf9ZKJcwcCN04NipqYSQ8CKWnIHDi-p1GeRAcu4P4qfQ5s5F1cdHR8TptzcH9zcJffJ7MsZc6emws7kK0QFXMV0Mn4pfoXUQDTwJu1zc5GmfdjFPukaTz6v27mXAxcMn87Jj4njVqtzVWKc",
+        "__Secure-1PSIDTS": "sidts-CjEB7F1E_O_8s9H8aYg-NstMPiAWX9DRKHUVi82vuCXdFTV1Qj08BcrbiwKFfynPcJa6EAA",
+        "__Secure-3PSIDTS": "sidts-CjEB7F1E_O_8s9H8aYg-NstMPiAWX9DRKHUVi82vuCXdFTV1Qj08BcrbiwKFfynPcJa6EAA",
+        "ST-l3hjtt": "session_logininfo=AFmmF2swRQIhAI4NSLBTB29sTpRadxpXOcf_16l03LiRrUjJjfnJ1qEqAiBVRwnE1u8WjES6dJ-Utj9cqoT7v0fhOeWUZvxhr4V8OA%3AQUQ3MjNmeFFsVFluUmk1WXF3NUNxckNfZTVQakQ5d2d2WUlPSzY5RnVYMFJjdzlzaDg2bkN1U2FoM2h0bHVVUkNzdUlEc2xDa2liQ2wxa0lKMWpRN196Z0ZQUWZ0Y2FtWmpxRVpaYS1WMU1ydjh2c0NWZERKb0pDdFN5cUFDaGZlbmhiZEVWdzdYa2hmY3p2U3hQMm94WTY0SVhNcHpzaGl3",
+        "SIDCC": "AKEyXzUgYDNOkvZoLyeBNxByfUmG3Nr5JucLnLcmOpzZIZ_nli2K8LGRCOs2f79WIKpWSIOGBKQ",
+        "__Secure-1PSIDCC": "AKEyXzV0x8CxrBBF10n50N1bh2HPlOU2AidsHrEDQrclksPyFKM_2ckKAorq425285ztU2reKJE",
+        "__Secure-3PSIDCC": "AKEyXzVuT-y1v9qfIPyFxf1UW2L_aNo5tUAjdFNw7VELrwFASCwiR491_YjwPw1dcptl56hlsg",
+        "expires": "Wed, 09-Apr-2025 18:48:42 GMT",
+        "path": "/",
+        "domain": ".youtube.com",
+        "priority": "high",
+        "SameSite": "none"
+    },
+    "file": true
 }
