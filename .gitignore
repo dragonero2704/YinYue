@@ -1,17 +1,25 @@
-# files
-invite_link.txt
-*.env
-#node modules
+# 29/04/2024 19:27 UTC+1
+# dragonero2704
+
+# node modules
 node_modules
 .data
 # packages
 package-lock.json
 package.json
 
-*.zip
+# Excluded directories
 logs
+ignore
+test
+
+# excluded file types
+*.zip
 *.jpg
 *.png
 
-test
+# Excluded files
 authorize.js
+invite_link.txt
+*.env
+
