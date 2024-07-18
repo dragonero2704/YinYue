@@ -334,7 +334,7 @@ class ServerQueue {
     if (!song) {
       song = this.#songs[this.#currentIndex];
     }
-    this.getResource(song, ServerQueue.METHODS.play_dl)
+    this.getResource(song, ServerQueue.METHODS.ytdl)
       .then((resource) => {
         try {
           this.#player.play(resource);
