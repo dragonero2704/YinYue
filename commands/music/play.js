@@ -1,4 +1,4 @@
-const { globalQueue } = require("../../misc/globals");
+const { globalQueue } = global
 
 const { ServerQueue, check } = require("../../classes/serverQueue");
 const { SongBuilder } = require("../../classes/songBuilder");
@@ -7,7 +7,7 @@ const {
   fieldEmbed,
   sendReply,
   reactToMsg,
-} = require("../../misc/functions");
+} = require("../../classes/functions");
 const { SlashCommandBuilder, basename } = require("discord.js");
 
 const lang = require(`./languages/${basename(__filename).split(".")[0]}.json`);

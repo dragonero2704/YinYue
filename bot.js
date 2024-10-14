@@ -1,29 +1,24 @@
-const { Client, GatewayIntentBits, Collection } = require('discord.js')
-const { readdirSync } = require('fs')
+const { Client, GatewayIntentBits, Collection } = require("discord.js");
+const { readdirSync } = require("fs");
+const logger = require("./logger");
 
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.MessageContent,
+  ],
+});
 
+client.commands = new Collection();
+client.aliases = new Collection();
 
-require("./misc/consoleOverride")();
-console.debug("Debug mode active")
-const bot = new Client({
-    intents: [
-        GatewayIntentBits.Guilds, 
-        GatewayIntentBits.GuildMessages, 
-        GatewayIntentBits.GuildMessageReactions, 
-        GatewayIntentBits.GuildVoiceStates, 
-        GatewayIntentBits.GuildMembers, 
-        GatewayIntentBits.MessageContent,
-    ],
-})
-
-bot.commands = new Collection()
-bot.aliases = new Collection()
-
-let handler_path = __dirname + '/handlers'
+const handler_path = __dirname + "/handlers";
 readdirSync(handler_path).forEach((handler) => {
-    require(`${handler_path}/${handler}`)(bot)
-})
+  require(`${handler_path}/${handler}`)(client);
+});
 
-bot.login(process.env.TOKEN)
-
-
+client.login(process.env.TOKEN);

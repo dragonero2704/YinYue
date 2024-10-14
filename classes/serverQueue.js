@@ -9,6 +9,7 @@ const {
   VoiceConnectionStatus,
   AudioPlayerStatus,
   demuxProbe,
+  entersState,
 } = require("@discordjs/voice");
 const {
   TextChannel,
@@ -17,8 +18,8 @@ const {
   ButtonBuilder,
   ButtonStyle,
 } = require("discord.js");
-const { titleEmbed, fieldEmbed, sendReply } = require("../misc/functions");
-const { globalQueue, botUserId } = require("../misc/globals");
+const { titleEmbed, fieldEmbed, sendReply } = require("./functions");
+const { globalQueue, botUserId } = global;
 const { RawToSecs, SecsToRaw } = require("./songBuilder");
 
 // stream libraries
@@ -26,6 +27,8 @@ const play_dl = require("play-dl");
 const ytdl = require("ytdl-core-discord");
 // const ytdlexec = require('youtube-dl-exec')
 const blank_field = "\u200b";
+
+const { logger } = global;
 
 // json paths
 const loopStatesJson = "./serverQueue/messages/loopstates.json";
@@ -116,12 +119,12 @@ class ServerQueue {
   };
   /**
    *
-   * @param {[]} songs
+   * @param {Array} songs
    * @param {TextChannel} textChannel
    * @param {VoiceChannel} voiceChannel
-   * @param {true} autodie
-   * @param {60_000} autodieInterval
-   * @param {"en-GB"} locale
+   * @param {boolean} autodie
+   * @param {number} autodieInterval
+   * @param {string} locale
    */
   constructor(
     songs, // can be an array or not
@@ -129,21 +132,16 @@ class ServerQueue {
     voiceChannel, // voiceChannel to connect to
     autodie = true, // autodie set by default to true
     autodieInterval = 60_000, // autodie interval set by default to 1 minute
-    locale = "en-GB" // language messages. Defaults to english (anche se so italiano)
+    locale = "en-GB" // language messages. Defaults to english
   ) {
-    if (Array.isArray(songs)) {
-      this.#songs = songs;
-    } else {
-      this.#songs = [songs];
-    }
-
+    this.#songs = Array.isArray(songs) ? songs : [songs];
     // assign default textChannel
     this.#textChannel = textChannel;
     this.#guildId = textChannel.guild.id;
     this.#voiceChannel = voiceChannel;
     this.#locale = locale;
     // try to connect to voice channel
-    this.log(`Connecting to voice channell #${this.#voiceChannel.id}`);
+    this.log(`Connecting to voice channell [id : ${this.#voiceChannel.id}]`);
     try {
       this.#connection = joinVoiceChannel({
         channelId: this.#voiceChannel.id,
@@ -173,10 +171,10 @@ class ServerQueue {
     });
 
     this.#sub = this.#connection.subscribe(this.#player);
-    this.initListeners();
+    this.#initListeners();
   }
 
-  initListeners() {
+  #initListeners() {
     this.#connection.on(
       VoiceConnectionStatus.Disconnected,
       async (oldState, newState) => {
@@ -185,18 +183,19 @@ class ServerQueue {
             entersState(connection, VoiceConnectionStatus.Signalling, 5000),
             entersState(connection, VoiceConnectionStatus.Connecting, 5000),
           ]);
-          // Seems to be reconnecting to a new channel - ignore disconnect
+          // Seems to be reconnecting to a new channel - ignore disconnect and register new voice channel
           this.#voiceChannel = this.#textChannel.guild.channels.cache.get(
-            this.#connection.joinConfig.channelId
+            // this.#connection.joinConfig.channelId
+            newState.subscription.connection.joinConfig.channelId
           );
         } catch (error) {
           // Seems to be a real disconnect which SHOULDN'T be recovered from
           this.log("Disconnected", "warning");
-
           this.die(true);
         }
       }
     );
+
     this.#connection.on("stateChange", (oldState, newState) => {
       const oldNetworking = Reflect.get(oldState, "networking");
       const newNetworking = Reflect.get(newState, "networking");
@@ -260,26 +259,26 @@ class ServerQueue {
   /**
    *
    * @param {string} msg the message to be displayed
-   * @param {} aim "warning"||"error"||"log"||"debug"
+   * @param {string} aim "warning"||"error"||"log"||"debug"
    * @returns
    */
   log(msg, aim = "debug") {
     const pref = `Guild ${this.#guildId} => `;
     switch (aim) {
       case "log":
-        console.log(pref + msg);
+        logger.info(pref + msg);
         break;
       case "error":
-        console.error(pref + msg);
+        logger.error(pref + msg);
         break;
       case "warning":
-        console.warning(pref + msg);
+        logger.warning(pref + msg);
         break;
       case "debug":
-        console.debug(pref + msg);
+        logger.debug(pref + msg);
         break;
       default:
-        console.log(pref + msg);
+        logger.debug(pref + msg);
         break;
     }
     return;
@@ -328,12 +327,10 @@ class ServerQueue {
   }
   /**
    *
-   * @param {{}} song
+   * @param {Object} song
    */
   async play(song = undefined) {
-    if (!song) {
-      song = this.#songs[this.#currentIndex];
-    }
+    song = song ?? this.#songs[this.#currentIndex];
     this.getResource(song, ServerQueue.METHODS.ytdl)
       .then((resource) => {
         try {
@@ -363,46 +360,37 @@ class ServerQueue {
   /**
    *
    * @param {boolean} forceskip
-   * @returns {{}} nextSong
+   * @return {Object} nextSong
    */
   nextTrack(forceskip = false) {
     let curIndex = this.#currentIndex;
     let nextIndex = curIndex + 1;
     let songsLenght = this.#songs.length;
     let nextSong = undefined;
-    if (!forceskip) {
-      switch (this.#loopState) {
-        case ServerQueue.loopStates.disabled:
-          if (nextIndex < songsLenght) {
-            nextSong = this.#songs[nextIndex];
-          }
-          break;
-        case ServerQueue.loopStates.queue:
-          if (nextIndex >= songsLenght) {
-            nextIndex = 0;
-          }
+
+    switch (this.#loopState) {
+      case ServerQueue.loopStates.disabled:
+        if (nextIndex < songsLenght) {
           nextSong = this.#songs[nextIndex];
-          break;
-        case ServerQueue.loopStates.track:
+        }
+        break;
+      case ServerQueue.loopStates.queue:
+        if (nextIndex >= songsLenght) {
+          nextIndex = 0;
+        }
+        nextSong = this.#songs[nextIndex];
+        break;
+      case ServerQueue.loopStates.track:
+        if (!forceskip) {
           nextIndex = curIndex;
           nextSong = this.#songs[nextIndex];
           break;
-      }
-    } else {
-      switch (this.#loopState) {
-        case ServerQueue.loopStates.disabled:
-          if (nextIndex < songsLenght) {
-            nextSong = this.#songs[nextIndex];
-          }
-          break;
-        case ServerQueue.loopStates.queue:
-        case ServerQueue.loopStates.track:
-          if (nextIndex >= songsLenght) {
-            nextIndex = 0;
-          }
-          nextSong = this.#songs[nextIndex];
-          break;
-      }
+        }
+        if (nextIndex >= songsLenght) {
+          nextIndex = 0;
+        }
+        nextSong = this.#songs[nextIndex];
+        break;
     }
 
     return nextSong;
@@ -416,14 +404,12 @@ class ServerQueue {
   }
   /**
    *
-   * @param  {...any} songs
+   * @param  {Array<Object>} songs
    */
   add(...songs) {
     songs
-      .flatMap((val) => val)
-      .forEach((song) => {
-        if (this.#songs.indexOf(song) === -1) this.#songs.push(song);
-      });
+      .flatMap(val => val)
+      .forEach(song => { if (this.#songs.indexOf(song) === -1) this.#songs.push(song);});
   }
 
   /**
@@ -436,12 +422,9 @@ class ServerQueue {
     });
   }
   /**
-   * Changes loopState of the queue
-   * @param {string} loopState if
-   * ´´´ts
-   * undefined
-   * ´´´
-   * @returns
+   * 
+   * @param {number} loopState 
+   * @returns 
    */
   changeLoopState(loopState = undefined) {
     if (!loopState) {
@@ -732,7 +715,6 @@ class ServerQueue {
 }
 
 module.exports = {
-  module: true,
   ServerQueue,
   check,
 };

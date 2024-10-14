@@ -1,4 +1,4 @@
-const { globalQueue } = require("../../misc/globals");
+const { globalQueue } = global
 const { ServerQueue, check } = require("../../classes/serverQueue");
 const { SlashCommandBuilder, basename } = require("discord.js");
 const {
@@ -6,7 +6,7 @@ const {
   fieldEmbed,
   sendReply,
   reactToMsg,
-} = require("../../misc/functions");
+} = require("../../classes/functions");
 
 const blank_field = "\u200b";
 

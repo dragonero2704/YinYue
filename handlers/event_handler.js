@@ -1,24 +1,26 @@
-const { readdirSync } = require('fs')
-const ascii_table = require('ascii-table')
-module.exports = (bot) => {
-    let table = new ascii_table('Events')
-    table.setHeading('Event', 'Status')
-    readdirSync("./events/").forEach(dir => {
-        const events = readdirSync(`./events/${dir}/`).filter(file => file.endsWith('.js'))
+const { readdirSync } = require("fs");
+const ascii_table = require("ascii-table");
+const { logger } = global;
+module.exports = (client) => {
+  let table = new ascii_table("Events");
+  table.setHeading("Event", "Status");
+  readdirSync("./events/").forEach((dir) => {
+    const events = readdirSync(`./events/${dir}/`).filter((file) =>
+      file.endsWith(".js")
+    );
 
-        for (let file of events) {
+    for (const file of events) {
+      const event = require(`../events/${dir}/${file}`);
 
-            let event = require(`../events/${dir}/${file}`)
+      const event_name = event.name ?? file.split(".")[0];
 
-            let event_name = event.name ?? file.split('.')[0];
-
-            table.addRow(file, 'Online')
-            if (event.once) {
-                bot.once(event_name, (...args) => event.run(...args, bot))
-            } else {
-                bot.on(event_name, (...args) => event.run(...args, bot))
-            }
-        }
-    })
-    console.log("\n"+table.toString())
-}
+      table.addRow(file, "Online");
+      if (event.once) {
+        client.once(event_name, (...args) => event.run(...args, client));
+      } else {
+        client.on(event_name, (...args) => event.run(...args, client));
+      }
+    }
+  });
+  logger.info("\n" + table.toString());
+};

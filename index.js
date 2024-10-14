@@ -1,44 +1,49 @@
-const { ShardingManager } = require('discord.js');
-const { appendFile } = require('fs')
-const { config } = require("dotenv")
-// const { startWebServer } = require('./server/server');
-const { listContent } = require(`./database/dbContent`)
-const { syncModels } = require(`./database/dbInit`)
+const { ShardingManager } = require("discord.js");
+const { appendFile } = require("fs");
+const { config } = require("dotenv");
+const { listContent } = require(`./database/dbContent`);
+const { syncModels } = require(`./database/dbInit`);
 
-require("./misc/consoleOverride")();
+// winston logger
+require("./logger");
+const { logger } = global;
 
-const test = process.argv.includes('--test')
+// globals definitions
+global.globalQueue = new Map();
 
-if(test){
-    config({
-        path: __dirname + '/test.env'
-    })
-}else{
-    config({
-        path: __dirname + '/.env'
-    })
+const dev = process.argv.includes("--dev");
+
+if (dev) {
+  logger.info("Usign [dev] enviroment [dev.env]");
+  config({
+    path: __dirname + "/dev.env",
+  });
+} else {
+  config({
+    path: __dirname + "/.env",
+  });
 }
 
-// startWebServer();
+logger.info("Syncing database");
 
-console.log('Syncing database')
-
-const force = process.argv.includes('-f')||process.argv.includes('--force')
+const force = process.argv.includes("-f") || process.argv.includes("--force");
 
 //sincronizzazione modelli
-syncModels(force)
+syncModels(force);
 //contenuto tabelle database
-console.log("listing content...")
+
 // listContent()
 
-const manager = new ShardingManager('./bot.js', {token: process.env.TOKEN, shardArgs: process.argv});
-// console.log("hi")
-manager.on('shardCreate', shard => {
-    console.log(`Launched shard ${shard.id}`)
-    shard.on("error",e=>console.error(e));
+const manager = new ShardingManager("./bot.js", {
+  token: process.env.TOKEN,
+  shardArgs: process.argv,
+});
+manager.on("shardCreate", (shard) => {
+  logger.info(`Launched shard ${shard.id}`);
+  shard.on("error", (e) => logger.error(e));
 });
 
-manager.spawn().catch(console.error);
+manager.spawn().catch(logger.error);
 
 // Lingue supportate da discord.js
 /*
@@ -54,9 +59,3 @@ manager.spawn().catch(console.error);
     'Thai',       'Turkish',      'Ukrainian',
     'Vietnamese'
 */
-
-
-
-
-
-

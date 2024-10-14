@@ -1,8 +1,9 @@
 const ytdl = require("ytdl-core-discord");
 const play_dl = require("play-dl");
 const { createAudioResource } = require("@discordjs/voice");
+
 const ytdlPromise = (song) => {
-  console.debug(song)
+  logger.debug(song)
   return new Promise((resolve, reject) => {
     const options = {
       filter: "audioonly",

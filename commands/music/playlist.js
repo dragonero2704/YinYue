@@ -1,4 +1,4 @@
-const { globalQueue } = require("../../misc/globals");
+const { globalQueue } = global
 const { ServerQueue, check } = require("../../classes/serverQueue");
 const {
   SlashCommandBuilder,
@@ -14,7 +14,7 @@ const {
   fieldEmbed,
   sendReply,
   reactToMsg,
-} = require("../../misc/functions");
+} = require("../../classes/functions");
 const { SavedQueues } = require("../../database/models/savedQueues");
 const { SlotLimits } = require("../../database/models/slotLimits");
 

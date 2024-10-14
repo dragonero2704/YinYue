@@ -1,4 +1,4 @@
-const { globalQueue } = require("../../misc/globals");
+const { globalQueue } = global
 
 const { SlashCommandBuilder, basename } = require("discord.js");
 

@@ -1,23 +1,21 @@
+const embedFromGuild = require('../misc/embed')
+
 function titleEmbed(guild, title, description = undefined, url = undefined) {
-    let embed = require('../misc/embed')(guild)
+    let embed = embedFromGuild(guild)
     embed.setTitle(title)
     if(description) embed.setDescription(description)
     if(url) embed.setURL(url)
     return embed;
 }
 
-function fieldEmbed(guild, title, content) {
-    let embed = require('../misc/embed')(guild)
-    embed.addFields([{ name: title, value: content }])
-    // embed.setDescription('')
-    return embed;
-}
+const fieldEmbed = (guild, title, content) => embedFromGuild(guild).addFields([{ name: title, value: content }])
 
-async function sendReply(channel, embed, timeout = undefined) {
+function sendReply(channel, embed, timeout = undefined) {
     if (!timeout) {
         channel.send({ embeds: [embed] })
     } else {
-        channel.send({ embeds: [embed] }).then(msg => {
+        channel.send({ embeds: [embed] })
+        .then(msg => {
             setTimeout(() => {
                 if (msg.editable)
                     msg.delete()

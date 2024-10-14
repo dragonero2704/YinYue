@@ -42,7 +42,6 @@ class queuePages {
       }
       queue.push(line);
     });
-    console.log(queue);
     const songsxpage = 20;
     const pages = queue.reduce((resultArray, item, index) => {
       const chunkIndex = Math.floor(index / songsxpage);

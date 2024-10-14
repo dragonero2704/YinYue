@@ -56,7 +56,7 @@ class SongBuilder {
 
   build(searchQuery = undefined) {
     if (searchQuery) this.#query = searchQuery;
-    const promiseLst = this.#methods.map((val) => val.call(this));
+    const promiseLst = this.#methods.map((fun) => fun.call(this));
     return Promise.any(promiseLst);
   }
   /**
