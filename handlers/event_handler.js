@@ -1,6 +1,11 @@
 const { readdirSync } = require("fs");
+const {Client} = require('discord.js')
 const ascii_table = require("ascii-table");
-const { logger } = global;
+
+/**
+ * 
+ * @param {Client} client 
+ */
 module.exports = (client) => {
   let table = new ascii_table("Events");
   table.setHeading("Event", "Status");

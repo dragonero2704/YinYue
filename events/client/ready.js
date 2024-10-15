@@ -1,4 +1,3 @@
-const { setToken, getFreeClientID } = require('play-dl')
 const ascii_table = require('ascii-table')
 
 module.exports = {
@@ -9,15 +8,6 @@ module.exports = {
         bot.user.setActivity({
             type: 'WATCHING',
             name: '-help'
-        })
-
-        // TODO rimuovere e inserire nell'index.js
-        getFreeClientID().then(clientID => {
-            setToken({
-                soundcloud: {
-                    client_id: clientID
-                },
-            })
         })
 
         // elenco dei server
@@ -31,6 +21,6 @@ module.exports = {
             serverTable.addRow(guild.name.trim(), guild.id, owner.user.tag)
         }
 
-        console.log('\n' + serverTable.toString())
+        logger.info('\n' + serverTable.toString())
     },
 }

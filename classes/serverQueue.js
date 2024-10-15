@@ -18,9 +18,13 @@ const {
   ButtonBuilder,
   ButtonStyle,
 } = require("discord.js");
-const { titleEmbed, fieldEmbed, sendReply } = require("./functions");
-const { globalQueue, botUserId } = global;
-const { RawToSecs, SecsToRaw } = require("./songBuilder");
+const {
+  titleEmbed,
+  fieldEmbed,
+  sendReply,
+  RawToSecs,
+  SecsToRaw,
+} = require("./util");
 
 // stream libraries
 const play_dl = require("play-dl");
@@ -28,15 +32,13 @@ const ytdl = require("ytdl-core-discord");
 // const ytdlexec = require('youtube-dl-exec')
 const blank_field = "\u200b";
 
-const { logger } = global;
-
 // json paths
 const loopStatesJson = "./serverQueue/messages/loopstates.json";
 const errorsJson = "./serverQueue/messages/errors.json";
 const responsesJson = "./serverQueue/messages/responses.json";
 
 function check(interaction, globalQueue, locale = "en-GB") {
-  let voice_channel = interaction.member.voice.channel;
+  const voice_channel = interaction.member.voice.channel;
   if (!voice_channel) {
     interaction.reply({
       embeds: [
@@ -116,6 +118,11 @@ class ServerQueue {
   static queueFormat = {
     start: "```Python",
     end: "```",
+  };
+  static METHODS = {
+    ytdl: 0,
+    play_dl: 1,
+    // ...
   };
   /**
    *
@@ -259,12 +266,12 @@ class ServerQueue {
   /**
    *
    * @param {string} msg the message to be displayed
-   * @param {string} aim "warning"||"error"||"log"||"debug"
+   * @param {string} level "warning"||"error"||"log"||"debug"
    * @returns
    */
-  log(msg, aim = "debug") {
+  log(msg, level = "debug") {
     const pref = `Guild ${this.#guildId} => `;
-    switch (aim) {
+    switch (level) {
       case "log":
         logger.info(pref + msg);
         break;
@@ -281,7 +288,6 @@ class ServerQueue {
         logger.debug(pref + msg);
         break;
     }
-    return;
   }
   /**
    * Toggles the autodieInterval always active
@@ -300,11 +306,6 @@ class ServerQueue {
     }
   }
 
-  static METHODS = {
-    ytdl: 0,
-    play_dl: 1,
-    // ...
-  };
   /**
    *
    * @param {{}} song the song object
@@ -312,18 +313,18 @@ class ServerQueue {
    * @returns {Promise} a Promise to an AudioResource playable by the discord player
    */
   async getResource(song, ...methods) {
-    console.debug("GetResource args:" + song);
-    methods = methods.flat();
-    const { ytdlPromise, playDlPromise } = require("./resourcefuns");
-    /*============================= End Promises definition ================================*/
-    const promises = [ytdlPromise, playDlPromise];
-    const defintivePromises = promises
-      .filter((_, index) => {
-        return methods.includes(index);
-      })
-      .map((v) => v.call(this, song));
-    console.debug("Resource Promises: " + defintivePromises);
-    return Promise.any(defintivePromises);
+    // TODO
+    // console.debug("GetResource args:" + song);
+    // methods = methods.flat();
+    // /*============================= End Promises definition ================================*/
+    // const promises = [ytdlPromise, playDlPromise];
+    // const defintivePromises = promises
+    //   .filter((_, index) => {
+    //     return methods.includes(index);
+    //   })
+    //   .map((v) => v.call(this, song));
+    // console.debug("Resource Promises: " + defintivePromises);
+    // return Promise.any(defintivePromises);
   }
   /**
    *
@@ -408,8 +409,10 @@ class ServerQueue {
    */
   add(...songs) {
     songs
-      .flatMap(val => val)
-      .forEach(song => { if (this.#songs.indexOf(song) === -1) this.#songs.push(song);});
+      .flatMap((val) => val)
+      .forEach((song) => {
+        if (this.#songs.indexOf(song) === -1) this.#songs.push(song);
+      });
   }
 
   /**
@@ -422,9 +425,9 @@ class ServerQueue {
     });
   }
   /**
-   * 
-   * @param {number} loopState 
-   * @returns 
+   *
+   * @param {number} loopState
+   * @returns
    */
   changeLoopState(loopState = undefined) {
     if (!loopState) {

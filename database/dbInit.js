@@ -13,13 +13,13 @@ const syncModels = (force = false)=> {
             model.sync({force: force});
         }catch(e){
             error = true
-            console.log(e)
+            logger.error(e)
         }
             
         if(error) dbTable.addRow(modelName, 'error')
         else dbTable.addRow(modelName, 'ok')
     })
-    console.log('\n'+dbTable.toString());
+    logger.debug('\n'+dbTable.toString());
 }
 
 module.exports = {syncModels}

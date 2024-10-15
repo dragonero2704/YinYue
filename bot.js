@@ -1,6 +1,5 @@
 const { Client, GatewayIntentBits, Collection } = require("discord.js");
 const { readdirSync } = require("fs");
-const logger = require("./logger");
 
 const client = new Client({
   intents: [

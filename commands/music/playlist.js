@@ -14,7 +14,7 @@ const {
   fieldEmbed,
   sendReply,
   reactToMsg,
-} = require("../../classes/functions");
+} = require("../../classes/util");
 const { SavedQueues } = require("../../database/models/savedQueues");
 const { SlotLimits } = require("../../database/models/slotLimits");
 

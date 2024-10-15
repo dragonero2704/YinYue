@@ -1,5 +1,4 @@
 const { readdirSync } = require("fs");
-const { logger } = global;
 const ascii_table = require("ascii-table");
 /**
  *

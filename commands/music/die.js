@@ -6,7 +6,7 @@ const {
   fieldEmbed,
   sendReply,
   reactToMsg,
-} = require("../../classes/functions");
+} = require("../../classes/util");
 
 const blank_field = "\u200b";
 

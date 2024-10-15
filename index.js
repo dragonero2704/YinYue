@@ -1,27 +1,28 @@
 const { ShardingManager } = require("discord.js");
-const { appendFile } = require("fs");
 const { config } = require("dotenv");
-const { listContent } = require(`./database/dbContent`);
 const { syncModels } = require(`./database/dbInit`);
-
-// winston logger
+const { getFreeClientID, setToken } = require("play-dl");
+// winston logger init
 require("./logger");
-const { logger } = global;
+
+// Refresh soundcloud free token for play_dl
+getFreeClientID().then((clientID) => {
+  setToken({
+    soundcloud: {
+      client_id: clientID,
+    },
+  });
+});
 
 // globals definitions
 global.globalQueue = new Map();
+global.ROOTDIR = __dirname;
 
-const dev = process.argv.includes("--dev");
-
-if (dev) {
+if (process.argv.includes("--dev")) {
   logger.info("Usign [dev] enviroment [dev.env]");
-  config({
-    path: __dirname + "/dev.env",
-  });
+  config({ path: __dirname + "/dev.env" });
 } else {
-  config({
-    path: __dirname + "/.env",
-  });
+  config({ path: __dirname + "/.env" });
 }
 
 logger.info("Syncing database");
@@ -30,9 +31,6 @@ const force = process.argv.includes("-f") || process.argv.includes("--force");
 
 //sincronizzazione modelli
 syncModels(force);
-//contenuto tabelle database
-
-// listContent()
 
 const manager = new ShardingManager("./bot.js", {
   token: process.env.TOKEN,

@@ -1,5 +1,3 @@
-//includes
-const ytdl = require("ytdl-core-discord");
 const playDL = require("play-dl");
 
 const isValidUrl = (urlString) => {
@@ -10,33 +8,6 @@ const isValidUrl = (urlString) => {
   }
 };
 
-function SecsToRaw(seconds) {
-  let res = [];
-  while (seconds > 0) {
-    res.push(String(Math.floor(seconds % 60)).padStart(2, "0"));
-    seconds /= 60;
-    seconds = Math.floor(seconds);
-  }
-  return res.join(":");
-}
-/**
- *
- * @param {String} raw
- */
-function RawToSecs(raw) {
-  //             sec min hours
-  const bases = [1, 60, 60 * 60];
-  raw = "sa:da:sda";
-  const arr = raw.split(":").reverse().slice(0, 3);
-  let seconds = 0;
-  arr.map((v, i) => v * bases[i]).forEach((v) => (seconds += v));
-  return seconds;
-}
-
-/**
- *
- *
- */
 class SongBuilder {
   #query;
   #methods;
@@ -77,8 +48,7 @@ class SongBuilder {
       // console.log('Query: '+query)
       let typeUrl = undefined;
       if (isValidUrl(query)) {
-        typeUrl = await playDL.validate(query)
-        .catch(console.error);
+        typeUrl = await playDL.validate(query).catch(console.error);
         typeUrl = typeUrl.split("_");
       } else {
         typeUrl = ["_", "_"];
@@ -90,8 +60,10 @@ class SongBuilder {
           switch (typeUrl[1]) {
             case "video":
               {
-                const media = await playDL.video_basic_info(query).catch(error => reject(error));
-                if(!media) reject("Can't retrieve video information")
+                const media = await playDL
+                  .video_basic_info(query)
+                  .catch((error) => reject(error));
+                if (!media) reject("Can't retrieve video information");
                 const video = media.video_details;
                 const song = {
                   url: video.url,
@@ -335,8 +307,5 @@ class SongBuilder {
 }
 
 module.exports = {
-  module: true,
   SongBuilder,
-  SecsToRaw,
-  RawToSecs,
 };

@@ -1,11 +1,17 @@
-const play_dl = require('play-dl')
+const play_dl = require("play-dl");
+/**
+ *
+ * @param {string} query
+ * @returns {Promise<Object>} song
+ */
+const search = (query) => {
+  // TODO
+  return new Promise((resolve, reject) => {});
+};
 
-const search = (query)=>{
-    // TODO
-}
+const stream = () => {
+  // TODO
+  return new Promise((resolve, reject) => {});
+};
 
-const stream = ()=>{
-    // TODO
-}
-
-module.exports = {search, stream}
+module.exports = { search, stream };

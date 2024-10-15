@@ -7,7 +7,7 @@ const {
   fieldEmbed,
   sendReply,
   reactToMsg,
-} = require("../../classes/functions");
+} = require("../../classes/util");
 
 const lang = require(`./languages/${basename(__filename).split(".")[0]}.json`);
 
