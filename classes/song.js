@@ -24,6 +24,11 @@ class Song {
     this.durationText = durationText;
     this.durationRaw = durationRaw;
   }
+
+  toString()
+  {
+    return `${title}\t${this.durationText}`
+  }
 }
 
 module.exports = Song;

@@ -33,7 +33,6 @@ const ytdl = require("ytdl-core-discord");
 const blank_field = "\u200b";
 
 // json paths
-const loopStatesJson = "./serverQueue/messages/loopstates.json";
 const errorsJson = "./serverQueue/messages/errors.json";
 const responsesJson = "./serverQueue/messages/responses.json";
 
@@ -89,6 +88,9 @@ function check(interaction, globalQueue, locale = "en-GB") {
   return true;
 }
 
+// libs functions
+const libsFunctions = require("../handlers/libs_handler")();
+
 //class definition
 class ServerQueue {
   // private fields
@@ -112,17 +114,16 @@ class ServerQueue {
   #queueMsg = undefined;
   #queueCollector = undefined;
 
-  static loopStates = require(loopStatesJson);
+  static loopStates = {
+    disabled: 0,
+    queue: 1,
+    track: 2,
+  };
   static errors = require(errorsJson);
   static responses = require(responsesJson);
   static queueFormat = {
     start: "```Python",
     end: "```",
-  };
-  static METHODS = {
-    ytdl: 0,
-    play_dl: 1,
-    // ...
   };
   /**
    *
@@ -330,7 +331,7 @@ class ServerQueue {
    *
    * @param {Object} song
    */
-  async play(song = undefined) {
+  async play(song = undefined, attempt = 0) {
     song = song ?? this.#songs[this.#currentIndex];
     this.getResource(song, ServerQueue.METHODS.ytdl)
       .then((resource) => {
@@ -338,24 +339,25 @@ class ServerQueue {
           this.#player.play(resource);
           this.#currentIndex = this.#songs.indexOf(song);
         } catch (error) {
-          this.log("Error at line 342: " + error, "error");
+          if (attempt > 5) {
+            this.log(`player.play() failed: ${error}`, "error");
+            this.log(`Too many attempts : ${attempt}. Aborting.`, "error");
+            return;
+          }
+          this.log(`player.play() failed: ${error}`, "warning");
+          this.log(`New attempt (${attempt})`, "warning");
+          this.play(song, attempt + 1);
         }
       })
       .catch((error) => {
-        this.getResource(
-          song,
-          ServerQueue.METHODS.play_dl,
-          ServerQueue.METHODS.ytdl
-        )
-          .then((resource) => {
-            try {
-              this.#player.play(resource);
-              this.#currentIndex = this.#songs.indexOf(song);
-            } catch (error) {
-              this.log(error, "error");
-            }
-          })
-          .catch((error) => this.log(error + "\n" + error.errors, "error"));
+        if (attempt > 5) {
+          this.log(`getResource failed: ${error}`, "error");
+          this.log(`Too many attempts : ${attempt}. Aborting.`, "error");
+          return;
+        }
+        this.log(`getResource failed: ${error}`, "warning");
+        this.log(`New attempt (${attempt})`, "warning");
+        this.play(song, attempt + 1);
       });
   }
   /**
