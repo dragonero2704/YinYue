@@ -41,7 +41,7 @@ manager.on("shardCreate", (shard) => {
   shard.on("error", (e) => logger.error(e));
 });
 
-manager.spawn().catch(logger.error);
+manager.spawn().catch(({message})=>logger.error(message));
 
 // Lingue supportate da discord.js
 /*

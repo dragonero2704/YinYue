@@ -1,4 +1,3 @@
-const { windowSize } = require("cli-color");
 const winston = require("winston");
 require("winston-daily-rotate-file");
 
@@ -31,6 +30,7 @@ const fileRotateTransport = new winston.transports.DailyRotateFile({
   filename: "logs/%DATE%.log",
   datePattern: "YYYY-MM-DD",
   maxFiles: "21d",
+  zippedArchive: true,
   format: winston.format.combine(
     winston.format.timestamp({
       format: "YYYY-MM-DD hh:mm:ss",
