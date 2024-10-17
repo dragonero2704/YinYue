@@ -1,6 +1,6 @@
 const ytdl = require("ytdl-core");
 const ytdldiscord = require("ytdl-core-discord");
-const Song = require(ROOTDIR + "/classes/song");
+const Song = require("../classes/song");
 const name = "ytdl";
 /**
  *

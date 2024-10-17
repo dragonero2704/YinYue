@@ -1,5 +1,5 @@
 const play_dl = require("play-dl");
-const Song = require(ROOTDIR + "/classes/song");
+const Song = require("../classes/song");
 
 const name = "play-dl";
 /**

@@ -1,5 +1,5 @@
 const ytstream = require("yt-stream");
-const Song = require(ROOTDIR + "/classes/song");
+const Song = require("../classes/song");
 const cache = new Map();
 const name = "yt-stream";
 /**

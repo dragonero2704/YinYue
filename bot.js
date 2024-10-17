@@ -16,7 +16,7 @@ client.commands = new Collection();
 client.aliases = new Collection();
 
 const handler_path = __dirname + "/handlers";
-readdirSync(handler_path).filter(handler=>!["libs_handler.js"].includes(handler)).forEach((handler) => {
+readdirSync(handler_path).forEach((handler) => {
   require(`${handler_path}/${handler}`)(client);
 });
 
