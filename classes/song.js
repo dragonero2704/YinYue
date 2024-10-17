@@ -27,7 +27,7 @@ class Song {
 
   toString()
   {
-    return `${title}\t${this.durationText}`
+    return `${this.title}\t${this.durationText}`
   }
 }
 

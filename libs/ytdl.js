@@ -18,11 +18,11 @@ const stream = (url, options = undefined) => {
   };
   return new Promise((resolve, reject) => {
     try {
-      const stream = ytdl(url, options ?? defaultOptions);
+      const str = ytdl(url, options ?? defaultOptions);
     } catch (error) {
       reject(error);
     }
-    resolve(stream);
+    resolve(str);
   });
 };
 

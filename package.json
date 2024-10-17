@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "start": "node .",
-        "dev": "node . --watch --dev",
+        "dev": "node --trace-warnings . --watch  --dev",
         "gRegister": "node ./command-deploy.js",
         "devRegister": "node ./dev-cmd-deploy.js"
     },

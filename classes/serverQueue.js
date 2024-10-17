@@ -27,9 +27,9 @@ const {
 } = require("./util");
 
 // stream libraries
-const play_dl = require("play-dl");
-const ytdl = require("ytdl-core-discord");
-// const ytdlexec = require('youtube-dl-exec')
+const { stream, methods } = require("../libs/libs_handler");
+logger.info(methods)
+const Song = require("./song");
 const blank_field = "\u200b";
 
 // json paths
@@ -88,9 +88,6 @@ function check(interaction, globalQueue, locale = "en-GB") {
   return true;
 }
 
-// libs functions
-const libsFunctions = require("../handlers/libs_handler")();
-
 //class definition
 class ServerQueue {
   // private fields
@@ -113,7 +110,7 @@ class ServerQueue {
   #pageIndex = 0;
   #queueMsg = undefined;
   #queueCollector = undefined;
-
+  static METHODS = methods;
   static loopStates = {
     disabled: 0,
     queue: 1,
@@ -280,7 +277,7 @@ class ServerQueue {
         logger.error(pref + msg);
         break;
       case "warning":
-        logger.warning(pref + msg);
+        logger.warn(pref + msg);
         break;
       case "debug":
         logger.debug(pref + msg);
@@ -309,23 +306,20 @@ class ServerQueue {
 
   /**
    *
-   * @param {{}} song the song object
-   * @param {Array} methods see static METHODS
-   * @returns {Promise} a Promise to an AudioResource playable by the discord player
+   * @param {Song} song the song object
+   * @param {Array} methods
+   * @returns {Promise<AudioResource>} a Promise to an AudioResource playable by the discord player
    */
-  async getResource(song, ...methods) {
-    // TODO
-    // console.debug("GetResource args:" + song);
-    // methods = methods.flat();
-    // /*============================= End Promises definition ================================*/
-    // const promises = [ytdlPromise, playDlPromise];
-    // const defintivePromises = promises
-    //   .filter((_, index) => {
-    //     return methods.includes(index);
-    //   })
-    //   .map((v) => v.call(this, song));
-    // console.debug("Resource Promises: " + defintivePromises);
-    // return Promise.any(defintivePromises);
+  getResource(song, ...exclude) {
+    exclude = exclude.flatMap((t) => t);
+    return new Promise((resolve, reject) => {
+      stream(song.url, exclude)
+        .then((str) => {
+          const resource = createAudioResource(str, {metadata:song});
+          resolve(resource);
+        })
+        .catch((e) => reject(e));
+    });
   }
   /**
    *
@@ -333,7 +327,7 @@ class ServerQueue {
    */
   async play(song = undefined, attempt = 0) {
     song = song ?? this.#songs[this.#currentIndex];
-    this.getResource(song, ServerQueue.METHODS.ytdl)
+    this.getResource(song, "play_dl", "ytdl")
       .then((resource) => {
         try {
           this.#player.play(resource);

@@ -16,7 +16,7 @@ module.exports = {
         try {
             const cmd_name = bot.aliases.get(commandName.toLowerCase()) || commandName.toLowerCase();
             logger.info(`${interaction.member.user.tag} executed /${commandName.toLowerCase()} in guild ${interaction.guild.name}`)
-            await bot.commands.get(cmd_name).execute({interaction, bot, locale});
+            await bot.commands.get(cmd_name).execute(interaction, bot, locale);
         } catch (warning) {
             logger.warn(warning)
         }

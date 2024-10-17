@@ -1,12 +1,6 @@
 const playDL = require("play-dl");
 
-const isValidUrl = (urlString) => {
-  try {
-    return Boolean(new URL(urlString));
-  } catch (e) {
-    return false;
-  }
-};
+
 
 class SongBuilder {
   #query;

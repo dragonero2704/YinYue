@@ -1,4 +1,4 @@
-const { globalQueue } = global
+const { globalQueue } = global;
 const { ServerQueue, check } = require("../../classes/serverQueue");
 const { SlashCommandBuilder, basename } = require("discord.js");
 const {

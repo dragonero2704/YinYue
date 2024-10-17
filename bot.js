@@ -1,6 +1,12 @@
 const { Client, GatewayIntentBits, Collection } = require("discord.js");
 const { readdirSync } = require("fs");
 
+global.logger = require("./logger")();
+
+// globals definitions
+global.globalQueue = new Map();
+global.ROOTDIR = __dirname;
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,

@@ -1,4 +1,4 @@
-const { globalQueue } = global
+const { globalQueue } = global;
 
 const { ServerQueue, check } = require("../../classes/serverQueue");
 const { SongBuilder } = require("../../classes/songBuilder");
@@ -9,7 +9,7 @@ const {
   reactToMsg,
 } = require("../../classes/util");
 const { SlashCommandBuilder, basename } = require("discord.js");
-
+const { search } = require("../../libs/libs_handler");
 const lang = require(`./languages/${basename(__filename).split(".")[0]}.json`);
 
 module.exports = {
@@ -28,10 +28,18 @@ module.exports = {
         .setNameLocalizations(lang.options.query.names)
         .setDescriptionLocalizations(lang.options.query.descriptions)
     ),
-
-  async execute(interaction, bot, locale, ...params) {
-    await interaction.deferReply().catch((error) => console.error(error));
-    let voice_channel = interaction.member.voice.channel;
+  /**
+   * 
+   * @param {import("discord.js").Interaction} interaction 
+   * @param {*} bot 
+   * @param {*} locale 
+   * @returns 
+   */
+  async execute(interaction, bot, locale) {
+    await interaction
+      .deferReply()
+      .catch((error) => logger.error(error.message));
+    const voice_channel = interaction.member.voice.channel;
     if (!voice_channel) {
       // sendReply(msg.channel, titleEmbed(msg.guild, ServerQueue.errors.voiceChannelNotFound), 10000);
       return interaction.editReply({
@@ -45,9 +53,9 @@ module.exports = {
       });
     }
 
-    let input = interaction.options.getString("query");
-    // console.log(input)
-    if (!input) {
+    const query = interaction.options.getString("query");
+    // console.log(query)
+    if (!query) {
       // sendReply(interaction.channel, titleEmbed(interaction.guild, ServerQueue.errors.invalidArgument), 10000);
       return interaction.editReply({
         embeds: [
@@ -72,14 +80,11 @@ module.exports = {
         return interaction.editReply({ content: content, ephemeral: true });
       }
     }
+    // search for the song
+    const item = await search(query).catch((error) =>
+      logger.error(error.message)
+    );
 
-    console.time("songObject");
-
-    const songBuilder = new SongBuilder(input);
-
-    let item = await songBuilder.build().catch((error) => console.error(error));
-    console.timeEnd("songObject");
-    // console.log(item)
     if (!item)
       return interaction.editReply({
         embeds: [
@@ -89,11 +94,10 @@ module.exports = {
       });
 
     if (!server_queue) {
-      console.log("Creating server queue");
       server_queue = new ServerQueue(item, interaction.channel, voice_channel);
       // adds songs to the global queue map
       globalQueue.set(interaction.guild.id, server_queue);
-      await server_queue.play().catch(console.error);
+      await server_queue.play().catch((e) => logger.error(e.message));
     } else {
       server_queue.add(item);
     }
@@ -108,7 +112,7 @@ module.exports = {
             ),
           ],
         })
-        .catch((error) => console.error(error));
+        .catch((error) => logger.error(error.message));
     } else {
       interaction
         .editReply({
@@ -120,7 +124,7 @@ module.exports = {
             ),
           ],
         })
-        .catch((error) => console.error(error));
+        .catch((error) => logger.error(error.message));
     }
   },
   async run(msg, args, bot) {

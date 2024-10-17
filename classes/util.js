@@ -1,13 +1,13 @@
-const { EmbedBuilder } = require("discord.js");
-
+const { EmbedBuilder, TextChannel, Embed } = require("discord.js");
+function embedFromGuild(guild) {
+  let embed = new EmbedBuilder().setColor(guild.members.me.displayColor);
+  return embed;
+}
 module.exports = {
-  embedFromGuild(guild) {
-    let embed = new EmbedBuilder().setColor(guild.members.me.displayColor);
-    return embed;
-  },
+  embedFromGuild,
 
   titleEmbed(guild, title, description = undefined, url = undefined) {
-    let embed = this.embedFromGuild(guild);
+    let embed = embedFromGuild(guild);
     embed.setTitle(title);
     if (description) embed.setDescription(description);
     if (url) embed.setURL(url);
@@ -15,9 +15,14 @@ module.exports = {
   },
 
   fieldEmbed(guild, title, content) {
-    this.embedFromGuild(guild).addFields([{ name: title, value: content }]);
+    return embedFromGuild(guild).addFields([{ name: title, value: content }]);
   },
-
+  /**
+   * 
+   * @param {TextChannel} channel 
+   * @param {Embed} embed 
+   * @param {number} timeout 
+   */
   sendReply(channel, embed, timeout = undefined) {
     if (!timeout) {
       channel.send({ embeds: [embed] });
@@ -54,5 +59,12 @@ module.exports = {
     let seconds = 0;
     arr.map((v, i) => v * bases[i]).forEach((v) => (seconds += v));
     return seconds;
+  },
+  isValidUrl(urlString) {
+    try {
+      return Boolean(new URL(urlString));
+    } catch (e) {
+      return false;
+    }
   },
 };

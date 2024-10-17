@@ -3,7 +3,7 @@ const { config } = require("dotenv");
 const { syncModels } = require(`./database/dbInit`);
 const { getFreeClientID, setToken } = require("play-dl");
 // winston logger init
-require("./logger");
+global.logger = require("./logger")();
 
 // Refresh soundcloud free token for play_dl
 getFreeClientID().then((clientID) => {
@@ -41,7 +41,7 @@ manager.on("shardCreate", (shard) => {
   shard.on("error", (e) => logger.error(e));
 });
 
-manager.spawn().catch(({message})=>logger.error(message));
+manager.spawn().catch(({ message }) => logger.error(message));
 
 // Lingue supportate da discord.js
 /*

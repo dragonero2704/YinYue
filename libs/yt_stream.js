@@ -39,8 +39,8 @@ const search = (query, cacheTimer = 60_000) => {
 const stream = (url) => {
   return new Promise((resolve, reject) => {
     ytstream
-      .stream(url, { quality: "high", download: false, type: "audio" })
-      .then((stream) => resolve(stream))
+      .stream(url, { quality: "low", download: true, type: "audio" })
+      .then((s) => resolve(s.stream))
       .catch((error) => reject(error));
   });
 };
