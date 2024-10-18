@@ -32,6 +32,7 @@ const search = (query) => {
             reject("Couldn't fetch info from url " + query);
           }
           break;
+        
 
         default:
           reject("Not implemented");

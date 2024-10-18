@@ -1,6 +1,5 @@
 const { readdirSync } = require("fs");
 const { Stream } = require("stream");
-// const Song = require(ROOTDIR + "/classes/song");
 
 const functions = new Map();
 

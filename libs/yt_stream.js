@@ -22,7 +22,7 @@ const search = (query, cacheTimer = 60_000) => {
           video.author,
           video.thumbnail,
           video.length_text,
-          video.length
+          Math.round(video.length / 1000)
         );
         cache.set(query, song);
         setTimeout(cache.delete.bind(cache, query), cacheTimer);
@@ -37,9 +37,14 @@ const search = (query, cacheTimer = 60_000) => {
  * @returns
  */
 const stream = (url) => {
+  const options = {
+    quality: "high",
+    download: true, // non toccare - causa errore interno non recuperabile
+    type: "audio",
+  };
   return new Promise((resolve, reject) => {
     ytstream
-      .stream(url, { quality: "low", download: true, type: "audio" })
+      .stream(url, options)
       .then((s) => resolve(s.stream))
       .catch((error) => reject(error));
   });

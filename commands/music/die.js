@@ -10,7 +10,9 @@ const {
 
 const blank_field = "\u200b";
 
-const lang = require(`./languages/${basename(__filename).split(".")[0]}.json`);
+const lang = require(`../../languages/${
+  basename(__filename).split(".")[0]
+}.json`);
 
 module.exports = {
   name: "die",

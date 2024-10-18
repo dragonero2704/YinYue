@@ -1,8 +1,10 @@
-const { globalQueue } = global
+const { globalQueue } = global;
 
 const { SlashCommandBuilder, basename } = require("discord.js");
 
-const lang = require(`./languages/${basename(__filename).split(".")[0]}.json`);
+const lang = require(`../../languages/${
+  basename(__filename).split(".")[0]
+}.json`);
 
 module.exports = {
   name: "24-7",
@@ -16,6 +18,4 @@ module.exports = {
     let serverQueue = globalQueue.get(interaction.guild.id);
     serverQueue.toggleAlwaysActive();
   },
-
-  async run(msg, args, bot) {},
 };

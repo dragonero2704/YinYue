@@ -4,7 +4,7 @@ module.exports = {
     name: 'ready',
     once: true,
     async run(bot) {
-        console.log(`${bot.user.tag} online!`)
+        logger.info(`${bot.user.tag} online!`)
         bot.user.setActivity({
             type: 'WATCHING',
             name: '-help'
@@ -14,7 +14,7 @@ module.exports = {
         let serverTable = new ascii_table("Servers")
 
         serverTable.setHeading("Server", "Id", "Proprietario")
-        console.log('Fetching servers...')
+        logger.info('Fetching servers...')
         let guilds = bot.guilds.cache.values()
         for (const guild of guilds) {
             let owner = await guild.fetchOwner()

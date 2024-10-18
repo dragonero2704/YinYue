@@ -8,7 +8,7 @@ const {
   reactToMsg,
 } = require("../../classes/util");
 
-const lang = require(`./languages/${basename(__filename).split(".")[0]}.json`);
+ const lang = require(`../../languages/${basename(__filename).split(".")[0]}.json`);
 
 module.exports = {
   name: "resume",

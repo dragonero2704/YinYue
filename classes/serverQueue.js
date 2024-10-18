@@ -8,7 +8,6 @@ const {
   NoSubscriberBehavior,
   VoiceConnectionStatus,
   AudioPlayerStatus,
-  demuxProbe,
   entersState,
 } = require("@discordjs/voice");
 const {
@@ -17,34 +16,34 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  CommandInteraction,
 } = require("discord.js");
 const {
   titleEmbed,
   fieldEmbed,
   sendReply,
-  RawToSecs,
-  SecsToRaw,
+  TextToSeconds,
+  SecondsToText
 } = require("./util");
 
-// stream libraries
+// stream function
 const { stream, methods } = require("../libs/libs_handler");
-logger.info(methods)
 const Song = require("./song");
+const { basename } = require("path");
 const blank_field = "\u200b";
 
-// json paths
-const errorsJson = "./serverQueue/messages/errors.json";
-const responsesJson = "./serverQueue/messages/responses.json";
+const lang = require(`./${basename(__filename).split(".")[0]}.json`);
+const queueFormat = {
+  start: "```Python",
+  end: "```",
+};
 
 function check(interaction, globalQueue, locale = "en-GB") {
   const voice_channel = interaction.member.voice.channel;
   if (!voice_channel) {
     interaction.reply({
       embeds: [
-        titleEmbed(
-          interaction.guild,
-          ServerQueue.errors.voiceChannelNotFound[locale]
-        ),
+        titleEmbed(interaction.guild, lang.errors.voiceChannelNotFound[locale]),
       ],
       ephemeral: true,
     });
@@ -54,7 +53,7 @@ function check(interaction, globalQueue, locale = "en-GB") {
   if (!server_queue) {
     interaction.reply({
       embeds: [
-        titleEmbed(interaction.guild, ServerQueue.errors.queueNotFound[locale]),
+        titleEmbed(interaction.guild, lang.errors.queueNotFound[locale]),
       ],
       ephemeral: true,
     });
@@ -68,7 +67,7 @@ function check(interaction, globalQueue, locale = "en-GB") {
       embeds: [
         titleEmbed(
           interaction.guild,
-          ServerQueue.errors.differentVoiceChannel[locale] + `<@${botUserId}> !`
+          lang.errors.differentVoiceChannel[locale] + `<@${botUserId}> !`
         ),
       ],
       ephemeral: true,
@@ -78,9 +77,7 @@ function check(interaction, globalQueue, locale = "en-GB") {
   let songs = server_queue.getSongs();
   if (songs.length === 0) {
     interaction.reply({
-      embeds: [
-        titleEmbed(interaction.guild, ServerQueue.errors.emptyQueue[locale]),
-      ],
+      embeds: [titleEmbed(interaction.guild, lang.errors.emptyQueue[locale])],
       ephemeral: true,
     });
     return false;
@@ -116,15 +113,9 @@ class ServerQueue {
     queue: 1,
     track: 2,
   };
-  static errors = require(errorsJson);
-  static responses = require(responsesJson);
-  static queueFormat = {
-    start: "```Python",
-    end: "```",
-  };
   /**
    *
-   * @param {Array} songs
+   * @param {Array<Song>} songs
    * @param {TextChannel} textChannel
    * @param {VoiceChannel} voiceChannel
    * @param {boolean} autodie
@@ -241,7 +232,7 @@ class ServerQueue {
       let embed = titleEmbed(
         this.getTextChannel().guild,
         `**${song.title}**`,
-        ServerQueue.responses.playing[this.#locale],
+        lang.responses.playing[this.#locale],
         song.url
       );
       embed.setImage(song.thumbnailUrl);
@@ -315,7 +306,7 @@ class ServerQueue {
     return new Promise((resolve, reject) => {
       stream(song.url, exclude)
         .then((str) => {
-          const resource = createAudioResource(str, {metadata:song});
+          const resource = createAudioResource(str, { metadata: song });
           resolve(resource);
         })
         .catch((e) => reject(e));
@@ -407,7 +398,9 @@ class ServerQueue {
     songs
       .flatMap((val) => val)
       .forEach((song) => {
-        if (this.#songs.indexOf(song) === -1) this.#songs.push(song);
+        // check if is present in this.#songs
+        if (this.#songs.map((el) => el.url).includes(song.url) === -1)
+          this.#songs.push(song);
       });
   }
 
@@ -505,7 +498,7 @@ class ServerQueue {
         this.#textChannel,
         titleEmbed(
           this.#textChannel.guild,
-          ServerQueue.responses.endQueue[this.#locale]
+          lang.responses.endQueue[this.#locale]
         )
       );
 
@@ -536,7 +529,10 @@ class ServerQueue {
 
     Object.keys(this).forEach((key) => (this[key] = null));
   }
-
+/**
+ * 
+ * @returns {number} milliseconds remaining
+ */
   getPlaybackDuration() {
     return this.#player.state.playbackDuration ?? 0;
   }
@@ -574,14 +570,16 @@ class ServerQueue {
     let queue = [];
     this.#songs.forEach((song, index) => {
       let line = "";
-      if (song === this.curPlayingSong) {
-        line = `    ⬐${ServerQueue.responses.playing[this.#locale]}\n${
-          index + 1
-        }. ${song.title}\t${SecsToRaw(
-          song.duration - Math.round(this.getPlaybackDuration() / 1000)
-        )} rimasti\n    ⬑${ServerQueue.responses.playing[this.#locale]}`;
+      if (song.url === this.#player.state.resource.metadata.url) {
+        const up = `    ⬐${lang.responses.playing[this.#locale]}`;
+        const down = `    ⬑${lang.responses.playing[this.#locale]}`;
+        const remaining = song.durationRaw - Math.round(this.getPlaybackDuration() / 1000)
+        logger.info(song.durationRaw + " - " + Math.round(this.getPlaybackDuration() / 1000))
+        const p = `${index + 1}. ${song.title}\t${SecondsToText(remaining)} rimasti`;
+
+        line = [up, p, down].join("\n")
       } else {
-        line = `${index + 1}. ${song.title}\t${song.durationRaw}`;
+        line = `${index + 1}. ${song.toString()}`;
       }
       queue.push(line);
     });
@@ -642,9 +640,14 @@ class ServerQueue {
           break;
       }
 
-      let content = [ServerQueue.queueFormat.start];
-      content = content.concat(pages[this.#pageIndex]);
-      content.push(ServerQueue.queueFormat.end);
+      const content = [
+        queueFormat.start,
+        pages[this.#pageIndex],
+        queueFormat.end,
+      ].flatMap((el) => el);
+      logger.info(content);
+      // content = content.concat(pages[this.#pageIndex]);
+      // content.push(queueFormat.end);
       inter.message.edit(content.join("\n"));
     });
   }
@@ -655,7 +658,7 @@ class ServerQueue {
     }
     this.#queueCollector = undefined;
     try {
-      if (this ?? queueMsg ?? editable === false) {
+      if (this.#queueMsg?.editable === false) {
         this.#queueMsg.fetch();
       }
       try {
@@ -668,15 +671,18 @@ class ServerQueue {
     }
     return;
   }
-
+  /**
+   *
+   * @param {CommandInteraction} interaction
+   */
   async showQueue(interaction) {
     this.stopCollector();
 
     let pages = this.queuePages();
 
-    let queue = [ServerQueue.queueFormat.start];
+    let queue = [queueFormat.start];
     queue = queue.concat(pages[0]);
-    queue.push(ServerQueue.queueFormat.end);
+    queue.push(queueFormat.end);
     queue = queue.join("\n");
 
     const row = new ActionRowBuilder().addComponents(
@@ -699,10 +705,12 @@ class ServerQueue {
     );
     await interaction.reply(blank_field);
     await interaction.deleteReply();
-    let queueinteraction = await interaction.channel.send({
-      content: queue,
-      components: [row],
-    });
+    let queueinteraction = await interaction.channel
+      .send({
+        content: queue,
+        components: [row],
+      })
+      .catch((e) => logger.error(e.message));
     // let queueinteraction = await interaction.reply({ content: queue, components: [row] });
     this.startCollector(queueinteraction, [
       "FirstPage",

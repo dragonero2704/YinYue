@@ -20,6 +20,7 @@ const client = new Client({
 
 client.commands = new Collection();
 client.aliases = new Collection();
+client.locales = new Collection();
 
 const handler_path = __dirname + "/handlers";
 readdirSync(handler_path).forEach((handler) => {

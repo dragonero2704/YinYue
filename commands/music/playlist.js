@@ -18,7 +18,7 @@ const {
 const { SavedQueues } = require("../../database/models/savedQueues");
 const { SlotLimits } = require("../../database/models/slotLimits");
 
-const lang = require(`./languages/${basename(__filename).split(".")[0]}.json`);
+ const lang = require(`../../languages/${basename(__filename).split(".")[0]}.json`);
 
 module.exports = {
   name: "playlist",

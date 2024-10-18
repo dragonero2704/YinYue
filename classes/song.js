@@ -13,8 +13,8 @@ class Song {
    * @param {string} title
    * @param {string} author
    * @param {string} thumbnailUrl
-   * @param {string} duration
-   * @param {number} durationRaw
+   * @param {string} durationText duration in text
+   * @param {number} durationRaw duration in seconds
    */
   constructor(url, title, author, thumbnailUrl, durationText, durationRaw) {
     this.url = url;

@@ -14,7 +14,7 @@ const stream = (url, options = undefined) => {
     liveBuffer: 20000,
     dlChunkSize: 4096,
     bitrate: 128,
-    quality: "lowestaudio",
+    quality: "highestaudio",
   };
   return new Promise((resolve, reject) => {
     try {

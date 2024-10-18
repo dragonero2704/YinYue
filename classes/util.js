@@ -39,20 +39,22 @@ module.exports = {
     await msg.react(emoji);
   },
 
-  SecsToRaw(seconds) {
-    let res = [];
-    while (seconds > 0) {
-      res.push(String(Math.floor(seconds % 60)).padStart(2, "0"));
-      seconds /= 60;
-      seconds = Math.floor(seconds);
-    }
+  SecondsToText(seconds) {
+    let res = [
+      String(Math.floor(seconds % 60)).padStart(2, "0"),
+      String(Math.floor((seconds / 60) % 60)).padStart(2, "0"),
+    ];
+    const hours = Math.floor((seconds / 3600))
+    if(hours > 0) res.push(String(hours).padStart(2, "0"))
+  
+    res.reverse()
     return res.join(":");
   },
   /**
    *
    * @param {String} raw
    */
-  RawToSecs(raw) {
+  TextToSeconds(raw) {
     //             sec min hours
     const bases = [1, 60, 60 * 60];
     const arr = raw.split(":").reverse().slice(0, 3);
