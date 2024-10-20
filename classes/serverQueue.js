@@ -644,9 +644,7 @@ class ServerQueue {
         pages[this.#pageIndex],
         queueFormat.end,
       ].flatMap((el) => el);
-      logger.info(content);
-      // content = content.concat(pages[this.#pageIndex]);
-      // content.push(queueFormat.end);
+
       inter.message.edit(content.join("\n"));
     });
   }
