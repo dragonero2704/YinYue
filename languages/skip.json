@@ -8,5 +8,12 @@
         "it":"Salta alla canzone successiva",
         "en-GB":"Skips to the next song",
         "en-US":"Skips to the next song"
+    }, 
+    "responses":{
+        "endQueue": {
+            "it": "Coda terminata",
+            "en-GB": "Queue ended",
+            "en-US": "Queue ended"
+        }
     }
 }

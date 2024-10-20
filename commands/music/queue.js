@@ -24,7 +24,7 @@ module.exports = {
     let songs = server_queue.getSongs();
     if (songs.length === 0) {
       interaction.reply({
-        embeds: [titleEmbed(msg.guild, ServerQueue.errors.emptyQueue)],
+        embeds: [titleEmbed(msg.guild, lang.errors.emptyQueue)],
       });
       return;
     }
@@ -37,7 +37,7 @@ module.exports = {
     let songs = server_queue.getSongs();
     if (songs.length === 0) {
       msg.reply({
-        embeds: [titleEmbed(msg.guild, ServerQueue.errors.emptyQueue)],
+        embeds: [titleEmbed(msg.guild, lang.errors.emptyQueue)],
       });
       return;
     }

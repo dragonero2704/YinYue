@@ -8,5 +8,18 @@
         "it": "Mostra la coda",
         "en-GB":"Shows the queue",
         "en-US":"Shows the queue"
+    },
+    "errors":
+    {
+        "queueNotFound": {
+        "it": "Coda non trovata",
+        "en-GB":"Queue not found",
+        "en-US":"Queue not found"
+        },
+        "emptyQueue": {
+            "it": "La coda è vuota",
+            "en-GB":"The queue is empty",
+            "en-US":"The queue is empty"
+        }
     }
 }

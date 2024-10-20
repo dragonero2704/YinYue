@@ -21,11 +21,12 @@ module.exports = {
     let server_queue = globalQueue.get(interaction.guild.id);
     server_queue.shuffle();
     interaction.reply(
-      `${
-        ServerQueue.queueFormat.start
-      }\nShuffled ${server_queue.getSongsLength()} songs\n${
-        ServerQueue.queueFormat.end
-      }`
+      // `${
+      //   ServerQueue.queueFormat.start
+      // }\nShuffled ${server_queue.getSongsLength()} songs\n${
+      //   ServerQueue.queueFormat.end
+      // }`
+      {embeds:[titleEmbed(interaction.guild, `${server_queue.getSongsLength()} ${lang.names[locale]}`)]}
     );
   },
   async run(msg, args, bot) {

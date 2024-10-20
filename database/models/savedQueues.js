@@ -13,7 +13,7 @@ const SavedQueues = connection.define('savedQueues', {
     }
 })
 
-let queueCache = new Cache()
+const cache = new Cache({enableKeyTTL:true})
 
 Reflect.defineProperty(SavedQueues, 'getQueues', {
     value: async function getQueue(guildId) {
@@ -39,7 +39,7 @@ Reflect.defineProperty(SavedQueues, 'getQueues', {
 
 Reflect.defineProperty(SavedQueues, 'getQueue', {
     value: async function getQueue(guildId, name) {
-        let q = queueCache.get(name)
+        let q = cache.get(name)
         if (q!== undefined) return q
         const queueJson = await SavedQueues.findOne({
             where: {
@@ -49,7 +49,7 @@ Reflect.defineProperty(SavedQueues, 'getQueue', {
         })
 
         if (queueJson) {
-            queueCache.set(name, JSON.parse(queueJson.songsJson))
+            cache.set(name, JSON.parse(queueJson.songsJson))
             return JSON.parse(queueJson.songsJson)
         }
         else return undefined;
@@ -58,7 +58,7 @@ Reflect.defineProperty(SavedQueues, 'getQueue', {
 
 Reflect.defineProperty(SavedQueues, 'saveQueue', {
     value: async function saveQueue(guildId, songsJson, queueName) {
-        queueCache.unset(queueName)
+        cache.delete(queueName)
         let q = await SavedQueues.getQueue(guildId, songsJson)
         if(q){
             return await SavedQueues.update({songsJson}, {where:{guildId, queueName}})
@@ -90,7 +90,7 @@ Reflect.defineProperty(SavedQueues, 'getQueueTotal', {
 
 Reflect.defineProperty(SavedQueues, 'deleteQueue', {
     value: async function deleteQueue(guildId, queueName) {
-        queueCache.clear()
+        cache.clear()
         return await SavedQueues.destroy({where:{
             guildId: guildId,
             queueName: queueName,

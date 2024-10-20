@@ -113,6 +113,7 @@ class ServerQueue {
     queue: 1,
     track: 2,
   };
+  static queueFormat = queueFormat
   /**
    *
    * @param {Array<Song>} songs
@@ -574,9 +575,7 @@ class ServerQueue {
         const up = `    ⬐${lang.responses.playing[this.#locale]}`;
         const down = `    ⬑${lang.responses.playing[this.#locale]}`;
         const remaining = song.durationRaw - Math.round(this.getPlaybackDuration() / 1000)
-        logger.info(song.durationRaw + " - " + Math.round(this.getPlaybackDuration() / 1000))
         const p = `${index + 1}. ${song.title}\t${SecondsToText(remaining)} rimasti`;
-
         line = [up, p, down].join("\n")
       } else {
         line = `${index + 1}. ${song.toString()}`;

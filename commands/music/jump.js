@@ -1,4 +1,4 @@
-const { globalQueue } = global
+const { globalQueue } = global;
 
 const { ServerQueue, check } = require("../../classes/serverQueue");
 const { SlashCommandBuilder, basename } = require("discord.js");
@@ -9,7 +9,9 @@ const {
   reactToMsg,
 } = require("../../classes/util");
 
- const lang = require(`../../languages/${basename(__filename).split(".")[0]}.json`);
+const lang = require(`../../languages/${
+  basename(__filename).split(".")[0]
+}.json`);
 
 module.exports = {
   name: "jump",
@@ -37,7 +39,7 @@ module.exports = {
         embeds: [
           titleEmbed(
             interaction.guild,
-            `Inserire un numero tra 1 e ${server_queue.getSongs().length}`
+            `Input a number between 1 and ${server_queue.getSongs().length}`
           ),
         ],
         ephemeral: true,
@@ -45,11 +47,22 @@ module.exports = {
       return;
     }
     interaction.reply(
-      `${ServerQueue.queueFormat.start}\nSalto a [${
-        server_queue.getSongs()[index - 1].title
-      }](${server_queue.getSongs()[index - 1].url})\n${
-        ServerQueue.queueFormat.end
-      }`
+      // `${ServerQueue.queueFormat.start}\nSalto a [${
+      //   server_queue.getSongs()[index - 1].title
+      // }](${server_queue.getSongs()[index - 1].url})\n${
+      //   ServerQueue.queueFormat.end
+      // }`
+      {
+        embeds: [
+          titleEmbed(
+            interaction.guild,
+            lang.names[locale],
+            `[${server_queue.getSongs()[index - 1].title}](${
+              server_queue.getSongs()[index - 1].url
+            })`
+          ),
+        ],
+      }
     );
 
     await server_queue.jump(index - 1);

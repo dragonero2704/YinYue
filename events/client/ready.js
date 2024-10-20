@@ -7,7 +7,7 @@ module.exports = {
         logger.info(`${bot.user.tag} online!`)
         bot.user.setActivity({
             type: 'WATCHING',
-            name: '-help'
+            name: 'youtube'
         })
 
         // elenco dei server
@@ -17,7 +17,7 @@ module.exports = {
         logger.info('Fetching servers...')
         let guilds = bot.guilds.cache.values()
         for (const guild of guilds) {
-            let owner = await guild.fetchOwner()
+            let owner = await guild.fetchOwner().catch(e=>logger.warm(e.message))
             serverTable.addRow(guild.name.trim(), guild.id, owner.user.tag)
         }
 

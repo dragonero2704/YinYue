@@ -1,7 +1,12 @@
-const { globalQueue } = global
+const { globalQueue } = global;
 
 const { ServerQueue, check } = require("../../classes/serverQueue");
-const { SlashCommandBuilder, basename } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  basename,
+  CommandInteraction,
+  Client,
+} = require("discord.js");
 const {
   titleEmbed,
   fieldEmbed,
@@ -9,7 +14,9 @@ const {
   reactToMsg,
 } = require("../../classes/util");
 
- const lang = require(`../../languages/${basename(__filename).split(".")[0]}.json`);
+const lang = require(`../../languages/${
+  basename(__filename).split(".")[0]
+}.json`);
 
 module.exports = {
   name: "loop",
@@ -38,6 +45,14 @@ module.exports = {
         .setNameLocalizations(lang.options[2].names)
         .setDescriptionLocalizations(lang.options[2].descriptions)
     ),
+  /**
+   *
+   * @param {CommandInteraction} interaction
+   * @param {Client} bot
+   * @param {String} locale
+   * @param  {...any} params
+   * @returns
+   */
   async execute(interaction, bot, locale, ...params) {
     if (!check(interaction, globalQueue)) return;
     let server_queue = globalQueue.get(interaction.guild.id);
@@ -47,17 +62,20 @@ module.exports = {
     switch (server_queue.changeLoopState(mode)) {
       case ServerQueue.loopStates.disabled:
         interaction.reply(
-          `${ServerQueue.queueFormat.start}\nLoop: disabled\n${ServerQueue.queueFormat.end}`
+          //`${ServerQueue.queueFormat.start}\nLoop: disabled\n${ServerQueue.queueFormat.end}`
+          { embeds: [titleEmbed(interaction.guild, "loop disabled")] }
         );
         break;
       case ServerQueue.loopStates.queue:
         interaction.reply(
-          `${ServerQueue.queueFormat.start}\nLoop: queue\n${ServerQueue.queueFormat.end}`
+          //`${ServerQueue.queueFormat.start}\nLoop: queue\n${ServerQueue.queueFormat.end}`
+          {embeds: [titleEmbed(interaction.guild, "loop queue")]}
         );
         break;
       case ServerQueue.loopStates.track:
         interaction.reply(
-          `${ServerQueue.queueFormat.start}\nLoop: track\n${ServerQueue.queueFormat.end}`
+          //`${ServerQueue.queueFormat.start}\nLoop: track\n${ServerQueue.queueFormat.end}`
+          {embeds: [titleEmbed(interaction.guild, "loop track")]}
         );
         break;
     }

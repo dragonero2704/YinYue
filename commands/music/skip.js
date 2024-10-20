@@ -35,7 +35,7 @@ module.exports = {
       server_queue.die();
       globalQueue.delete(interaction.guild.id);
       interaction.reply({
-        embeds: [titleEmbed(interaction.guild, ServerQueue.responses.endQueue)],
+        embeds: [titleEmbed(interaction.guild, lang.responses.endQueue)],
       });
     }
   },

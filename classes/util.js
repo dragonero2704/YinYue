@@ -1,11 +1,23 @@
-const { EmbedBuilder, TextChannel, Embed } = require("discord.js");
+const { EmbedBuilder, TextChannel, Embed, Guild } = require("discord.js");
+/**
+ * 
+ * @param {Guild} guild 
+ * @returns 
+ */
 function embedFromGuild(guild) {
   let embed = new EmbedBuilder().setColor(guild.members.me.displayColor);
   return embed;
 }
 module.exports = {
   embedFromGuild,
-
+  /**
+   * 
+   * @param {Guild} guild 
+   * @param {String} title 
+   * @param {String} description 
+   * @param {String} url 
+   * @returns 
+   */
   titleEmbed(guild, title, description = undefined, url = undefined) {
     let embed = embedFromGuild(guild);
     embed.setTitle(title);
@@ -13,7 +25,13 @@ module.exports = {
     if (url) embed.setURL(url);
     return embed;
   },
-
+  /**
+   * 
+   * @param {Guild} guild 
+   * @param {String} title 
+   * @param {String} content 
+   * @returns 
+   */
   fieldEmbed(guild, title, content) {
     return embedFromGuild(guild).addFields([{ name: title, value: content }]);
   },
@@ -46,7 +64,6 @@ module.exports = {
     ];
     const hours = Math.floor((seconds / 3600))
     if(hours > 0) res.push(String(hours).padStart(2, "0"))
-  
     res.reverse()
     return res.join(":");
   },
@@ -56,7 +73,7 @@ module.exports = {
    */
   TextToSeconds(raw) {
     //             sec min hours
-    const bases = [1, 60, 60 * 60];
+    const bases = [1, 60, 3600];
     const arr = raw.split(":").reverse().slice(0, 3);
     let seconds = 0;
     arr.map((v, i) => v * bases[i]).forEach((v) => (seconds += v));

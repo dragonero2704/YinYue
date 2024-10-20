@@ -7,7 +7,10 @@ const {
 } = require("../../classes/util");
 const { SlashCommandBuilder, basename } = require("discord.js");
 const { search } = require("../../libs/libs_handler");
-const lang = require(`../../languages/${basename(__filename).split(".")[0]}.json`);
+const { NotImplemented } = require("../../classes/error");
+const lang = require(`../../languages/${
+  basename(__filename).split(".")[0]
+}.json`);
 
 module.exports = {
   name: "play",
@@ -26,11 +29,11 @@ module.exports = {
         .setDescriptionLocalizations(lang.options.query.descriptions)
     ),
   /**
-   * 
-   * @param {import("discord.js").Interaction} interaction 
-   * @param {*} bot 
-   * @param {*} locale 
-   * @returns 
+   *
+   * @param {import("discord.js").Interaction} interaction
+   * @param {*} bot
+   * @param {*} locale
+   * @returns
    */
   async execute(interaction, bot, locale) {
     await interaction
@@ -67,7 +70,7 @@ module.exports = {
 
     let server_queue = globalQueue.get(interaction.guild.id);
 
-    if (server_queue !== undefined) {
+    if (server_queue) {
       if (server_queue.getVoiceChannel() !== voice_channel) {
         let content =
           ServerQueue.queueFormat.start +
@@ -78,29 +81,28 @@ module.exports = {
       }
     }
     // search for the song
-    const item = await search(query).catch((error) =>
-      logger.error(error.message)
-    );
-
-    if (!item)
-      return interaction.editReply({
-        embeds: [
-          titleEmbed(interaction.guild, lang.responses.noResults[locale]),
-        ],
-        ephemeral: true,
-      });
+    const item = await search(query, ["yt-stream"]).catch((error) => {
+      if (error instanceof NotImplemented) {
+        interaction.editReply({
+          embeds: [
+            titleEmbed(interaction.guild, lang.responses.noResults[locale]),
+          ],
+          ephemeral: true,
+        });
+      }
+      logger.error(error.message);
+    });
 
     if (!server_queue) {
       server_queue = new ServerQueue(item, interaction.channel, voice_channel);
-      logger.info("Queue created")
+      logger.info("Queue created");
       // adds songs to the global queue map
       globalQueue.set(interaction.guild.id, server_queue);
       await server_queue.play().catch((e) => logger.error(e.message));
-      
     } else {
       server_queue.add(item);
     }
-    if (Array.isArray(item)) {
+    if (item.length === 1) {
       interaction
         .editReply({
           embeds: [
@@ -128,10 +130,10 @@ module.exports = {
   },
   /**
    * Deprecated
-   * @param {*} msg 
-   * @param {*} args 
-   * @param {*} bot 
-   * @returns 
+   * @param {*} msg
+   * @param {*} args
+   * @param {*} bot
+   * @returns
    */
   async run(msg, args, bot) {
     let voice_channel = await msg.member.voice.channel;

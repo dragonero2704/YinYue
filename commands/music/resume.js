@@ -21,7 +21,8 @@ module.exports = {
     let server_queue = globalQueue.get(interaction.guild.id);
 
     interaction.reply(
-      `${ServerQueue.queueFormat.start}\nRiprendo\n${ServerQueue.queueFormat.end}`
+      // `${ServerQueue.queueFormat.start}\nRiprendo\n${ServerQueue.queueFormat.end}`
+      {embeds:[titleEmbed(interaction.guild, lang.names[locale])]}
     );
 
     server_queue.resume();
