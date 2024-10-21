@@ -1,19 +1,32 @@
-const { SlashCommandBuilder } = require('discord.js')
+const {
+  SlashCommandBuilder,
+  CommandInteraction,
+  Client,
+} = require("discord.js");
+const { titleEmbed } = require("../../classes/util");
 
 module.exports = {
-    name: 'ping',
-    description: 'Calcola il ping',
-    run(msg, args, bot) {
-        let embed = require('../../misc/embed')(msg.guild)
-        embed.setTitle(`Ping: ${bot.ws.ping}ms`)
-        msg.reply({ embeds: [embed], ephemeral: true })
-    },
-    data: new SlashCommandBuilder()
-        .setName('ping')
-        .setDescription('Calcola il ping'),
-    async execute(inter, bot, locale, ...params) {
-        let embed = require('../../misc/embed')(inter.guild)
-        embed.setTitle(`Ping: ${bot.ws.ping}ms`)
-        await inter.reply({ embeds: [embed], ephemeral: true })
-    }
-}
+  name: "ping",
+  description: "Calcola il ping",
+  run(msg, args, bot) {
+    msg.reply({
+      embeds: [titleEmbed(msg.guild, `Ping: ${bot.ws.ping}ms`)],
+      ephemeral: true,
+    });
+  },
+  data: new SlashCommandBuilder()
+    .setName("ping")
+    .setDescription("Calcola il ping"),
+  /**
+   *
+   * @param {CommandInteraction} inter
+   * @param {Client} bot
+   * @param {String} locale
+   */
+  async execute(inter, bot, locale) {
+    inter.reply({
+      embeds: [titleEmbed(inter.guild, `Ping: ${bot.ws.ping}ms`)],
+      ephemeral: true,
+    });
+  },
+};
