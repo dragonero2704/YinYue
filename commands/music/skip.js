@@ -35,7 +35,7 @@ module.exports = {
       server_queue.die();
       globalQueue.delete(interaction.guild.id);
       interaction.reply({
-        embeds: [titleEmbed(interaction.guild, lang.responses.endQueue)],
+        embeds: [titleEmbed(interaction.guild, lang.responses.endQueue[locale])],
       });
     }
   },
@@ -53,7 +53,7 @@ module.exports = {
       globalQueue.delete(msg.guild.id);
       sendReply(
         msg.channel,
-        titleEmbed(msg.guild, ServerQueue.responses.endQueue)
+        titleEmbed(msg.guild, ServerQueue.responses.endQueue[locale])
       );
     }
     reactToMsg(msg, "⏭️");
