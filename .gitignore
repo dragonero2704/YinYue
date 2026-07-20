@@ -4,6 +4,7 @@
 # node modules
 node_modules
 .data
+build
 # packages
 package-lock.json
 package.json
